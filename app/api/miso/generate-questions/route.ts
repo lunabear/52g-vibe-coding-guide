@@ -3,9 +3,19 @@ import { NextRequest, NextResponse } from 'next/server';
 interface MISOWorkflowResponse {
   data?: {
     outputs?: {
-      result?: string[];
+      result_planner?: string[];
+      result_designer?: string[];
+      result_developer?: string[];
     };
   };
+  outputs?: {
+    result_planner?: string[];
+    result_designer?: string[];
+    result_developer?: string[];
+  };
+  result_planner?: string[];
+  result_designer?: string[];
+  result_developer?: string[];
 }
 
 export async function POST(request: NextRequest) {
@@ -58,22 +68,49 @@ export async function POST(request: NextRequest) {
     const responseText = await response.text();
     const data = JSON.parse(responseText);
     
-    // 중첩된 응답 구조 처리: data.data.outputs.result
-    if (data.data && data.data.outputs && data.data.outputs.result && Array.isArray(data.data.outputs.result)) {
-      return NextResponse.json({ questions: data.data.outputs.result });
+    // 새로운 응답 구조 처리
+    let planner: string[] = [];
+    let designer: string[] = [];
+    let developer: string[] = [];
+    
+    // data.data.outputs 구조
+    if (data.data && data.data.outputs) {
+      planner = data.data.outputs.result_planner || [];
+      designer = data.data.outputs.result_designer || [];
+      developer = data.data.outputs.result_developer || [];
+    }
+    // data.outputs 구조
+    else if (data.outputs) {
+      planner = data.outputs.result_planner || [];
+      designer = data.outputs.result_designer || [];
+      developer = data.outputs.result_developer || [];
+    }
+    // 최상위 구조
+    else {
+      planner = data.result_planner || [];
+      designer = data.result_designer || [];
+      developer = data.result_developer || [];
     }
     
-    // 대체 응답 구조들
-    if (data.outputs && data.outputs.result && Array.isArray(data.outputs.result)) {
-      return NextResponse.json({ questions: data.outputs.result });
-    }
-    
-    if (data.result && Array.isArray(data.result)) {
-      return NextResponse.json({ questions: data.result });
+    // 하나라도 질문이 있으면 반환
+    if (planner.length > 0 || designer.length > 0 || developer.length > 0) {
+      return NextResponse.json({
+        questions: {
+          planner,
+          designer,
+          developer
+        }
+      });
     }
     
     console.warn('Unexpected MISO API response structure:', JSON.stringify(data, null, 2));
-    return NextResponse.json({ questions: [] });
+    return NextResponse.json({
+      questions: {
+        planner: [],
+        designer: [],
+        developer: []
+      }
+    });
   } catch (error) {
     console.error('Failed to generate final questions:', error);
     return NextResponse.json(

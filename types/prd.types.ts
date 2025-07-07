@@ -100,3 +100,21 @@ export enum StepStatus {
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
 }
+
+export interface IExpertQuestions {
+  planner: string[];
+  designer: string[];
+  developer: string[];
+}
+
+export interface IExpertAnswer {
+  question: string;
+  answer: string;
+  expert: ExpertType;
+}
+
+export enum ExpertType {
+  PLANNER = 'planner',
+  DESIGNER = 'designer',
+  DEVELOPER = 'developer',
+}

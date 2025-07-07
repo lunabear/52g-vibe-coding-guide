@@ -24,7 +24,7 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ showLogo = true }) =
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="text-black">Idea</span>
-                <span className="text-gray-400 ml-2">→ PRD</span>
+                <span className="text-gray-400 ml-2">→ Real</span>
               </motion.div>
             </Link>
           )}

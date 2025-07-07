@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { IPRDData, IPRDStep, IQuestion } from '@/types/prd.types';
+import { IPRDData, IPRDStep, IQuestion, IExpertQuestions, IExpertAnswer } from '@/types/prd.types';
 import { PRD_STEPS } from '@/lib/prd-questions';
 
 interface IPRDContext {
@@ -9,6 +9,8 @@ interface IPRDContext {
   prdData: Partial<IPRDData>;
   answers: Record<string, string>;
   additionalQuestions: Record<string, IQuestion[]>;
+  expertQuestions: IExpertQuestions | null;
+  expertAnswers: IExpertAnswer[];
   prdContent: string | null;
   
   setCurrentStep: (step: number) => void;
@@ -19,6 +21,8 @@ interface IPRDContext {
   canProceedToNextStep: () => boolean;
   resetPRD: () => void;
   setAdditionalQuestions: (stepId: string, questions: IQuestion[]) => void;
+  setExpertQuestions: (questions: IExpertQuestions) => void;
+  setExpertAnswers: (answers: IExpertAnswer[]) => void;
   setPRDContent: (content: string) => void;
   getAllQuestionsAndAnswers: () => Array<{ question: string; answer: string }>;
 }
@@ -30,6 +34,8 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [prdData, setPrdData] = useState<Partial<IPRDData>>({});
   const [additionalQuestions, setAdditionalQuestionsState] = useState<Record<string, IQuestion[]>>({});
+  const [expertQuestions, setExpertQuestions] = useState<IExpertQuestions | null>(null);
+  const [expertAnswers, setExpertAnswers] = useState<IExpertAnswer[]>([]);
   const [prdContent, setPRDContent] = useState<string | null>(null);
 
   const updateAnswer = useCallback((questionId: string, value: string) => {
@@ -106,14 +112,24 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     });
     
+    // 전문가 질문들
+    expertAnswers.forEach(expertAnswer => {
+      allQuestionsAndAnswers.push({
+        question: expertAnswer.question,
+        answer: expertAnswer.answer
+      });
+    });
+    
     return allQuestionsAndAnswers;
-  }, [answers, additionalQuestions]);
+  }, [answers, additionalQuestions, expertAnswers]);
 
   const resetPRD = useCallback(() => {
     setCurrentStep(1);
     setAnswers({});
     setPrdData({});
     setAdditionalQuestionsState({});
+    setExpertQuestions(null);
+    setExpertAnswers([]);
     setPRDContent(null);
   }, []);
 
@@ -122,6 +138,8 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     prdData,
     answers,
     additionalQuestions,
+    expertQuestions,
+    expertAnswers,
     prdContent,
     setCurrentStep,
     updateAnswer,
@@ -131,6 +149,8 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     canProceedToNextStep,
     resetPRD,
     setAdditionalQuestions,
+    setExpertQuestions,
+    setExpertAnswers,
     setPRDContent,
     getAllQuestionsAndAnswers,
   };
