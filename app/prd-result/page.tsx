@@ -209,14 +209,18 @@ export default function PRDResultPage() {
                   ),
                   hr: () => <hr className="my-8 border-gray-200" />,
                   br: () => <br className="my-2" />,
-                  code: ({ inline, children }) => 
-                    inline ? (
-                      <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">{children}</code>
+                  code: ({ children, ...props }) => {
+                    const match = /language-(\w+)/.exec(props.className || '');
+                    const isInline = !match;
+                    
+                    return isInline ? (
+                      <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
                     ) : (
                       <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
-                        <code className="text-sm font-mono">{children}</code>
+                        <code className="text-sm font-mono" {...props}>{children}</code>
                       </pre>
-                    ),
+                    );
+                  },
                 }}
               >
                 {prdContent || '# PRD 문서\n\n내용을 불러올 수 없습니다.'}

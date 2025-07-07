@@ -28,15 +28,9 @@ function PRDGeneratorContent() {
   const [hasFetchedFinalQuestions, setHasFetchedFinalQuestions] = useState(false);
   const currentStepData = getCurrentStepData();
 
-  if (!currentStepData) {
-    return null;
-  }
-
-  const progress = (currentStep / PRD_STEPS.length) * 100;
-
   // 마지막 단계(인사이트)에 도달했을 때 MISO API 호출
   useEffect(() => {
-    if (currentStepData.id === 'insight' && !hasFetchedFinalQuestions && !additionalQuestions['insight']) {
+    if (currentStepData && currentStepData.id === 'insight' && !hasFetchedFinalQuestions && !additionalQuestions['insight']) {
       setIsGeneratingQuestions(true);
       
       // 모든 답변을 수집
@@ -49,7 +43,13 @@ function PRDGeneratorContent() {
         setHasFetchedFinalQuestions(true);
       });
     }
-  }, [currentStepData.id, hasFetchedFinalQuestions, additionalQuestions, answers, generateFinalQuestions, setAdditionalQuestions]);
+  }, [currentStepData, hasFetchedFinalQuestions, additionalQuestions, answers, generateFinalQuestions, setAdditionalQuestions]);
+
+  if (!currentStepData) {
+    return null;
+  }
+
+  const progress = (currentStep / PRD_STEPS.length) * 100;
 
   const handleNextClick = async () => {
     if (!canProceedToNextStep()) return;
