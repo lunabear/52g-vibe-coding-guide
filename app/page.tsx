@@ -4,14 +4,15 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { SimpleHeader } from '@/components/layout/SimpleHeader';
+import Footer from '@/components/layout/Footer';
 
 export default function Home() {
   const router = useRouter();
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <SimpleHeader />
-      <main className="min-h-screen flex items-center justify-center px-4 pt-16">
+      <main className="flex-1 flex items-center justify-center px-4 pt-16">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -55,6 +56,7 @@ export default function Home() {
         </div>
       </motion.div>
     </main>
-    </>
+    <Footer />
+    </div>
   );
 }

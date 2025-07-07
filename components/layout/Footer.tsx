@@ -2,18 +2,14 @@ import Image from "next/image"
 
 export default function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-100">
-      <div className="max-w-7xl mx-auto py-12 px-6">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-light">52</span>
-            </div>
-            <p className="text-lg font-light text-gray-900">52g Innovation</p>
+    <footer className="bg-white">
+      <div className="max-w-7xl mx-auto px-6 py-8 md:py-12">
+        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+          <div className="flex items-center text-center md:items-start md:text-left leading-7 flex-col gap-y-0">
+            <Image src="/assets/logo-52g.png" alt="푸터 로고" width={50} height={50} className="h-7 w-auto" />
+            <p className="mt-2 font-bold text-gray-600 text-base">5pen 2nnovation GS</p>
+            <p className="mt-6 text-gray-500 text-sm">Copyright © 52g. All rights reserved.</p>
           </div>
-          <p className="text-sm text-gray-400 font-extralight">
-            Copyright © 52g. All rights reserved.
-          </p>
         </div>
       </div>
     </footer>
