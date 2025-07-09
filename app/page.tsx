@@ -13,7 +13,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-white">
       <SimpleHeader />
       <main className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-6xl mx-auto px-8 py-20">
+        <div className="w-full max-w-6xl mx-auto px-8 pt-32 pb-16">
           {/* 카드 그리드 - 타이틀 없이 바로 시작 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 overflow-visible">
             {/* 아이디어 발굴 카드 */}
@@ -22,7 +22,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               onClick={() => router.push('/idea-generator')}
-              className="group relative bg-gray-50 rounded-2xl p-12 h-[380px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+              className="group relative bg-gray-50 rounded-2xl p-12 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
               {/* 메인 텍스트 */}
               <div className="space-y-6">
@@ -37,7 +37,7 @@ export default function Home() {
               </div>
 
               {/* 캐릭터 - 카드를 벗어나는 효과 */}
-              <div className="absolute -bottom-4 -right-4 w-40 h-40 z-20">
+              <div className="absolute bottom-6 -right-4 w-40 h-40 z-20">
                 {/* 기본 이미지 */}
                 <Image
                   src="/assets/mini_ally_default.png"
@@ -48,7 +48,7 @@ export default function Home() {
                   priority
                 />
                 {/* 호버 이미지 - 더 크게 */}
-                <div className="absolute bottom-3 -right-4 w-56 h-56">
+                <div className="absolute bottom-4 -right-4 w-56 h-56">
                   <Image
                     src="/assets/mini_ally_hover.png"
                     alt="Mini Ally Hover"
@@ -72,7 +72,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               onClick={() => router.push('/prd-generator')}
-              className="group relative bg-gray-50 rounded-2xl p-12 h-[380px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+              className="group relative bg-gray-50 rounded-2xl p-12 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
               {/* 메인 텍스트 */}
               <div className="space-y-6">
@@ -87,7 +87,7 @@ export default function Home() {
               </div>
 
               {/* 캐릭터 - 카드를 벗어나는 효과 */}
-              <div className="absolute -bottom-16 -right-10 w-80 h-60 z-20">
+              <div className="absolute -bottom-6 -right-10 w-80 h-60 z-20">
                 {/* 기본 이미지 */}
                 <Image
                   src="/assets/coach_default.png"

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useAdditionalQuestions } from '@/hooks/useAdditionalQuestions';
 import { ExpertQuestions } from '@/components/prd/ExpertQuestions';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
+import MISOLoading from '@/components/common/MISOLoading';
 
 function PRDGeneratorContent() {
   const router = useRouter();
@@ -160,12 +161,11 @@ function PRDGeneratorContent() {
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="flex items-center justify-center py-20"
                     >
-                      <div className="flex flex-col items-center gap-4">
-                        <Sparkles className="w-8 h-8 animate-pulse text-yellow-500" />
-                        <span className="text-lg">MISO가 당신의 아이디어를 분석 중입니다...</span>
-                      </div>
+                      <MISOLoading 
+                        message="MISO가 전문가들과 상의 중이에요"
+                        subMessage="기획자, 개발자, 디자이너가 당신의 아이디어를 검토하고 있어요 💭"
+                      />
                     </motion.div>
                   ) : expertQuestions ? (
                     <motion.div

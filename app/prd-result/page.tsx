@@ -10,6 +10,7 @@ import rehypeRaw from 'rehype-raw';
 import { usePRDContext } from '@/contexts/PRDContext';
 import { misoAPI } from '@/lib/miso-api';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
+import MISOLoading from '@/components/common/MISOLoading';
 
 export default function PRDResultPage() {
   const router = useRouter();
@@ -140,15 +141,10 @@ export default function PRDResultPage() {
           transition={{ duration: 0.3 }}
           className="text-center"
         >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="inline-block mb-6"
-          >
-            <Sparkles className="w-12 h-12 text-yellow-500" />
-          </motion.div>
-          <h2 className="text-2xl font-light mb-2">PRD를 생성하고 있습니다</h2>
-          <p className="text-gray-600">MISO가 당신의 아이디어를 정리하고 있어요...</p>
+          <MISOLoading 
+            message="PRD를 생성하고 있습니다"
+            subMessage="MISO가 당신의 아이디어를 정리하고 있어요..."
+          />
         </motion.div>
       </div>
     );
@@ -379,23 +375,10 @@ export default function PRDResultPage() {
               <div className="max-h-[600px] overflow-y-auto">
                 {isDatabaseLoading ? (
                   <div className="h-[540px] flex items-center justify-center p-6">
-                    <div className="text-center max-w-xs">
-                      <div className="mb-6 relative inline-block">
-                        <div className="absolute inset-0 bg-yellow-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                        <Sparkles className="w-12 h-12 text-yellow-500 relative z-10" />
-                      </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">
-                        데이터베이스 설계 중
-                      </h3>
-                      <p className="text-sm text-gray-500 leading-relaxed">
-                        PRD를 분석하여 최적의 테이블 구조를 설계하고 있습니다
-                      </p>
-                      <div className="mt-6 flex justify-center gap-1">
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                      </div>
-                    </div>
+                    <MISOLoading 
+                      message="데이터베이스 설계 중"
+                      subMessage="PRD를 분석하여 최적의 테이블 구조를 설계하고 있습니다"
+                    />
                   </div>
                 ) : databaseSchema ? (
                   <div className="p-6">
@@ -558,23 +541,10 @@ export default function PRDResultPage() {
               <div className="max-h-[600px] overflow-y-auto">
                 {isDesignLoading ? (
                   <div className="h-[540px] flex items-center justify-center p-6">
-                    <div className="text-center max-w-xs">
-                      <div className="mb-6 relative inline-block">
-                        <div className="absolute inset-0 bg-yellow-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                        <Sparkles className="w-12 h-12 text-yellow-500 relative z-10" />
-                      </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">
-                        UI/UX 설계 중
-                      </h3>
-                      <p className="text-sm text-gray-500 leading-relaxed">
-                        PRD와 데이터베이스를 분석하여 최적의 사용자 경험을 설계하고 있습니다
-                      </p>
-                      <div className="mt-6 flex justify-center gap-1">
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                      </div>
-                    </div>
+                    <MISOLoading 
+                      message="UI/UX 설계 중"
+                      subMessage="PRD와 데이터베이스를 분석하여 최적의 사용자 경험을 설계하고 있습니다"
+                    />
                   </div>
                 ) : designContent ? (
                   <div className="p-6">
