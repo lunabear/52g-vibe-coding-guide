@@ -22,15 +22,15 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               onClick={() => router.push('/idea-generator')}
-              className="group relative bg-gray-50 rounded-2xl p-12 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+              className="group relative bg-gray-50 rounded-2xl p-10 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
-              {/* 메인 텍스트 */}
-              <div className="space-y-6">
-                <h2 className="text-[32px] leading-tight font-light text-gray-900">
+              {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
+              <div className="space-y-4 max-w-[280px]">
+                <h2 className="text-[28px] leading-tight font-light text-gray-900">
                   아이디어가<br />
                   필요하신가요?
                 </h2>
-                <p className="text-lg text-gray-600 font-light leading-relaxed">
+                <p className="text-base text-gray-600 font-light leading-relaxed">
                   Mini Ally와 대화하며<br />
                   프로젝트 아이디어를 찾아보세요
                 </p>
@@ -60,9 +60,9 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 호버 시 나타나는 안내 */}
-              <div className="absolute bottom-12 left-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <span className="text-gray-700 font-medium">시작하기 →</span>
+              {/* 호버 시 나타나는 안내 - 위치 조정 */}
+              <div className="absolute bottom-10 left-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <span className="text-gray-700 font-medium text-sm">시작하기 →</span>
               </div>
             </motion.button>
 
@@ -72,15 +72,15 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               onClick={() => router.push('/prd-generator')}
-              className="group relative bg-gray-50 rounded-2xl p-12 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+              className="group relative bg-gray-50 rounded-2xl p-10 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
-              {/* 메인 텍스트 */}
-              <div className="space-y-6">
-                <h2 className="text-[32px] leading-tight font-light text-gray-900">
+              {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
+              <div className="space-y-4 max-w-[280px]">
+                <h2 className="text-[28px] leading-tight font-light text-gray-900">
                   아이디어를<br />
                   문서로 만들고 싶나요?
                 </h2>
-                <p className="text-lg text-gray-600 font-light leading-relaxed">
+                <p className="text-base text-gray-600 font-light leading-relaxed">
                   전문가와 함께<br />
                   체계적인 PRD를 작성하세요
                 </p>
@@ -110,9 +110,9 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 호버 시 나타나는 안내 */}
-              <div className="absolute bottom-12 left-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <span className="text-gray-700 font-medium">시작하기 →</span>
+              {/* 호버 시 나타나는 안내 - 위치 조정 */}
+              <div className="absolute bottom-10 left-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <span className="text-gray-700 font-medium text-sm">시작하기 →</span>
               </div>
             </motion.button>
           </div>
