@@ -21,7 +21,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              onClick={() => router.push('/idea-generator')}
+              onClick={() => router.push('/chat')}
               className="group relative bg-gray-50 rounded-2xl p-10 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
