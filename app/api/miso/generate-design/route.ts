@@ -13,11 +13,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { prdContent, databaseSchema } = body;
+    const { prdContent } = body;
 
-    if (!prdContent || !databaseSchema) {
+    if (!prdContent) {
       return NextResponse.json(
-        { error: 'PRD content and database schema are required' },
+        { error: 'PRD content is required' },
         { status: 400 }
       );
     }
@@ -27,9 +27,6 @@ export async function POST(request: NextRequest) {
 <prd>
 ${prdContent}
 </prd>
-<database>
-${databaseSchema}
-</database>
 </context>`;
 
     const response = await fetch(`${endpoint}/workflows/run`, {
