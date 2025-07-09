@@ -58,20 +58,23 @@ ${prdContent}
     const data = JSON.parse(responseText);
     
     // 응답 구조 처리
+    let result;
     if (data.data && data.data.outputs && data.data.outputs.result) {
-      return NextResponse.json({ design: data.data.outputs.result });
+      result = data.data.outputs.result;
+    } else if (data.outputs && data.outputs.result) {
+      result = data.outputs.result;
+    } else if (data.result) {
+      result = data.result;
     }
     
-    if (data.outputs && data.outputs.result) {
-      return NextResponse.json({ design: data.outputs.result });
+    // 배열인 경우 join
+    const designContent = Array.isArray(result) ? result.join('\n\n') : result || '';
+    
+    if (!designContent) {
+      console.warn('Unexpected MISO API response structure for design:', data);
     }
     
-    if (data.result) {
-      return NextResponse.json({ design: data.result });
-    }
-    
-    console.warn('Unexpected MISO API response structure for design:', data);
-    return NextResponse.json({ design: '' });
+    return NextResponse.json({ design: designContent });
   } catch (error) {
     console.error('Failed to generate design:', error);
     return NextResponse.json(

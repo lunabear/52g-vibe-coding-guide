@@ -111,6 +111,34 @@ export class MISOAPIClient {
       return '';
     }
   }
+
+  async fixDocument(
+    documentType: 'prd' | 'design' | 'database',
+    currentContent: string,
+    fixRequest: string
+  ): Promise<string> {
+    try {
+      const response = await fetch('/api/miso/fix-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ documentType, currentContent, fixRequest }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        return '';
+      }
+
+      const data = await response.json();
+      return data.fixedContent || '';
+    } catch (error) {
+      console.error('Failed to fix document:', error);
+      return '';
+    }
+  }
 }
 
 export const misoAPI = new MISOAPIClient();
