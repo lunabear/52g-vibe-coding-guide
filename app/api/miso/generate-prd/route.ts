@@ -56,20 +56,23 @@ export async function POST(request: NextRequest) {
     const data = JSON.parse(responseText);
     
     // 중첩된 응답 구조 처리
+    let result;
     if (data.data && data.data.outputs && data.data.outputs.result) {
-      return NextResponse.json({ prd: data.data.outputs.result });
+      result = data.data.outputs.result;
+    } else if (data.outputs && data.outputs.result) {
+      result = data.outputs.result;
+    } else if (data.result) {
+      result = data.result;
     }
     
-    if (data.outputs && data.outputs.result) {
-      return NextResponse.json({ prd: data.outputs.result });
+    // 배열인 경우 join
+    const prdContent = Array.isArray(result) ? result.join('\n\n') : result || '';
+    
+    if (!prdContent) {
+      console.warn('Unexpected MISO API response structure for PRD:', data);
     }
     
-    if (data.result) {
-      return NextResponse.json({ prd: data.result });
-    }
-    
-    console.warn('Unexpected MISO API response structure for PRD:', data);
-    return NextResponse.json({ prd: '' });
+    return NextResponse.json({ prd: prdContent });
   } catch (error) {
     console.error('Failed to generate PRD:', error);
     return NextResponse.json(

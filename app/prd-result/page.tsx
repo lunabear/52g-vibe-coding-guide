@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Download, FileText, Sparkles } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Edit2, Save, X, Send, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -11,7 +10,6 @@ import JSZip from 'jszip';
 import { usePRDContext } from '@/contexts/PRDContext';
 import { misoAPI } from '@/lib/miso-api';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
-import MISOLoading from '@/components/common/MISOLoading';
 import { ErrorPage } from '@/components/common/ErrorPage';
 
 export default function PRDResultPage() {
@@ -28,6 +26,24 @@ export default function PRDResultPage() {
   const [isDesignError, setIsDesignError] = useState(false);
   const [isDatabaseError, setIsDatabaseError] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  
+  // 편집 모드 상태
+  const [isEditingPRD, setIsEditingPRD] = useState(false);
+  const [isEditingDesign, setIsEditingDesign] = useState(false);
+  const [isEditingDatabase, setIsEditingDatabase] = useState(false);
+  
+  // 임시 편집 내용
+  const [tempPRDContent, setTempPRDContent] = useState('');
+  const [tempDesignContent, setTempDesignContent] = useState('');
+  const [tempDatabaseContent, setTempDatabaseContent] = useState('');
+  
+  // 수정 요청 상태
+  const [prdFixRequest, setPRDFixRequest] = useState('');
+  const [designFixRequest, setDesignFixRequest] = useState('');
+  const [databaseFixRequest, setDatabaseFixRequest] = useState('');
+  const [isPRDFixing, setIsPRDFixing] = useState(false);
+  const [isDesignFixing, setIsDesignFixing] = useState(false);
+  const [isDatabaseFixing, setIsDatabaseFixing] = useState(false);
 
   useEffect(() => {
     // PRD가 이미 생성되어 있으면 사용
@@ -95,7 +111,7 @@ export default function PRDResultPage() {
     }
   };
 
-  // 데이터베이스 스키마 생성 함수
+  // 개발 작업 task 생성 함수
   const generateDatabaseSchema = async (prd: string, design: string) => {
     setIsDatabaseLoading(true);
     setIsDatabaseError(false);
@@ -114,7 +130,7 @@ export default function PRDResultPage() {
     }
   };
 
-  // 디자인이 완성되면 데이터베이스 스키마 생성 시작
+  // 디자인이 완성되면 개발 작업 task 생성 시작
   useEffect(() => {
     if (prdContent && designContent && !hasFetchedDatabase && !isDesignError) {
       setHasFetchedDatabase(true);
@@ -136,9 +152,9 @@ export default function PRDResultPage() {
       zip.file(`2_디자이너_Heather_UI설계_${date}.md`, designContent);
     }
     
-    // 3. 개발자 Bob의 데이터베이스 설계
+    // 3. 개발자 Bob의 개발 작업 task 설계
     if (databaseSchema) {
-      zip.file(`3_개발자_Bob_데이터베이스설계_${date}.md`, databaseSchema);
+      zip.file(`3_개발자_Bob_개발작업설계_${date}.md`, databaseSchema);
     }
     
     // README 파일 추가
@@ -156,10 +172,10 @@ export default function PRDResultPage() {
 - 내용: 페이지별 UI/UX 설계 가이드
 - 사용자 경험 관점에서 인터페이스와 상호작용을 설계
 
-### 3. 개발자 Bob의 데이터베이스 설계
-- 파일명: 3_개발자_Bob_데이터베이스설계_${date}.md
-- 내용: 데이터베이스 테이블 구조 및 관계도
-- 기술적 관점에서 데이터 구조와 관계를 설계
+### 3. 개발자 Bob의 개발 작업 task 설계
+- 파일명: 3_개발자_Bob_개발작업설계_${date}.md
+- 내용: 개발 작업 task 및 구현 계획
+- 기술적 관점에서 개발 작업을 체계적으로 설계
 
 ## 사용 방법
 각 문서는 마크다운 형식으로 작성되어 있습니다.
@@ -196,78 +212,130 @@ export default function PRDResultPage() {
     setShowExitModal(false);
   };
 
+  // 편집 관련 함수들
+  const handleEditPRD = () => {
+    setTempPRDContent(prdContent || '');
+    setIsEditingPRD(true);
+  };
+
+  const handleSavePRD = () => {
+    setPRDContent(tempPRDContent);
+    setIsEditingPRD(false);
+  };
+
+  const handleCancelPRD = () => {
+    setIsEditingPRD(false);
+    setTempPRDContent('');
+  };
+
+  const handleEditDesign = () => {
+    setTempDesignContent(designContent || '');
+    setIsEditingDesign(true);
+  };
+
+  const handleSaveDesign = () => {
+    setDesignContent(tempDesignContent);
+    setIsEditingDesign(false);
+  };
+
+  const handleCancelDesign = () => {
+    setIsEditingDesign(false);
+    setTempDesignContent('');
+  };
+
+  const handleEditDatabase = () => {
+    setTempDatabaseContent(databaseSchema || '');
+    setIsEditingDatabase(true);
+  };
+
+  const handleSaveDatabase = () => {
+    setDatabaseSchema(tempDatabaseContent);
+    setIsEditingDatabase(false);
+  };
+
+  const handleCancelDatabase = () => {
+    setIsEditingDatabase(false);
+    setTempDatabaseContent('');
+  };
+
+  // 수정 요청 처리 함수들
+  const handlePRDFix = async () => {
+    if (!prdFixRequest.trim() || !prdContent) return;
+    
+    setIsPRDFixing(true);
+    try {
+      const fixedContent = await misoAPI.fixDocument('prd', prdContent, prdFixRequest);
+      if (fixedContent) {
+        setPRDContent(fixedContent);
+        setPRDFixRequest('');
+      }
+    } catch (error) {
+      console.error('Failed to fix PRD:', error);
+    } finally {
+      setIsPRDFixing(false);
+    }
+  };
+
+  const handleDesignFix = async () => {
+    if (!designFixRequest.trim() || !designContent) return;
+    
+    setIsDesignFixing(true);
+    try {
+      const fixedContent = await misoAPI.fixDocument('design', designContent, designFixRequest);
+      if (fixedContent) {
+        setDesignContent(fixedContent);
+        setDesignFixRequest('');
+      }
+    } catch (error) {
+      console.error('Failed to fix design:', error);
+    } finally {
+      setIsDesignFixing(false);
+    }
+  };
+
+  const handleDatabaseFix = async () => {
+    if (!databaseFixRequest.trim() || !databaseSchema) return;
+    
+    setIsDatabaseFixing(true);
+    try {
+      const fixedContent = await misoAPI.fixDocument('database', databaseSchema, databaseFixRequest);
+      if (fixedContent) {
+        setDatabaseSchema(fixedContent);
+        setDatabaseFixRequest('');
+      }
+    } catch (error) {
+      console.error('Failed to fix database:', error);
+    } finally {
+      setIsDatabaseFixing(false);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="text-center"
-        >
-          <div className="flex flex-col items-center justify-center py-8">
-            {/* Kyle thinking animation */}
-            <div className="relative mb-8">
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.1, 1],
-                  opacity: [0.2, 0.1, 0.2]
-                }}
-                transition={{ 
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute -inset-8 bg-gray-100 rounded-full blur-3xl"
-              />
-              
-              <motion.div
-                animate={{ 
-                  y: [0, -5, 0],
-                }}
-                transition={{ 
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="relative z-10"
-              >
-                <img
-                  src="/assets/mini_kyle_thinking.png"
-                  alt="Kyle thinking"
-                  className="w-48 h-48 object-contain drop-shadow-lg"
-                />
-              </motion.div>
-            </div>
-            
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-center space-y-2"
-            >
-              <h3 className="text-2xl font-medium text-gray-900">PRD를 생성하고 있습니다</h3>
-              <p className="text-base text-gray-600 max-w-sm">기획자 Kyle이 당신의 아이디어를 정리하고 있어요...</p>
-            </motion.div>
-            
-            <div className="flex gap-1 mt-4">
-              {[0, 1, 2].map((index) => (
-                <motion.div
-                  key={index}
-                  animate={{ 
-                    opacity: [0.3, 1, 0.3]
-                  }}
-                  transition={{ 
-                    duration: 1.2,
-                    repeat: Infinity,
-                    delay: index * 0.2
-                  }}
-                  className="w-2 h-2 bg-gray-400 rounded-full"
-                />
-              ))}
-            </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mb-8">
+            <img
+              src="/assets/mini_kyle_thinking.png"
+              alt="Kyle thinking"
+              className="w-32 h-32 object-contain mx-auto"
+            />
           </div>
-        </motion.div>
+          <h3 className="text-2xl font-medium text-gray-900 mb-3">PRD를 생성하고 있습니다</h3>
+          <p className="text-base text-gray-600 max-w-sm">기획자 Kyle이 당신의 아이디어를 정리하고 있어요...</p>
+          <div className="flex gap-1 mt-8 justify-center">
+            {[0, 1, 2].map((index) => (
+              <div
+                key={index}
+                className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"
+                style={{
+                  animationDelay: `${index * 0.2}s`,
+                  animationDuration: '1.2s'
+                }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -299,85 +367,96 @@ export default function PRDResultPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-b border-gray-100 z-50"
-      >
-        <div className="max-w-full mx-auto px-4 py-4 flex items-center justify-between">
-          <button
-            onClick={handleGoHome}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            처음으로
-          </button>
-          <div className="flex items-center gap-4">
+      <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-b border-gray-100 z-50">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={handleGoHome}
+                className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                처음으로
+              </button>
+              <div className="h-6 w-px bg-gray-200"></div>
+              <h1 className="text-lg font-medium text-gray-900">프로젝트 문서</h1>
+            </div>
             <button
               onClick={handleDownload}
               disabled={!prdContent && !databaseSchema && !designContent}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               <Download className="w-4 h-4" />
-              전체 문서 다운로드 (ZIP)
+              ZIP 다운로드
             </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      <main className="pt-24 pb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-full px-4"
-        >
-          <div className="mb-12 text-center">
-            <h1 className="text-4xl font-light mb-4">프로젝트 문서가 완성되었습니다</h1>
-            <p className="text-lg text-gray-600 font-light">세 명의 전문가가 협력하여 완전한 프로젝트 가이드를 만들었어요</p>
-          </div>
-
-          {/* 3 Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 xl:gap-6 2xl:gap-8">
+      <main className="pt-20 pb-8">
+        <div className="px-6">
+          {/* 3 Column Layout - Full Width */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             
             {/* 기획자 - PRD */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden"
-            >
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
               {/* Header */}
-              <div className="p-6 bg-gray-50 border-b border-gray-100">
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 flex items-center justify-center">
                       <img 
                         src="/assets/mini_kyle_default.png" 
-                        alt="기획자" 
+                        alt="기획자 Kyle" 
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div>
                       <h3 className="text-lg font-medium text-gray-900">기획자 Kyle</h3>
-                      <p className="text-xs text-gray-600">프로덕트 요구사항 정의</p>
+                      <p className="text-sm text-gray-600">프로덕트 요구사항 정의</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                    <span className="text-xs font-medium text-green-600">완료</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={isEditingPRD ? handleSavePRD : handleEditPRD}
+                      className="p-1.5 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={isEditingPRD ? "저장" : "편집"}
+                      disabled={isPRDFixing}
+                    >
+                      {isEditingPRD ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
+                    </button>
+                    {isEditingPRD && (
+                      <button
+                        onClick={handleCancelPRD}
+                        className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                        title="취소"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="font-medium text-green-600">완료</span>
+                    </div>
                   </div>
                 </div>
               </div>
               
               {/* Content */}
-              <div className="max-h-[600px] overflow-y-auto">
+              <div className="max-h-[calc(100vh-280px)] overflow-y-auto relative">
                 <div className="p-6">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]} 
-                    rehypePlugins={[rehypeRaw]}
-                    components={{
+                  {isEditingPRD ? (
+                    <textarea
+                      value={tempPRDContent}
+                      onChange={(e) => setTempPRDContent(e.target.value)}
+                      className="w-full h-[calc(100vh-330px)] p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      placeholder="PRD 내용을 입력하세요..."
+                    />
+                  ) : (
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]} 
+                      rehypePlugins={[rehypeRaw]}
+                      components={{
                       h1: ({ children }) => (
                         <h1 className="text-xl font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
                           {children}
@@ -458,24 +537,78 @@ export default function PRDResultPage() {
                       },
                     }}
                   >
-                    {prdContent || '# PRD 문서\n\n내용을 불러올 수 없습니다.'}
-                  </ReactMarkdown>
+                      {prdContent || '# PRD 문서\n\n내용을 불러올 수 없습니다.'}
+                    </ReactMarkdown>
+                  )}
                 </div>
+                
+                {/* 수정 중 오버레이 */}
+                {isPRDFixing && (
+                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="mb-4">
+                        <img
+                          src="/assets/mini_kyle_thinking.png"
+                          alt="Kyle thinking"
+                          className="w-20 h-20 object-contain"
+                        />
+                      </div>
+                      <h3 className="text-base font-medium text-gray-900 mb-2">문서를 수정하고 있습니다</h3>
+                      <div className="flex gap-1 mt-4">
+                        {[0, 1, 2].map((index) => (
+                          <div
+                            key={index}
+                            className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
+                            style={{
+                              animationDelay: `${index * 0.2}s`,
+                              animationDuration: '1.2s'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </motion.div>
+              
+              {/* 수정 요청 채팅바 */}
+              {prdContent && !isEditingPRD && (
+                <div className="border-t border-gray-100 p-4 bg-gray-50/50">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={prdFixRequest}
+                        onChange={(e) => setPRDFixRequest(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handlePRDFix()}
+                        placeholder="Kyle에게 수정을 요청하세요"
+                        className="w-full px-4 py-2.5 pr-12 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder-gray-400 transition-all"
+                        disabled={isPRDFixing}
+                      />
+                      <button
+                        onClick={handlePRDFix}
+                        disabled={isPRDFixing || !prdFixRequest.trim()}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isPRDFixing ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* 디자이너 - 페이지 설계 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden"
-            >
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
               {/* Header */}
-              <div className="p-6 bg-gray-50 border-b border-gray-100">
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 flex items-center justify-center">
                       <img 
                         src="/assets/mini_heather_default.png" 
                         alt="디자이너 Heather" 
@@ -484,93 +617,78 @@ export default function PRDResultPage() {
                     </div>
                     <div>
                       <h3 className="text-lg font-medium text-gray-900">디자이너 Heather</h3>
-                      <p className="text-xs text-gray-600">페이지별 디자인 설계</p>
+                      <p className="text-sm text-gray-600">페이지별 디자인 설계</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 ${isDesignLoading ? 'bg-yellow-500 animate-pulse' : isDesignError ? 'bg-red-500' : designContent ? 'bg-green-500' : 'bg-yellow-500'} rounded-full`}></div>
-                    <span className={`text-xs font-medium ${isDesignLoading ? 'text-yellow-600' : isDesignError ? 'text-red-600' : designContent ? 'text-green-600' : 'text-yellow-600'}`}>
-                      {isDesignLoading ? '생성 중' : isDesignError ? '오류' : designContent ? '완료' : '대기 중'}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    {designContent && !isDesignLoading && !isDesignError && (
+                      <>
+                        <button
+                          onClick={isEditingDesign ? handleSaveDesign : handleEditDesign}
+                          className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                          title={isEditingDesign ? "저장" : "편집"}
+                        >
+                          {isEditingDesign ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
+                        </button>
+                        {isEditingDesign && (
+                          <button
+                            onClick={handleCancelDesign}
+                            className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                            title="취소"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </>
+                    )}
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className={`w-2 h-2 ${isDesignLoading ? 'bg-yellow-500 animate-pulse' : isDesignError ? 'bg-red-500' : designContent ? 'bg-green-500' : 'bg-yellow-500'} rounded-full`}></div>
+                      <span className={`font-medium ${isDesignLoading ? 'text-yellow-600' : isDesignError ? 'text-red-600' : designContent ? 'text-green-600' : 'text-yellow-600'}`}>
+                        {isDesignLoading ? '생성 중' : isDesignError ? '오류' : designContent ? '완료' : '대기 중'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
               
               {/* Content */}
-              <div className="max-h-[600px] overflow-y-auto">
+              <div className="max-h-[calc(100vh-280px)] overflow-y-auto relative">
                 {isDesignLoading ? (
-                  <div className="h-[540px] flex items-center justify-center p-6">
-                    <div className="flex flex-col items-center justify-center py-8">
-                      {/* Heather thinking animation */}
-                      <div className="relative mb-8">
-                        <motion.div
-                          animate={{ 
-                            scale: [1, 1.1, 1],
-                            opacity: [0.2, 0.1, 0.2]
-                          }}
-                          transition={{ 
-                            duration: 4,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                          className="absolute -inset-8 bg-purple-100 rounded-full blur-3xl"
+                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="mb-6">
+                        <img
+                          src="/assets/mini_heather_thinking.png"
+                          alt="Heather thinking"
+                          className="w-24 h-24 object-contain"
                         />
-                        
-                        <motion.div
-                          animate={{ 
-                            y: [0, -5, 0],
-                          }}
-                          transition={{ 
-                            duration: 3,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                          className="relative z-10"
-                        >
-                          <img
-                            src="/assets/mini_heather_thinking.png"
-                            alt="Heather thinking"
-                            className="w-32 h-32 object-contain drop-shadow-lg"
-                          />
-                        </motion.div>
                       </div>
-                      
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="text-center space-y-2"
-                      >
-                        <h3 className="text-xl font-medium text-gray-900">UI/UX 설계 중</h3>
-                        <p className="text-sm text-gray-600 max-w-sm">PRD를 분석하여 최적의 사용자 경험을 설계하고 있습니다</p>
-                      </motion.div>
-                      
-                      <div className="flex gap-1 mt-4">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">UI/UX 설계 중</h3>
+                      <p className="text-sm text-gray-600 text-center max-w-xs">
+                        PRD를 분석하여 최적의 사용자 경험을 설계하고 있습니다
+                      </p>
+                      <div className="flex gap-1 mt-6">
                         {[0, 1, 2].map((index) => (
-                          <motion.div
+                          <div
                             key={index}
-                            animate={{ 
-                              opacity: [0.3, 1, 0.3]
+                            className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"
+                            style={{
+                              animationDelay: `${index * 0.2}s`,
+                              animationDuration: '1.2s'
                             }}
-                            transition={{ 
-                              duration: 1.2,
-                              repeat: Infinity,
-                              delay: index * 0.2
-                            }}
-                            className="w-1.5 h-1.5 bg-purple-400 rounded-full"
                           />
                         ))}
                       </div>
                     </div>
                   </div>
                 ) : isDesignError ? (
-                  <div className="h-[540px] flex items-center justify-center p-6">
+                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
                     <div className="text-center max-w-xs">
                       <div className="mb-6">
                         <img
                           src="/assets/mini_heather_error.png"
                           alt="Heather error"
-                          className="w-32 h-32 object-contain mx-auto mb-4"
+                          className="w-24 h-24 object-contain mx-auto"
                         />
                       </div>
                       <h3 className="text-base font-medium text-gray-900 mb-2">
@@ -588,11 +706,20 @@ export default function PRDResultPage() {
                     </div>
                   </div>
                 ) : designContent ? (
-                  <div className="p-6">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]} 
-                      rehypePlugins={[rehypeRaw]}
-                      components={{
+                  <>
+                    <div className="p-6">
+                      {isEditingDesign ? (
+                        <textarea
+                          value={tempDesignContent}
+                          onChange={(e) => setTempDesignContent(e.target.value)}
+                          className="w-full h-[calc(100vh-330px)] p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                          placeholder="UI/UX 설계 내용을 입력하세요..."
+                        />
+                      ) : (
+                        <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]} 
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
                         h1: ({ children }) => (
                           <h1 className="text-xl font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
                             {children}
@@ -679,16 +806,45 @@ export default function PRDResultPage() {
                           <em className="text-gray-600 not-italic">{children}</em>
                         ),
                       }}
-                    >
-                      {designContent}
-                    </ReactMarkdown>
-                  </div>
+                      >
+                        {designContent}
+                      </ReactMarkdown>
+                      )}
+                    </div>
+                    
+                    {/* 수정 중 오버레이 */}
+                    {isDesignFixing && (
+                      <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="mb-4">
+                            <img
+                              src="/assets/mini_heather_thinking.png"
+                              alt="Heather thinking"
+                              className="w-20 h-20 object-contain"
+                            />
+                          </div>
+                          <h3 className="text-base font-medium text-gray-900 mb-2">디자인을 수정하고 있습니다</h3>
+                          <div className="flex gap-1 mt-4">
+                            {[0, 1, 2].map((index) => (
+                              <div
+                                key={index}
+                                className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"
+                                style={{
+                                  animationDelay: `${index * 0.2}s`,
+                                  animationDuration: '1.2s'
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <div className="h-[540px] flex items-center justify-center p-6">
+                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
                     <div className="text-center max-w-xs">
-                      <div className="mb-6 relative inline-block">
-                        <div className="absolute inset-0 bg-yellow-100 rounded-full blur-xl opacity-50"></div>
-                        <FileText className="w-12 h-12 text-yellow-400 relative z-10" />
+                      <div className="mb-6">
+                        <FileText className="w-12 h-12 text-gray-300 mx-auto" />
                       </div>
                       <h3 className="text-base font-medium text-gray-900 mb-2">
                         UI/UX 설계 대기 중
@@ -700,20 +856,45 @@ export default function PRDResultPage() {
                   </div>
                 )}
               </div>
-            </motion.div>
+              
+              {/* 수정 요청 채팅바 */}
+              {designContent && !isEditingDesign && !isDesignLoading && !isDesignError && (
+                <div className="border-t border-gray-100 p-4 bg-gray-50/50">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={designFixRequest}
+                        onChange={(e) => setDesignFixRequest(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleDesignFix()}
+                        placeholder="Heather에게 수정을 요청하세요"
+                        className="w-full px-4 py-2.5 pr-12 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 placeholder-gray-400 transition-all"
+                        disabled={isDesignFixing}
+                      />
+                      <button
+                        onClick={handleDesignFix}
+                        disabled={isDesignFixing || !designFixRequest.trim()}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isDesignFixing ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* 개발자 - 테이블 설계 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden"
-            >
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
               {/* Header */}
-              <div className="p-6 bg-gray-50 border-b border-gray-100">
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 flex items-center justify-center">
                       <img 
                         src="/assets/mini_bob_default.png" 
                         alt="개발자 Bob" 
@@ -722,97 +903,82 @@ export default function PRDResultPage() {
                     </div>
                     <div>
                       <h3 className="text-lg font-medium text-gray-900">개발자 Bob</h3>
-                      <p className="text-xs text-gray-600">데이터베이스 테이블 설계</p>
+                      <p className="text-sm text-gray-600">개발 작업 task 설계</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 ${isDatabaseLoading ? 'bg-yellow-500 animate-pulse' : isDatabaseError ? 'bg-red-500' : databaseSchema ? 'bg-green-500' : 'bg-gray-300'} rounded-full`}></div>
-                    <span className={`text-xs font-medium ${isDatabaseLoading ? 'text-yellow-600' : isDatabaseError ? 'text-red-600' : databaseSchema ? 'text-green-600' : 'text-gray-400'}`}>
-                      {isDatabaseLoading ? '생성 중' : isDatabaseError ? '오류' : databaseSchema ? '완료' : '대기 중'}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    {databaseSchema && !isDatabaseLoading && !isDatabaseError && (
+                      <>
+                        <button
+                          onClick={isEditingDatabase ? handleSaveDatabase : handleEditDatabase}
+                          className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                          title={isEditingDatabase ? "저장" : "편집"}
+                        >
+                          {isEditingDatabase ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
+                        </button>
+                        {isEditingDatabase && (
+                          <button
+                            onClick={handleCancelDatabase}
+                            className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+                            title="취소"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </>
+                    )}
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className={`w-2 h-2 ${isDatabaseLoading ? 'bg-yellow-500 animate-pulse' : isDatabaseError ? 'bg-red-500' : databaseSchema ? 'bg-green-500' : 'bg-gray-300'} rounded-full`}></div>
+                      <span className={`font-medium ${isDatabaseLoading ? 'text-yellow-600' : isDatabaseError ? 'text-red-600' : databaseSchema ? 'text-green-600' : 'text-gray-400'}`}>
+                        {isDatabaseLoading ? '생성 중' : isDatabaseError ? '오류' : databaseSchema ? '완료' : '대기 중'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
               
               {/* Content */}
-              <div className="max-h-[600px] overflow-y-auto">
+              <div className="max-h-[calc(100vh-280px)] overflow-y-auto relative">
                 {isDatabaseLoading ? (
-                  <div className="h-[540px] flex items-center justify-center p-6">
-                    <div className="flex flex-col items-center justify-center py-8">
-                      {/* Bob thinking animation */}
-                      <div className="relative mb-8">
-                        <motion.div
-                          animate={{ 
-                            scale: [1, 1.1, 1],
-                            opacity: [0.2, 0.1, 0.2]
-                          }}
-                          transition={{ 
-                            duration: 4,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                          className="absolute -inset-8 bg-blue-100 rounded-full blur-3xl"
+                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="mb-6">
+                        <img
+                          src="/assets/mini_bob_thinking.png"
+                          alt="Bob thinking"
+                          className="w-24 h-24 object-contain"
                         />
-                        
-                        <motion.div
-                          animate={{ 
-                            y: [0, -5, 0],
-                          }}
-                          transition={{ 
-                            duration: 3,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                          className="relative z-10"
-                        >
-                          <img
-                            src="/assets/mini_bob_thinking.png"
-                            alt="Bob thinking"
-                            className="w-32 h-32 object-contain drop-shadow-lg"
-                          />
-                        </motion.div>
                       </div>
-                      
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="text-center space-y-2"
-                      >
-                        <h3 className="text-xl font-medium text-gray-900">데이터베이스 설계 중</h3>
-                        <p className="text-sm text-gray-600 max-w-sm">PRD와 UI/UX 설계를 분석하여 최적의 테이블 구조를 설계하고 있습니다</p>
-                      </motion.div>
-                      
-                      <div className="flex gap-1 mt-4">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">개발 작업 설계 중</h3>
+                      <p className="text-sm text-gray-600 text-center max-w-xs">
+                        PRD와 UI/UX 설계를 분석하여 개발 작업을 체계적으로 설계하고 있습니다
+                      </p>
+                      <div className="flex gap-1 mt-6">
                         {[0, 1, 2].map((index) => (
-                          <motion.div
+                          <div
                             key={index}
-                            animate={{ 
-                              opacity: [0.3, 1, 0.3]
+                            className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
+                            style={{
+                              animationDelay: `${index * 0.2}s`,
+                              animationDuration: '1.2s'
                             }}
-                            transition={{ 
-                              duration: 1.2,
-                              repeat: Infinity,
-                              delay: index * 0.2
-                            }}
-                            className="w-1.5 h-1.5 bg-blue-400 rounded-full"
                           />
                         ))}
                       </div>
                     </div>
                   </div>
                 ) : isDatabaseError ? (
-                  <div className="h-[540px] flex items-center justify-center p-6">
+                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
                     <div className="text-center max-w-xs">
                       <div className="mb-6">
                         <img
                           src="/assets/mini_bob_error.png"
                           alt="Bob error"
-                          className="w-32 h-32 object-contain mx-auto mb-4"
+                          className="w-24 h-24 object-contain mx-auto"
                         />
                       </div>
                       <h3 className="text-base font-medium text-gray-900 mb-2">
-                        데이터베이스 설계 실패
+                        개발 작업 설계 실패
                       </h3>
                       <p className="text-sm text-gray-500 leading-relaxed mb-4">
                         설계 과정에서 문제가 발생했어요. 잠시 후 다시 시도해주세요.
@@ -826,11 +992,20 @@ export default function PRDResultPage() {
                     </div>
                   </div>
                 ) : databaseSchema ? (
-                  <div className="p-6">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]} 
-                      rehypePlugins={[rehypeRaw]}
-                      components={{
+                  <>
+                    <div className="p-6">
+                      {isEditingDatabase ? (
+                        <textarea
+                          value={tempDatabaseContent}
+                          onChange={(e) => setTempDatabaseContent(e.target.value)}
+                          className="w-full h-[calc(100vh-330px)] p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                          placeholder="개발 작업 task를 입력하세요..."
+                        />
+                      ) : (
+                        <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]} 
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
                         h1: ({ children }) => (
                           <h1 className="text-xl font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
                             {children}
@@ -907,38 +1082,90 @@ export default function PRDResultPage() {
                           );
                         },
                       }}
-                    >
-                      {databaseSchema}
-                    </ReactMarkdown>
-                  </div>
+                      >
+                        {databaseSchema}
+                      </ReactMarkdown>
+                      )}
+                    </div>
+                    
+                    {/* 수정 중 오버레이 */}
+                    {isDatabaseFixing && (
+                      <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="mb-4">
+                            <img
+                              src="/assets/mini_bob_thinking.png"
+                              alt="Bob thinking"
+                              className="w-20 h-20 object-contain"
+                            />
+                          </div>
+                          <h3 className="text-base font-medium text-gray-900 mb-2">데이터베이스를 수정하고 있습니다</h3>
+                          <div className="flex gap-1 mt-4">
+                            {[0, 1, 2].map((index) => (
+                              <div
+                                key={index}
+                                className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"
+                                style={{
+                                  animationDelay: `${index * 0.2}s`,
+                                  animationDuration: '1.2s'
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <div className="h-[540px] flex items-center justify-center p-6">
+                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
                     <div className="text-center max-w-xs">
-                      <div className="mb-6 relative inline-block">
-                        <div className="absolute inset-0 bg-gray-100 rounded-full blur-xl opacity-50"></div>
-                        <FileText className="w-12 h-12 text-gray-400 relative z-10" />
+                      <div className="mb-6">
+                        <FileText className="w-12 h-12 text-gray-300 mx-auto" />
                       </div>
                       <h3 className="text-base font-medium text-gray-900 mb-2">
-                        데이터베이스 설계 대기 중
+                        개발 작업 설계 대기 중
                       </h3>
                       <p className="text-sm text-gray-500 leading-relaxed">
                         UI/UX 설계가 완료되면 자동으로 시작됩니다
                       </p>
-                      <div className="mt-6">
-                        <div className="inline-flex items-center gap-2 text-xs text-gray-400">
-                          <span className="block w-8 h-0.5 bg-gray-300 rounded"></span>
-                          <span>순서를 기다리는 중</span>
-                          <span className="block w-8 h-0.5 bg-gray-300 rounded"></span>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 )}
               </div>
-            </motion.div>
+              
+              {/* 수정 요청 채팅바 */}
+              {databaseSchema && !isEditingDatabase && !isDatabaseLoading && !isDatabaseError && (
+                <div className="border-t border-gray-100 p-4 bg-gray-50/50">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={databaseFixRequest}
+                        onChange={(e) => setDatabaseFixRequest(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleDatabaseFix()}
+                        placeholder="Bob에게 수정을 요청하세요"
+                        className="w-full px-4 py-2.5 pr-12 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder-gray-400 transition-all"
+                        disabled={isDatabaseFixing}
+                      />
+                      <button
+                        onClick={handleDatabaseFix}
+                        disabled={isDatabaseFixing || !databaseFixRequest.trim()}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {isDatabaseFixing ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
           </div>
-        </motion.div>
+        </div>
       </main>
       
       {/* Exit Confirmation Modal */}
