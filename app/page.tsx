@@ -13,7 +13,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-white">
       <SimpleHeader />
       <main className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-6xl mx-auto px-8 py-20">
+        <div className="w-full max-w-6xl mx-auto px-8 pt-32 pb-16">
           {/* 카드 그리드 - 타이틀 없이 바로 시작 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 overflow-visible">
             {/* 아이디어 발굴 카드 */}
@@ -22,22 +22,22 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               onClick={() => router.push('/idea-generator')}
-              className="group relative bg-gray-50 rounded-2xl p-12 h-[380px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+              className="group relative bg-gray-50 rounded-2xl p-10 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
-              {/* 메인 텍스트 */}
-              <div className="space-y-6">
-                <h2 className="text-[32px] leading-tight font-light text-gray-900">
+              {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
+              <div className="space-y-4 max-w-[280px]">
+                <h2 className="text-[28px] leading-tight font-light text-gray-900">
                   아이디어가<br />
                   필요하신가요?
                 </h2>
-                <p className="text-lg text-gray-600 font-light leading-relaxed">
+                <p className="text-base text-gray-600 font-light leading-relaxed">
                   Mini Ally와 대화하며<br />
                   프로젝트 아이디어를 찾아보세요
                 </p>
               </div>
 
               {/* 캐릭터 - 카드를 벗어나는 효과 */}
-              <div className="absolute -bottom-4 -right-4 w-40 h-40 z-20">
+              <div className="absolute bottom-6 -right-4 w-40 h-40 z-20">
                 {/* 기본 이미지 */}
                 <Image
                   src="/assets/mini_ally_default.png"
@@ -48,7 +48,7 @@ export default function Home() {
                   priority
                 />
                 {/* 호버 이미지 - 더 크게 */}
-                <div className="absolute bottom-3 -right-4 w-56 h-56">
+                <div className="absolute bottom-4 -right-4 w-56 h-56">
                   <Image
                     src="/assets/mini_ally_hover.png"
                     alt="Mini Ally Hover"
@@ -60,9 +60,9 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 호버 시 나타나는 안내 */}
-              <div className="absolute bottom-12 left-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <span className="text-gray-700 font-medium">시작하기 →</span>
+              {/* 호버 시 나타나는 안내 - 위치 조정 */}
+              <div className="absolute bottom-10 left-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <span className="text-gray-700 font-medium text-sm">시작하기 →</span>
               </div>
             </motion.button>
 
@@ -72,22 +72,22 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               onClick={() => router.push('/prd-generator')}
-              className="group relative bg-gray-50 rounded-2xl p-12 h-[380px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+              className="group relative bg-gray-50 rounded-2xl p-10 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
-              {/* 메인 텍스트 */}
-              <div className="space-y-6">
-                <h2 className="text-[32px] leading-tight font-light text-gray-900">
+              {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
+              <div className="space-y-4 max-w-[280px]">
+                <h2 className="text-[28px] leading-tight font-light text-gray-900">
                   아이디어를<br />
                   문서로 만들고 싶나요?
                 </h2>
-                <p className="text-lg text-gray-600 font-light leading-relaxed">
+                <p className="text-base text-gray-600 font-light leading-relaxed">
                   전문가와 함께<br />
                   체계적인 PRD를 작성하세요
                 </p>
               </div>
 
               {/* 캐릭터 - 카드를 벗어나는 효과 */}
-              <div className="absolute -bottom-16 -right-10 w-80 h-60 z-20">
+              <div className="absolute -bottom-6 -right-10 w-80 h-60 z-20">
                 {/* 기본 이미지 */}
                 <Image
                   src="/assets/coach_default.png"
@@ -110,9 +110,9 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 호버 시 나타나는 안내 */}
-              <div className="absolute bottom-12 left-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <span className="text-gray-700 font-medium">시작하기 →</span>
+              {/* 호버 시 나타나는 안내 - 위치 조정 */}
+              <div className="absolute bottom-10 left-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <span className="text-gray-700 font-medium text-sm">시작하기 →</span>
               </div>
             </motion.button>
           </div>

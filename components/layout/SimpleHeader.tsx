@@ -19,12 +19,16 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ showLogo = true }) =
           {showLogo && (
             <Link href="/" className="flex items-center space-x-2 group">
               <motion.div 
-                className="text-xl font-light"
+                className="flex items-center gap-1"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span className="text-black">Idea</span>
-                <span className="text-gray-400 ml-2">→ Real</span>
+                <span className="text-2xl font-bold">
+                  <span className="text-[#00BCD4]">PLAI</span>
+                </span>
+                <span className="text-xl transform scale-x-[-1]">🪽</span>
+                <span className="text-2xl font-bold text-gray-800">MAKER</span>
+                <span className="text-xl">🪽</span>
               </motion.div>
             </Link>
           )}

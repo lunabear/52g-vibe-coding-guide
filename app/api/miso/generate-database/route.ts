@@ -13,14 +13,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { prdContent } = body;
+    const { prdContent, designContent } = body;
 
-    if (!prdContent) {
+    if (!prdContent || !designContent) {
       return NextResponse.json(
-        { error: 'PRD content is required' },
+        { error: 'PRD content and design content are required' },
         { status: 400 }
       );
     }
+
+    // XML 형식으로 컨텍스트 구성
+    const xmlContext = `<context>
+<prd>
+${prdContent}
+</prd>
+<design>
+${designContent}
+</design>
+</context>`;
 
     const response = await fetch(`${endpoint}/workflows/run`, {
       method: 'POST',
@@ -30,7 +40,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         inputs: {
-          context: prdContent,
+          context: xmlContext,
           step: 'generate_database',
         },
         mode: 'blocking',

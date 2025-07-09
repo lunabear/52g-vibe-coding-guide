@@ -60,7 +60,8 @@ export class MISOAPIClient {
   }
 
   async generateDatabaseSchema(
-    prdContent: string
+    prdContent: string,
+    designContent: string
   ): Promise<string> {
     try {
       const response = await fetch('/api/miso/generate-database', {
@@ -68,7 +69,7 @@ export class MISOAPIClient {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prdContent }),
+        body: JSON.stringify({ prdContent, designContent }),
       });
 
       if (!response.ok) {
@@ -86,8 +87,7 @@ export class MISOAPIClient {
   }
 
   async generateDesign(
-    prdContent: string,
-    databaseSchema: string
+    prdContent: string
   ): Promise<string> {
     try {
       const response = await fetch('/api/miso/generate-design', {
@@ -95,7 +95,7 @@ export class MISOAPIClient {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prdContent, databaseSchema }),
+        body: JSON.stringify({ prdContent }),
       });
 
       if (!response.ok) {

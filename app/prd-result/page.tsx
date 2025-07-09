@@ -7,9 +7,12 @@ import { ArrowLeft, Download, FileText, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import JSZip from 'jszip';
 import { usePRDContext } from '@/contexts/PRDContext';
 import { misoAPI } from '@/lib/miso-api';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
+import MISOLoading from '@/components/common/MISOLoading';
+import { ErrorPage } from '@/components/common/ErrorPage';
 
 export default function PRDResultPage() {
   const router = useRouter();
@@ -22,6 +25,8 @@ export default function PRDResultPage() {
   const [designContent, setDesignContent] = useState<string | null>(null);
   const [isDesignLoading, setIsDesignLoading] = useState(false);
   const [hasFetchedDesign, setHasFetchedDesign] = useState(false);
+  const [isDesignError, setIsDesignError] = useState(false);
+  const [isDatabaseError, setIsDatabaseError] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
@@ -50,7 +55,11 @@ export default function PRDResultPage() {
         }
       } catch (err) {
         console.error('Failed to generate PRD:', err);
-        setError('PRD 생성 중 오류가 발생했습니다.');
+        if (err instanceof Error && err.message.includes('fetch')) {
+          setError('network');
+        } else {
+          setError('PRD 생성 중 오류가 발생했습니다.');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -59,58 +68,114 @@ export default function PRDResultPage() {
     generatePRD();
   }, [prdContent, getAllQuestionsAndAnswers, setPRDContent, router]);
 
-  // PRD가 완성되면 바로 데이터베이스 스키마 생성 시작
+  // PRD가 완성되면 바로 디자인 생성 시작
   useEffect(() => {
-    if (prdContent && !hasFetchedDatabase) {
-      setHasFetchedDatabase(true);
-      generateDatabaseSchema(prdContent);
+    if (prdContent && !hasFetchedDesign) {
+      setHasFetchedDesign(true);
+      generateDesign(prdContent);
     }
-  }, [prdContent, hasFetchedDatabase]);
-
-  // 데이터베이스 스키마 생성 함수
-  const generateDatabaseSchema = async (prd: string) => {
-    setIsDatabaseLoading(true);
-    try {
-      const schema = await misoAPI.generateDatabaseSchema(prd);
-      if (schema) {
-        setDatabaseSchema(schema);
-      }
-    } catch (err) {
-      console.error('Failed to generate database schema:', err);
-    } finally {
-      setIsDatabaseLoading(false);
-    }
-  };
+  }, [prdContent, hasFetchedDesign]);
 
   // 디자인 생성 함수
-  const generateDesign = async (prd: string, dbSchema: string) => {
+  const generateDesign = async (prd: string) => {
     setIsDesignLoading(true);
+    setIsDesignError(false);
     try {
-      const design = await misoAPI.generateDesign(prd, dbSchema);
+      const design = await misoAPI.generateDesign(prd);
       if (design) {
         setDesignContent(design);
+      } else {
+        setIsDesignError(true);
       }
     } catch (err) {
       console.error('Failed to generate design:', err);
+      setIsDesignError(true);
     } finally {
       setIsDesignLoading(false);
     }
   };
 
-  // 데이터베이스 스키마가 완성되면 디자인 생성 시작
-  useEffect(() => {
-    if (prdContent && databaseSchema && !hasFetchedDesign) {
-      setHasFetchedDesign(true);
-      generateDesign(prdContent, databaseSchema);
+  // 데이터베이스 스키마 생성 함수
+  const generateDatabaseSchema = async (prd: string, design: string) => {
+    setIsDatabaseLoading(true);
+    setIsDatabaseError(false);
+    try {
+      const schema = await misoAPI.generateDatabaseSchema(prd, design);
+      if (schema) {
+        setDatabaseSchema(schema);
+      } else {
+        setIsDatabaseError(true);
+      }
+    } catch (err) {
+      console.error('Failed to generate database schema:', err);
+      setIsDatabaseError(true);
+    } finally {
+      setIsDatabaseLoading(false);
     }
-  }, [prdContent, databaseSchema, hasFetchedDesign]);
+  };
 
-  const handleDownload = () => {
-    const blob = new Blob([prdContent || ''], { type: 'text/markdown' });
+  // 디자인이 완성되면 데이터베이스 스키마 생성 시작
+  useEffect(() => {
+    if (prdContent && designContent && !hasFetchedDatabase && !isDesignError) {
+      setHasFetchedDatabase(true);
+      generateDatabaseSchema(prdContent, designContent);
+    }
+  }, [prdContent, designContent, hasFetchedDatabase, isDesignError]);
+
+  const handleDownload = async () => {
+    const zip = new JSZip();
+    const date = new Date().toISOString().split('T')[0];
+    
+    // 1. 기획자 Kyle의 PRD 문서
+    if (prdContent) {
+      zip.file(`1_기획자_Kyle_PRD_${date}.md`, prdContent);
+    }
+    
+    // 2. 디자이너 Heather의 UI/UX 설계
+    if (designContent) {
+      zip.file(`2_디자이너_Heather_UI설계_${date}.md`, designContent);
+    }
+    
+    // 3. 개발자 Bob의 데이터베이스 설계
+    if (databaseSchema) {
+      zip.file(`3_개발자_Bob_데이터베이스설계_${date}.md`, databaseSchema);
+    }
+    
+    // README 파일 추가
+    const readmeContent = `# 프로젝트 문서 모음
+    
+## 포함된 문서들
+
+### 1. 기획자 Kyle의 PRD
+- 파일명: 1_기획자_Kyle_PRD_${date}.md
+- 내용: 프로덕트 요구사항 정의서
+- 비즈니스 관점에서 프로젝트의 목표, 기능, 요구사항을 정의
+
+### 2. 디자이너 Heather의 UI/UX 설계
+- 파일명: 2_디자이너_Heather_UI설계_${date}.md
+- 내용: 페이지별 UI/UX 설계 가이드
+- 사용자 경험 관점에서 인터페이스와 상호작용을 설계
+
+### 3. 개발자 Bob의 데이터베이스 설계
+- 파일명: 3_개발자_Bob_데이터베이스설계_${date}.md
+- 내용: 데이터베이스 테이블 구조 및 관계도
+- 기술적 관점에서 데이터 구조와 관계를 설계
+
+## 사용 방법
+각 문서는 마크다운 형식으로 작성되어 있습니다.
+마크다운 에디터나 뷰어에서 열어서 확인하실 수 있습니다.
+
+생성일: ${new Date().toLocaleString('ko-KR')}
+`;
+    
+    zip.file('README.md', readmeContent);
+    
+    // ZIP 파일 생성 및 다운로드
+    const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `PRD_${new Date().toISOString().split('T')[0]}.md`;
+    a.download = `프로젝트문서_${date}.zip`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -140,40 +205,95 @@ export default function PRDResultPage() {
           transition={{ duration: 0.3 }}
           className="text-center"
         >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="inline-block mb-6"
-          >
-            <Sparkles className="w-12 h-12 text-yellow-500" />
-          </motion.div>
-          <h2 className="text-2xl font-light mb-2">PRD를 생성하고 있습니다</h2>
-          <p className="text-gray-600">MISO가 당신의 아이디어를 정리하고 있어요...</p>
+          <div className="flex flex-col items-center justify-center py-8">
+            {/* Kyle thinking animation */}
+            <div className="relative mb-8">
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.2, 0.1, 0.2]
+                }}
+                transition={{ 
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="absolute -inset-8 bg-gray-100 rounded-full blur-3xl"
+              />
+              
+              <motion.div
+                animate={{ 
+                  y: [0, -5, 0],
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="relative z-10"
+              >
+                <img
+                  src="/assets/mini_kyle_thinking.png"
+                  alt="Kyle thinking"
+                  className="w-48 h-48 object-contain drop-shadow-lg"
+                />
+              </motion.div>
+            </div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center space-y-2"
+            >
+              <h3 className="text-2xl font-medium text-gray-900">PRD를 생성하고 있습니다</h3>
+              <p className="text-base text-gray-600 max-w-sm">기획자 Kyle이 당신의 아이디어를 정리하고 있어요...</p>
+            </motion.div>
+            
+            <div className="flex gap-1 mt-4">
+              {[0, 1, 2].map((index) => (
+                <motion.div
+                  key={index}
+                  animate={{ 
+                    opacity: [0.3, 1, 0.3]
+                  }}
+                  transition={{ 
+                    duration: 1.2,
+                    repeat: Infinity,
+                    delay: index * 0.2
+                  }}
+                  className="w-2 h-2 bg-gray-400 rounded-full"
+                />
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
     );
   }
 
   if (error) {
+    if (error === 'network') {
+      return (
+        <ErrorPage 
+          errorCode="network"
+          showHomeButton={true}
+          showRetryButton={true}
+          onRetry={() => {
+            setError(null);
+            setIsLoading(true);
+            window.location.reload();
+          }}
+        />
+      );
+    }
+    
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center"
-        >
-          <div className="text-red-500 mb-4">
-            <FileText className="w-12 h-12 mx-auto" />
-          </div>
-          <h2 className="text-xl font-light mb-2">{error}</h2>
-          <button
-            onClick={() => router.push('/')}
-            className="mt-4 px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
-          >
-            처음으로 돌아가기
-          </button>
-        </motion.div>
-      </div>
+      <ErrorPage 
+        errorCode="default"
+        title={error}
+        showHomeButton={true}
+      />
     );
   }
 
@@ -196,10 +316,11 @@ export default function PRDResultPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={handleDownload}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+              disabled={!prdContent && !databaseSchema && !designContent}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download className="w-4 h-4" />
-              PRD 다운로드
+              전체 문서 다운로드 (ZIP)
             </button>
           </div>
         </div>
@@ -233,13 +354,13 @@ export default function PRDResultPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 flex items-center justify-center">
                       <img 
-                        src="/assets/charactor_planner.png" 
+                        src="/assets/mini_kyle_default.png" 
                         alt="기획자" 
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">기획자</h3>
+                      <h3 className="text-lg font-medium text-gray-900">기획자 Kyle</h3>
                       <p className="text-xs text-gray-600">프로덕트 요구사항 정의</p>
                     </div>
                   </div>
@@ -343,7 +464,7 @@ export default function PRDResultPage() {
               </div>
             </motion.div>
 
-            {/* 개발자 - 테이블 설계 */}
+            {/* 디자이너 - 페이지 설계 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -356,20 +477,20 @@ export default function PRDResultPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 flex items-center justify-center">
                       <img 
-                        src="/assets/charactor_developer.png" 
-                        alt="개발자" 
+                        src="/assets/mini_heather_default.png" 
+                        alt="디자이너 Heather" 
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">개발자</h3>
-                      <p className="text-xs text-gray-600">데이터베이스 테이블 설계</p>
+                      <h3 className="text-lg font-medium text-gray-900">디자이너 Heather</h3>
+                      <p className="text-xs text-gray-600">페이지별 디자인 설계</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 ${isDatabaseLoading ? 'bg-yellow-500 animate-pulse' : databaseSchema ? 'bg-green-500' : 'bg-yellow-500'} rounded-full`}></div>
-                    <span className={`text-xs font-medium ${isDatabaseLoading ? 'text-yellow-600' : databaseSchema ? 'text-green-600' : 'text-yellow-600'}`}>
-                      {isDatabaseLoading ? '생성 중' : databaseSchema ? '완료' : '대기 중'}
+                    <div className={`w-1.5 h-1.5 ${isDesignLoading ? 'bg-yellow-500 animate-pulse' : isDesignError ? 'bg-red-500' : designContent ? 'bg-green-500' : 'bg-yellow-500'} rounded-full`}></div>
+                    <span className={`text-xs font-medium ${isDesignLoading ? 'text-yellow-600' : isDesignError ? 'text-red-600' : designContent ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {isDesignLoading ? '생성 중' : isDesignError ? '오류' : designContent ? '완료' : '대기 중'}
                     </span>
                   </div>
                 </div>
@@ -377,27 +498,96 @@ export default function PRDResultPage() {
               
               {/* Content */}
               <div className="max-h-[600px] overflow-y-auto">
-                {isDatabaseLoading ? (
+                {isDesignLoading ? (
                   <div className="h-[540px] flex items-center justify-center p-6">
-                    <div className="text-center max-w-xs">
-                      <div className="mb-6 relative inline-block">
-                        <div className="absolute inset-0 bg-yellow-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                        <Sparkles className="w-12 h-12 text-yellow-500 relative z-10" />
+                    <div className="flex flex-col items-center justify-center py-8">
+                      {/* Heather thinking animation */}
+                      <div className="relative mb-8">
+                        <motion.div
+                          animate={{ 
+                            scale: [1, 1.1, 1],
+                            opacity: [0.2, 0.1, 0.2]
+                          }}
+                          transition={{ 
+                            duration: 4,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="absolute -inset-8 bg-purple-100 rounded-full blur-3xl"
+                        />
+                        
+                        <motion.div
+                          animate={{ 
+                            y: [0, -5, 0],
+                          }}
+                          transition={{ 
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="relative z-10"
+                        >
+                          <img
+                            src="/assets/mini_heather_thinking.png"
+                            alt="Heather thinking"
+                            className="w-32 h-32 object-contain drop-shadow-lg"
+                          />
+                        </motion.div>
                       </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">
-                        데이터베이스 설계 중
-                      </h3>
-                      <p className="text-sm text-gray-500 leading-relaxed">
-                        PRD를 분석하여 최적의 테이블 구조를 설계하고 있습니다
-                      </p>
-                      <div className="mt-6 flex justify-center gap-1">
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center space-y-2"
+                      >
+                        <h3 className="text-xl font-medium text-gray-900">UI/UX 설계 중</h3>
+                        <p className="text-sm text-gray-600 max-w-sm">PRD를 분석하여 최적의 사용자 경험을 설계하고 있습니다</p>
+                      </motion.div>
+                      
+                      <div className="flex gap-1 mt-4">
+                        {[0, 1, 2].map((index) => (
+                          <motion.div
+                            key={index}
+                            animate={{ 
+                              opacity: [0.3, 1, 0.3]
+                            }}
+                            transition={{ 
+                              duration: 1.2,
+                              repeat: Infinity,
+                              delay: index * 0.2
+                            }}
+                            className="w-1.5 h-1.5 bg-purple-400 rounded-full"
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>
-                ) : databaseSchema ? (
+                ) : isDesignError ? (
+                  <div className="h-[540px] flex items-center justify-center p-6">
+                    <div className="text-center max-w-xs">
+                      <div className="mb-6">
+                        <img
+                          src="/assets/mini_heather_error.png"
+                          alt="Heather error"
+                          className="w-32 h-32 object-contain mx-auto mb-4"
+                        />
+                      </div>
+                      <h3 className="text-base font-medium text-gray-900 mb-2">
+                        UI/UX 설계 실패
+                      </h3>
+                      <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                        설계 과정에서 문제가 발생했어요. 잠시 후 다시 시도해주세요.
+                      </p>
+                      <button
+                        onClick={() => generateDesign(prdContent || '')}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  </div>
+                ) : designContent ? (
                   <div className="p-6">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]} 
@@ -466,26 +656,16 @@ export default function PRDResultPage() {
                           );
                         },
                         pre: ({ children }) => (
-                          <div className="my-4 bg-gray-900 rounded-lg overflow-hidden max-w-full">
-                            <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
-                              <span className="text-xs font-mono text-gray-400">SQL</span>
-                              <div className="flex gap-1">
-                                <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                                <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-                                <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                              </div>
-                            </div>
-                            <div className="overflow-x-auto">
-                              <pre className="p-4 min-w-0">
-                                <code className="text-xs font-mono text-gray-100 leading-relaxed whitespace-pre">{children}</code>
-                              </pre>
-                            </div>
+                          <div className="my-4 bg-gray-50 rounded-lg overflow-hidden">
+                            <pre className="p-4 overflow-x-auto">
+                              <code className="text-xs font-mono text-gray-700">{children}</code>
+                            </pre>
                           </div>
                         ),
                         code: ({ children, ...props }) => {
                           const isInline = !props.node?.position;
                           return isInline ? (
-                            <code className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-mono">
+                            <code className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded text-xs font-mono">
                               {children}
                             </code>
                           ) : (
@@ -500,7 +680,7 @@ export default function PRDResultPage() {
                         ),
                       }}
                     >
-                      {databaseSchema}
+                      {designContent}
                     </ReactMarkdown>
                   </div>
                 ) : (
@@ -511,7 +691,7 @@ export default function PRDResultPage() {
                         <FileText className="w-12 h-12 text-yellow-400 relative z-10" />
                       </div>
                       <h3 className="text-base font-medium text-gray-900 mb-2">
-                        데이터베이스 설계 대기 중
+                        UI/UX 설계 대기 중
                       </h3>
                       <p className="text-sm text-gray-500 leading-relaxed">
                         PRD 작성이 완료되면 자동으로 시작됩니다
@@ -522,7 +702,7 @@ export default function PRDResultPage() {
               </div>
             </motion.div>
 
-            {/* 디자이너 - 페이지 설계 */}
+            {/* 개발자 - 테이블 설계 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -535,20 +715,20 @@ export default function PRDResultPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 flex items-center justify-center">
                       <img 
-                        src="/assets/charactor_designer.png" 
-                        alt="디자이너" 
+                        src="/assets/mini_bob_default.png" 
+                        alt="개발자 Bob" 
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">디자이너</h3>
-                      <p className="text-xs text-gray-600">페이지별 디자인 설계</p>
+                      <h3 className="text-lg font-medium text-gray-900">개발자 Bob</h3>
+                      <p className="text-xs text-gray-600">데이터베이스 테이블 설계</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 ${isDesignLoading ? 'bg-yellow-500 animate-pulse' : designContent ? 'bg-green-500' : 'bg-gray-300'} rounded-full`}></div>
-                    <span className={`text-xs font-medium ${isDesignLoading ? 'text-yellow-600' : designContent ? 'text-green-600' : 'text-gray-400'}`}>
-                      {isDesignLoading ? '생성 중' : designContent ? '완료' : '대기 중'}
+                    <div className={`w-1.5 h-1.5 ${isDatabaseLoading ? 'bg-yellow-500 animate-pulse' : isDatabaseError ? 'bg-red-500' : databaseSchema ? 'bg-green-500' : 'bg-gray-300'} rounded-full`}></div>
+                    <span className={`text-xs font-medium ${isDatabaseLoading ? 'text-yellow-600' : isDatabaseError ? 'text-red-600' : databaseSchema ? 'text-green-600' : 'text-gray-400'}`}>
+                      {isDatabaseLoading ? '생성 중' : isDatabaseError ? '오류' : databaseSchema ? '완료' : '대기 중'}
                     </span>
                   </div>
                 </div>
@@ -556,27 +736,96 @@ export default function PRDResultPage() {
               
               {/* Content */}
               <div className="max-h-[600px] overflow-y-auto">
-                {isDesignLoading ? (
+                {isDatabaseLoading ? (
                   <div className="h-[540px] flex items-center justify-center p-6">
-                    <div className="text-center max-w-xs">
-                      <div className="mb-6 relative inline-block">
-                        <div className="absolute inset-0 bg-yellow-100 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                        <Sparkles className="w-12 h-12 text-yellow-500 relative z-10" />
+                    <div className="flex flex-col items-center justify-center py-8">
+                      {/* Bob thinking animation */}
+                      <div className="relative mb-8">
+                        <motion.div
+                          animate={{ 
+                            scale: [1, 1.1, 1],
+                            opacity: [0.2, 0.1, 0.2]
+                          }}
+                          transition={{ 
+                            duration: 4,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="absolute -inset-8 bg-blue-100 rounded-full blur-3xl"
+                        />
+                        
+                        <motion.div
+                          animate={{ 
+                            y: [0, -5, 0],
+                          }}
+                          transition={{ 
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                          className="relative z-10"
+                        >
+                          <img
+                            src="/assets/mini_bob_thinking.png"
+                            alt="Bob thinking"
+                            className="w-32 h-32 object-contain drop-shadow-lg"
+                          />
+                        </motion.div>
                       </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">
-                        UI/UX 설계 중
-                      </h3>
-                      <p className="text-sm text-gray-500 leading-relaxed">
-                        PRD와 데이터베이스를 분석하여 최적의 사용자 경험을 설계하고 있습니다
-                      </p>
-                      <div className="mt-6 flex justify-center gap-1">
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center space-y-2"
+                      >
+                        <h3 className="text-xl font-medium text-gray-900">데이터베이스 설계 중</h3>
+                        <p className="text-sm text-gray-600 max-w-sm">PRD와 UI/UX 설계를 분석하여 최적의 테이블 구조를 설계하고 있습니다</p>
+                      </motion.div>
+                      
+                      <div className="flex gap-1 mt-4">
+                        {[0, 1, 2].map((index) => (
+                          <motion.div
+                            key={index}
+                            animate={{ 
+                              opacity: [0.3, 1, 0.3]
+                            }}
+                            transition={{ 
+                              duration: 1.2,
+                              repeat: Infinity,
+                              delay: index * 0.2
+                            }}
+                            className="w-1.5 h-1.5 bg-blue-400 rounded-full"
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>
-                ) : designContent ? (
+                ) : isDatabaseError ? (
+                  <div className="h-[540px] flex items-center justify-center p-6">
+                    <div className="text-center max-w-xs">
+                      <div className="mb-6">
+                        <img
+                          src="/assets/mini_bob_error.png"
+                          alt="Bob error"
+                          className="w-32 h-32 object-contain mx-auto mb-4"
+                        />
+                      </div>
+                      <h3 className="text-base font-medium text-gray-900 mb-2">
+                        데이터베이스 설계 실패
+                      </h3>
+                      <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                        설계 과정에서 문제가 발생했어요. 잠시 후 다시 시도해주세요.
+                      </p>
+                      <button
+                        onClick={() => generateDatabaseSchema(prdContent || '', designContent || '')}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  </div>
+                ) : databaseSchema ? (
                   <div className="p-6">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]} 
@@ -631,16 +880,26 @@ export default function PRDResultPage() {
                           </blockquote>
                         ),
                         pre: ({ children }) => (
-                          <div className="my-4 bg-gray-50 rounded-lg overflow-hidden">
-                            <pre className="p-4 overflow-x-auto">
-                              <code className="text-xs font-mono text-gray-700">{children}</code>
-                            </pre>
+                          <div className="my-4 bg-gray-900 rounded-lg overflow-hidden max-w-full">
+                            <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+                              <span className="text-xs font-mono text-gray-400">SQL</span>
+                              <div className="flex gap-1">
+                                <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                                <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+                                <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                              </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <pre className="p-4 min-w-0">
+                                <code className="text-xs font-mono text-gray-100 leading-relaxed whitespace-pre">{children}</code>
+                              </pre>
+                            </div>
                           </div>
                         ),
                         code: ({ children, ...props }) => {
                           const isInline = !props.node?.position;
                           return isInline ? (
-                            <code className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded text-xs font-mono">
+                            <code className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-mono">
                               {children}
                             </code>
                           ) : (
@@ -649,7 +908,7 @@ export default function PRDResultPage() {
                         },
                       }}
                     >
-                      {designContent}
+                      {databaseSchema}
                     </ReactMarkdown>
                   </div>
                 ) : (
@@ -660,10 +919,10 @@ export default function PRDResultPage() {
                         <FileText className="w-12 h-12 text-gray-400 relative z-10" />
                       </div>
                       <h3 className="text-base font-medium text-gray-900 mb-2">
-                        UI/UX 설계 대기 중
+                        데이터베이스 설계 대기 중
                       </h3>
                       <p className="text-sm text-gray-500 leading-relaxed">
-                        데이터베이스 설계가 완료되면 자동으로 시작됩니다
+                        UI/UX 설계가 완료되면 자동으로 시작됩니다
                       </p>
                       <div className="mt-6">
                         <div className="inline-flex items-center gap-2 text-xs text-gray-400">
