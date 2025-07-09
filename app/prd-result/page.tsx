@@ -25,6 +25,8 @@ export default function PRDResultPage() {
   const [designContent, setDesignContent] = useState<string | null>(null);
   const [isDesignLoading, setIsDesignLoading] = useState(false);
   const [hasFetchedDesign, setHasFetchedDesign] = useState(false);
+  const [isDesignError, setIsDesignError] = useState(false);
+  const [isDatabaseError, setIsDatabaseError] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
@@ -77,13 +79,17 @@ export default function PRDResultPage() {
   // 디자인 생성 함수
   const generateDesign = async (prd: string) => {
     setIsDesignLoading(true);
+    setIsDesignError(false);
     try {
       const design = await misoAPI.generateDesign(prd);
       if (design) {
         setDesignContent(design);
+      } else {
+        setIsDesignError(true);
       }
     } catch (err) {
       console.error('Failed to generate design:', err);
+      setIsDesignError(true);
     } finally {
       setIsDesignLoading(false);
     }
@@ -92,13 +98,17 @@ export default function PRDResultPage() {
   // 데이터베이스 스키마 생성 함수
   const generateDatabaseSchema = async (prd: string, design: string) => {
     setIsDatabaseLoading(true);
+    setIsDatabaseError(false);
     try {
       const schema = await misoAPI.generateDatabaseSchema(prd, design);
       if (schema) {
         setDatabaseSchema(schema);
+      } else {
+        setIsDatabaseError(true);
       }
     } catch (err) {
       console.error('Failed to generate database schema:', err);
+      setIsDatabaseError(true);
     } finally {
       setIsDatabaseLoading(false);
     }
@@ -106,11 +116,11 @@ export default function PRDResultPage() {
 
   // 디자인이 완성되면 데이터베이스 스키마 생성 시작
   useEffect(() => {
-    if (prdContent && designContent && !hasFetchedDatabase) {
+    if (prdContent && designContent && !hasFetchedDatabase && !isDesignError) {
       setHasFetchedDatabase(true);
       generateDatabaseSchema(prdContent, designContent);
     }
-  }, [prdContent, designContent, hasFetchedDatabase]);
+  }, [prdContent, designContent, hasFetchedDatabase, isDesignError]);
 
   const handleDownload = async () => {
     const zip = new JSZip();
@@ -478,9 +488,9 @@ export default function PRDResultPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 ${isDesignLoading ? 'bg-yellow-500 animate-pulse' : designContent ? 'bg-green-500' : 'bg-yellow-500'} rounded-full`}></div>
-                    <span className={`text-xs font-medium ${isDesignLoading ? 'text-yellow-600' : designContent ? 'text-green-600' : 'text-yellow-600'}`}>
-                      {isDesignLoading ? '생성 중' : designContent ? '완료' : '대기 중'}
+                    <div className={`w-1.5 h-1.5 ${isDesignLoading ? 'bg-yellow-500 animate-pulse' : isDesignError ? 'bg-red-500' : designContent ? 'bg-green-500' : 'bg-yellow-500'} rounded-full`}></div>
+                    <span className={`text-xs font-medium ${isDesignLoading ? 'text-yellow-600' : isDesignError ? 'text-red-600' : designContent ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {isDesignLoading ? '생성 중' : isDesignError ? '오류' : designContent ? '완료' : '대기 중'}
                     </span>
                   </div>
                 </div>
@@ -551,6 +561,30 @@ export default function PRDResultPage() {
                           />
                         ))}
                       </div>
+                    </div>
+                  </div>
+                ) : isDesignError ? (
+                  <div className="h-[540px] flex items-center justify-center p-6">
+                    <div className="text-center max-w-xs">
+                      <div className="mb-6">
+                        <img
+                          src="/assets/mini_heather_error.png"
+                          alt="Heather error"
+                          className="w-32 h-32 object-contain mx-auto mb-4"
+                        />
+                      </div>
+                      <h3 className="text-base font-medium text-gray-900 mb-2">
+                        UI/UX 설계 실패
+                      </h3>
+                      <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                        설계 과정에서 문제가 발생했어요. 잠시 후 다시 시도해주세요.
+                      </p>
+                      <button
+                        onClick={() => generateDesign(prdContent || '')}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                      >
+                        다시 시도
+                      </button>
                     </div>
                   </div>
                 ) : designContent ? (
@@ -692,9 +726,9 @@ export default function PRDResultPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 ${isDatabaseLoading ? 'bg-yellow-500 animate-pulse' : databaseSchema ? 'bg-green-500' : 'bg-gray-300'} rounded-full`}></div>
-                    <span className={`text-xs font-medium ${isDatabaseLoading ? 'text-yellow-600' : databaseSchema ? 'text-green-600' : 'text-gray-400'}`}>
-                      {isDatabaseLoading ? '생성 중' : databaseSchema ? '완료' : '대기 중'}
+                    <div className={`w-1.5 h-1.5 ${isDatabaseLoading ? 'bg-yellow-500 animate-pulse' : isDatabaseError ? 'bg-red-500' : databaseSchema ? 'bg-green-500' : 'bg-gray-300'} rounded-full`}></div>
+                    <span className={`text-xs font-medium ${isDatabaseLoading ? 'text-yellow-600' : isDatabaseError ? 'text-red-600' : databaseSchema ? 'text-green-600' : 'text-gray-400'}`}>
+                      {isDatabaseLoading ? '생성 중' : isDatabaseError ? '오류' : databaseSchema ? '완료' : '대기 중'}
                     </span>
                   </div>
                 </div>
@@ -765,6 +799,30 @@ export default function PRDResultPage() {
                           />
                         ))}
                       </div>
+                    </div>
+                  </div>
+                ) : isDatabaseError ? (
+                  <div className="h-[540px] flex items-center justify-center p-6">
+                    <div className="text-center max-w-xs">
+                      <div className="mb-6">
+                        <img
+                          src="/assets/mini_bob_error.png"
+                          alt="Bob error"
+                          className="w-32 h-32 object-contain mx-auto mb-4"
+                        />
+                      </div>
+                      <h3 className="text-base font-medium text-gray-900 mb-2">
+                        데이터베이스 설계 실패
+                      </h3>
+                      <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                        설계 과정에서 문제가 발생했어요. 잠시 후 다시 시도해주세요.
+                      </p>
+                      <button
+                        onClick={() => generateDatabaseSchema(prdContent || '', designContent || '')}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                      >
+                        다시 시도
+                      </button>
                     </div>
                   </div>
                 ) : databaseSchema ? (
