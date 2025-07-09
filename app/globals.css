@@ -18,6 +18,11 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 97%;
     --secondary-foreground: 0 0% 0%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --ring: 0 0% 0%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
     --accent: 0 0% 97%;
     --accent-foreground: 0 0% 0%;
     --card: 0 0% 100%;
