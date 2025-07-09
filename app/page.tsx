@@ -2,103 +2,120 @@
 
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
 import { SimpleHeader } from '@/components/layout/SimpleHeader';
 import Footer from '@/components/layout/Footer';
+import Image from 'next/image';
 
 export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <SimpleHeader />
-      <main className="flex-1 flex items-center justify-center px-4 pt-16">
-        <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-          {/* 왼쪽 영역 - 디자인싱킹&아이데이션 */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex items-center justify-center"
-          >
-            <div className="text-center space-y-6">
-              <motion.h2
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.8 }}
-                className="text-4xl md:text-5xl font-light tracking-tight leading-tight text-gray-800"
-              >
-                디자인싱킹<br />
-                <span className="font-normal">&</span><br />
-                아이데이션
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
-                className="text-lg text-gray-600 font-light max-w-sm mx-auto leading-relaxed"
-              >
-                체계적인 사고 과정을 통해<br />
-                창의적인 솔루션을 발견하세요
-              </motion.p>
-              
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.8 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => router.push('/idea-generator')}
-                className="inline-flex items-center gap-2 px-8 py-3 text-sm font-normal bg-black text-white rounded-md hover:bg-gray-800 transition-colors duration-200"
-              >
-                아이디어 시작하기
-                <ArrowRight className="w-4 h-4" />
-              </motion.button>
-            </div>
-          </motion.div>
+      <main className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-6xl mx-auto px-8 py-20">
+          {/* 카드 그리드 - 타이틀 없이 바로 시작 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 overflow-visible">
+            {/* 아이디어 발굴 카드 */}
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              onClick={() => router.push('/idea-generator')}
+              className="group relative bg-gray-50 rounded-2xl p-12 h-[380px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+            >
+              {/* 메인 텍스트 */}
+              <div className="space-y-6">
+                <h2 className="text-[32px] leading-tight font-light text-gray-900">
+                  아이디어가<br />
+                  필요하신가요?
+                </h2>
+                <p className="text-lg text-gray-600 font-light leading-relaxed">
+                  Mini Ally와 대화하며<br />
+                  프로젝트 아이디어를 찾아보세요
+                </p>
+              </div>
 
-          {/* 오른쪽 영역 - 기존 콘텐츠 */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex items-center justify-center"
-          >
-            <div className="text-center space-y-10">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.8 }}
-              >
-                <h1 className="text-5xl md:text-6xl font-extralight tracking-tight leading-tight">
+              {/* 캐릭터 - 카드를 벗어나는 효과 */}
+              <div className="absolute -bottom-4 -right-4 w-40 h-40 z-20">
+                {/* 기본 이미지 */}
+                <Image
+                  src="/assets/mini_ally_default.png"
+                  alt="Mini Ally"
+                  width={160}
+                  height={160}
+                  className="object-contain absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-500 ease-in-out"
+                  priority
+                />
+                {/* 호버 이미지 - 더 크게 */}
+                <div className="absolute bottom-3 -right-4 w-56 h-56">
+                  <Image
+                    src="/assets/mini_ally_hover.png"
+                    alt="Mini Ally Hover"
+                    width={224}
+                    height={224}
+                    className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"
+                    priority
+                  />
+                </div>
+              </div>
+
+              {/* 호버 시 나타나는 안내 */}
+              <div className="absolute bottom-12 left-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <span className="text-gray-700 font-medium">시작하기 →</span>
+              </div>
+            </motion.button>
+
+            {/* PRD 작성 카드 */}
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              onClick={() => router.push('/prd-generator')}
+              className="group relative bg-gray-50 rounded-2xl p-12 h-[380px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+            >
+              {/* 메인 텍스트 */}
+              <div className="space-y-6">
+                <h2 className="text-[32px] leading-tight font-light text-gray-900">
                   아이디어를<br />
-                  <span className="font-normal">현실로</span>
-                </h1>
-              </motion.div>
+                  문서로 만들고 싶나요?
+                </h2>
+                <p className="text-lg text-gray-600 font-light leading-relaxed">
+                  전문가와 함께<br />
+                  체계적인 PRD를 작성하세요
+                </p>
+              </div>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
-                className="text-xl text-gray-600 font-light max-w-md mx-auto leading-relaxed"
-              >
-                당신의 생각을 체계적인 제품 기획서로 만들어드립니다
-              </motion.p>
+              {/* 캐릭터 - 카드를 벗어나는 효과 */}
+              <div className="absolute -bottom-16 -right-10 w-80 h-60 z-20">
+                {/* 기본 이미지 */}
+                <Image
+                  src="/assets/coach_default.png"
+                  alt="Coach Team"
+                  width={320}
+                  height={240}
+                  className="object-contain absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-500 ease-in-out"
+                  priority
+                />
+                {/* 호버 이미지 */}
+                <div className="absolute inset-0 w-full h-full">
+                  <Image
+                    src="/assets/coach_hover.png"
+                    alt="Coach Team Hover"
+                    width={320}
+                    height={240}
+                    className="object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out"
+                    priority
+                  />
+                </div>
+              </div>
 
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.8 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => router.push('/prd-generator')}
-                className="inline-flex items-center gap-2 px-8 py-3 text-sm font-normal bg-black text-white rounded-md hover:bg-gray-800 transition-colors duration-200"
-              >
-                시작하기
-                <ArrowRight className="w-4 h-4" />
-              </motion.button>
-            </div>
-          </motion.div>
+              {/* 호버 시 나타나는 안내 */}
+              <div className="absolute bottom-12 left-12 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <span className="text-gray-700 font-medium">시작하기 →</span>
+              </div>
+            </motion.button>
+          </div>
         </div>
       </main>
       <Footer />
