@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { SimpleHeader } from '@/components/layout/SimpleHeader';
 import Footer from '@/components/layout/Footer';
+import HackathonModal from '@/components/common/HackathonModal';
 import Image from 'next/image';
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <HackathonModal />
       <SimpleHeader />
       <main className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-6xl mx-auto px-8 pt-32 pb-16">
