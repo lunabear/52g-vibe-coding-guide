@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Download, FileText, Edit2, Save, X, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Edit2, Save, X, Send, Loader2, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -11,6 +11,7 @@ import { usePRDContext } from '@/contexts/PRDContext';
 import { misoAPI } from '@/lib/miso-api';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ErrorPage } from '@/components/common/ErrorPage';
+import { VibeCodingGuideModal } from '@/components/common/VibeCodingGuideModal';
 
 export default function PRDResultPage() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function PRDResultPage() {
   const [isDesignError, setIsDesignError] = useState(false);
   const [isDatabaseError, setIsDatabaseError] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showVibeCodingModal, setShowVibeCodingModal] = useState(false);
   
   // 편집 모드 상태
   const [isEditingPRD, setIsEditingPRD] = useState(false);
@@ -382,12 +384,12 @@ export default function PRDResultPage() {
               <h1 className="text-lg font-medium text-gray-900">프로젝트 문서</h1>
             </div>
             <button
-              onClick={handleDownload}
+              onClick={() => setShowVibeCodingModal(true)}
               disabled={!prdContent && !databaseSchema && !designContent}
               className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
-              <Download className="w-4 h-4" />
-              ZIP 다운로드
+              <Sparkles className="w-4 h-4" />
+              바이브코딩에 적용하기
             </button>
           </div>
         </div>
@@ -1177,6 +1179,13 @@ export default function PRDResultPage() {
         cancelText="계속 보기"
         onConfirm={handleConfirmExit}
         onCancel={handleCancelExit}
+      />
+      
+      {/* VibeCoding Guide Modal */}
+      <VibeCodingGuideModal
+        isOpen={showVibeCodingModal}
+        onClose={() => setShowVibeCodingModal(false)}
+        onDownload={handleDownload}
       />
     </div>
   );
