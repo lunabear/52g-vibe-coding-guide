@@ -9,7 +9,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, Download, Check } from 'lucide-react';
+import { Copy, Download, Check, ExternalLink } from 'lucide-react';
+import { EXTERNAL_LINKS } from '@/lib/links';
 
 interface VibeCodingGuideModalProps {
   isOpen: boolean;
@@ -82,9 +83,20 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload }: VibeCoding
                   )}
                 </button>
               </div>
-              <p className="mt-4 text-sm text-gray-600 leading-relaxed">
-                위 내용을 복사하여 v0의 Interaction → Introduction 섹션에 붙여넣으세요.
-              </p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  위 내용을 복사하여 v0의 Interaction → Introduction 섹션에 붙여넣으세요.
+                </p>
+                <a
+                  href={EXTERNAL_LINKS.V0_INTRODUCTION_GUIDE}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  자세한 방법 보러가기
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
           </div>
 
@@ -107,9 +119,18 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload }: VibeCoding
                   <p className="text-sm text-gray-600 mb-1">
                     PRD, UI/UX, 개발 작업 문서가 포함된 ZIP 파일을 다운로드합니다.
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 mb-2">
                     다운로드한 파일을 v0의 Source 섹션에 업로드해주세요.
                   </p>
+                  <a
+                    href={EXTERNAL_LINKS.V0_DOCUMENT_UPLOAD_GUIDE}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    프로젝트 문서 다운로드 및 업로드 가이드
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
               </div>
             </div>
