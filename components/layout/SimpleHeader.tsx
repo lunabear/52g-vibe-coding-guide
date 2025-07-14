@@ -25,7 +25,7 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ showLogo = true }) =
                 whileTap={{ scale: 0.95 }}
               >
                 <Image
-                  src="/assets/Keep-the-uploaded-202507131822-unscreen.gif"
+                  src="/assets/navi_logo.gif"
                   alt="PLAI MAKER"
                   width={0}
                   height={0}
