@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft } from 'lucide-react';
+import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getUserId } from '@/lib/user-id';
@@ -46,8 +46,9 @@ export default function ChatPage() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [userId, setUserId] = useState<string>('');
+  const [isMobile, setIsMobile] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -63,6 +64,16 @@ export default function ChatPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // 모바일 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 대화 목록 불러오기 및 사용자 ID 설정
   useEffect(() => {
@@ -290,14 +301,31 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="h-screen bg-white flex overflow-hidden">
+    <div className="h-screen bg-white flex overflow-hidden relative">
+      {/* 모바일 사이드바 백드롭 */}
+      {isMobile && showSidebar && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+      
       {/* 사이드바 - 대화 목록 */}
-      {showSidebar && (
-        <div
-          className="w-[320px] bg-[#FAFAFA] border-r border-gray-100 flex flex-col"
-        >
+      <div
+        className={cn(
+          "bg-[#FAFAFA] border-r border-gray-100 flex flex-col transition-all duration-300 ease-in-out",
+          isMobile 
+            ? "fixed left-0 top-0 h-full z-50 w-[85%] max-w-[320px]" 
+            : "relative w-[320px]",
+          showSidebar 
+            ? "translate-x-0" 
+            : isMobile 
+              ? "-translate-x-full" 
+              : "w-0 -ml-[320px]"
+        )}
+      >
           {/* 사이드바 헤더 */}
-          <div className="h-[72px] px-6 flex items-center justify-between">
+          <div className="h-[60px] md:h-[72px] px-4 md:px-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -307,19 +335,31 @@ export default function ChatPage() {
               >
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
               </Button>
-              <h2 className="text-[22px] font-light text-gray-900 tracking-tight">대화 목록</h2>
+              <h2 className="text-[18px] md:text-[22px] font-light text-gray-900 tracking-tight">대화 목록</h2>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setCurrentConversationId(null);
-                setMessages([]);
-              }}
-              className="h-10 w-10 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <Plus className="w-5 h-5 text-gray-700" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setCurrentConversationId(null);
+                  setMessages([]);
+                }}
+                className="h-10 w-10 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <Plus className="w-5 h-5 text-gray-700" />
+              </Button>
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSidebar(false)}
+                  className="h-10 w-10 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-700" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* 대화 목록 */}
@@ -399,32 +439,33 @@ export default function ChatPage() {
             </div>
           </ScrollArea>
         </div>
-      )}
 
       {/* 메인 채팅 영역 */}
       <div className="flex-1 flex flex-col bg-white">
         {/* 헤더 */}
-        <div className="h-[72px] px-8 flex items-center justify-between border-b border-gray-100">
+        <div className="h-[60px] md:h-[72px] px-4 md:px-8 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center gap-5">
-            {!showSidebar && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowSidebar(true)}
-                className="h-10 w-10 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5 text-gray-700" />
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowSidebar(!showSidebar)}
+              className="h-8 w-8 md:h-10 md:w-10 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              {showSidebar && !isMobile ? (
+                <X className="w-5 h-5 text-gray-700" />
+              ) : (
+                <Menu className="w-5 h-5 text-gray-700" />
+              )}
+            </Button>
             <div className="flex items-center gap-3">
               <img
                 src="/assets/mini_ally_default.png"
                 alt="Mini Ally"
-                className="w-10 h-10 object-contain"
+                className="w-8 h-8 md:w-10 md:h-10 object-contain"
               />
               <div>
-                <h1 className="text-[18px] font-normal text-gray-900">Mini Ally</h1>
-                <p className="text-[13px] text-gray-500">MISO</p>
+                <h1 className="text-[16px] md:text-[18px] font-normal text-gray-900">Mini Ally</h1>
+                <p className="text-[12px] md:text-[13px] text-gray-500">MISO</p>
               </div>
             </div>
           </div>
@@ -433,7 +474,7 @@ export default function ChatPage() {
         {/* 메시지 영역 */}
         <div className="flex-1 overflow-hidden flex flex-col">
           <ScrollArea className="flex-1">
-            <div className="max-w-[720px] mx-auto px-8 py-8">
+            <div className="max-w-[720px] mx-auto px-4 md:px-8 py-6 md:py-8">
               {isLoadingMessages ? (
                 <div className="flex items-center justify-center min-h-[400px]">
                   <div className="text-center">
@@ -465,7 +506,7 @@ export default function ChatPage() {
                       className="w-full h-full object-contain"
                     />
                   </div>
-                  <h2 className="text-[28px] font-light text-gray-900 mb-3">
+                  <h2 className="text-[20px] md:text-[28px] font-light text-gray-900 mb-3 px-4 text-center">
                     {(() => {
                       const hour = new Date().getHours();
                       if (hour >= 5 && hour < 12) {
@@ -479,7 +520,7 @@ export default function ChatPage() {
                       }
                     })()}
                   </h2>
-                  <p className="text-[16px] text-gray-500 leading-relaxed max-w-md mx-auto">
+                  <p className="text-[14px] md:text-[16px] text-gray-500 leading-relaxed max-w-md mx-auto px-4 text-center">
                     {(() => {
                       const hour = new Date().getHours();
                       if (hour >= 5 && hour < 12) {
@@ -509,7 +550,7 @@ export default function ChatPage() {
                           <img
                             src="/assets/mini_ally_default.png"
                             alt="Mini Ally"
-                            className="w-12 h-12 object-contain"
+                            className="w-10 h-10 md:w-12 md:h-12 object-contain"
                           />
                         </div>
                       )}
@@ -522,16 +563,16 @@ export default function ChatPage() {
                         <div className="space-y-2">
                           <div
                             className={cn(
-                              'inline-block px-5 py-3.5',
+                              'inline-block px-4 md:px-5 py-3 md:py-3.5',
                               msg.role === 'user'
-                                ? 'bg-gray-900 text-white rounded-[20px] max-w-[360px]'
+                                ? 'bg-gray-900 text-white rounded-[20px] max-w-[280px] md:max-w-[360px]'
                                 : 'text-gray-800 max-w-full'
                             )}
                           >
                             {msg.content ? (
                               <p className={cn(
                                 "whitespace-pre-wrap leading-relaxed break-words",
-                                msg.role === 'user' ? 'text-[15px]' : 'text-[16px] font-light'
+                                msg.role === 'user' ? 'text-[14px] md:text-[15px]' : 'text-[14px] md:text-[16px] font-light'
                               )}>
                                 {msg.content}
                               </p>
@@ -567,7 +608,7 @@ export default function ChatPage() {
 
         {/* 입력 영역 */}
         <div className="border-t border-gray-100 bg-white">
-          <div className="max-w-[720px] mx-auto px-8 py-4">
+          <div className="max-w-[720px] mx-auto px-4 md:px-8 py-3 md:py-4">
             <div className="relative">
               <Textarea
                 ref={textareaRef}
@@ -575,26 +616,26 @@ export default function ChatPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="메시지를 입력하세요..."
-                className="w-full min-h-[56px] max-h-[150px] px-5 py-4 resize-none border border-gray-200 rounded-2xl text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
+                className="w-full min-h-[48px] md:min-h-[56px] max-h-[120px] md:max-h-[150px] px-4 md:px-5 py-3 md:py-4 resize-none border border-gray-200 rounded-2xl text-[14px] md:text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
                 disabled={isLoading}
               />
-              <div className="absolute right-3 bottom-3">
+              <div className="absolute right-2 md:right-3 bottom-2 md:bottom-3">
                 <Button
                   onClick={handleSendMessage}
                   disabled={!message.trim() || isLoading}
                   size="icon"
                   className={cn(
-                    "h-10 w-10 rounded-xl transition-all",
+                    "h-8 w-8 md:h-10 md:w-10 rounded-xl transition-all",
                     message.trim() && !isLoading
                       ? "bg-gray-900 hover:bg-gray-800 text-white"
                       : "bg-gray-100 text-gray-400"
                   )}
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
               </div>
             </div>
-            <p className="text-[13px] text-gray-400 text-center mt-3">
+            <p className="text-[11px] md:text-[13px] text-gray-400 text-center mt-2 md:mt-3">
               Mini Ally는 실수할 수 있습니다. 중요한 정보는 확인해 주세요.
             </p>
           </div>
