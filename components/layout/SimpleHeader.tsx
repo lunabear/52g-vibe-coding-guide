@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 interface SimpleHeaderProps {
@@ -14,21 +15,23 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ showLogo = true }) =
       animate={{ y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="max-w-7xl mx-auto px-6 py-0">
         <div className="flex items-center justify-between">
           {showLogo && (
             <Link href="/" className="flex items-center space-x-2 group">
               <motion.div 
-                className="flex items-center gap-1"
+                className="flex items-center"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span className="text-2xl font-bold">
-                  <span className="text-[#00BCD4]">PLAI</span>
-                </span>
-                <span className="text-xl transform scale-x-[-1]">🪽</span>
-                <span className="text-2xl font-bold text-gray-800">MAKER</span>
-                <span className="text-xl">🪽</span>
+                <Image
+                  src="/assets/Keep-the-uploaded-202507131822-unscreen.gif"
+                  alt="PLAI MAKER"
+                  width={0}
+                  height={0}
+                  className="h-[60px] w-auto object-contain"
+                  priority
+                />
               </motion.div>
             </Link>
           )}
