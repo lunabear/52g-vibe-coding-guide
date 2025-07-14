@@ -27,14 +27,15 @@ export default function Home() {
               className="group relative bg-gray-50 rounded-2xl p-10 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
-              <div className="space-y-4 max-w-[280px]">
-                <h2 className="text-[28px] leading-tight font-light text-gray-900">
+              <div className="absolute top-10 left-10 space-y-4 max-w-[280px]">
+                <h2 className="text-[28px] leading-tight font-bold text-gray-900">
                   아이디어가<br />
                   필요하신가요?
                 </h2>
                 <p className="text-base text-gray-600 font-light leading-relaxed">
-                  Mini Ally와 대화하며<br />
-                  프로젝트 아이디어를 찾아보세요
+                  Mini Ally에게 실시간으로<br />
+                  질문하고 고민을 해결해 보세요.
+                
                 </p>
               </div>
 
@@ -77,14 +78,15 @@ export default function Home() {
               className="group relative bg-gray-50 rounded-2xl p-10 h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
-              <div className="space-y-4 max-w-[280px]">
-                <h2 className="text-[28px] leading-tight font-light text-gray-900">
+              <div className="absolute top-10 left-10 space-y-4 max-w-[280px]">
+                <h2 className="text-[28px] leading-tight font-bold text-gray-900">
                   아이디어를<br />
-                  문서로 만들고 싶나요?
+                  빠르고 체계적으로<br />
+                  구현하고 싶나요?
                 </h2>
                 <p className="text-base text-gray-600 font-light leading-relaxed">
-                  전문가와 함께<br />
-                  체계적인 PRD를 작성하세요
+                  제품 기획서로 AI 구현 속도·정확도 UP!<br />
+                  전문가와 핵심 요구사항을 정리해 보세요.
                 </p>
               </div>
 
