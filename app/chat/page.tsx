@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu, ChevronRight, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { getUserId } from '@/lib/user-id';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -656,24 +658,94 @@ export default function ChatPage() {
                           >
                             {msg.content ? (
                               <div className={cn(
-                                "whitespace-pre-wrap leading-relaxed break-words",
-                                msg.role === 'user' ? 'text-[14px] custom:text-[15px]' : 'text-[14px] custom:text-[16px] font-light'
+                                "leading-relaxed break-words",
+                                msg.role === 'user' 
+                                  ? 'text-[14px] custom:text-[15px] whitespace-pre-wrap' 
+                                  : 'text-[14px] custom:text-[16px] font-light [&>*:first-child]:mt-0 [&>*:last-child]:mb-0'
                               )}>
-                                {parseActionButtons(msg.content).map((part: any, index: number) => (
-                                  <React.Fragment key={index}>
-                                    {part.type === 'text' ? (
-                                      <span>{part.content}</span>
-                                    ) : (
-                                      <Button
-                                        onClick={() => handleActionClick(part.action)}
-                                        className="inline-flex items-center gap-2 mx-1 my-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
-                                      >
-                                        {part.text}
-                                        <ChevronRight className="w-4 h-4" />
-                                      </Button>
-                                    )}
-                                  </React.Fragment>
-                                ))}
+                                {msg.role === 'user' ? (
+                                  <span>{msg.content}</span>
+                                ) : (
+                                  parseActionButtons(msg.content).map((part: any, index: number) => (
+                                    <React.Fragment key={index}>
+                                      {part.type === 'text' ? (
+                                        <ReactMarkdown 
+                                          remarkPlugins={[remarkGfm]}
+                                          components={{
+                                            h1: ({ children }) => (
+                                              <h1 className="text-lg font-semibold text-gray-900 mt-4 mb-3 first:mt-0">
+                                                {children}
+                                              </h1>
+                                            ),
+                                            h2: ({ children }) => (
+                                              <h2 className="text-base font-semibold text-gray-800 mt-4 mb-2 first:mt-0">
+                                                {children}
+                                              </h2>
+                                            ),
+                                            h3: ({ children }) => (
+                                              <h3 className="text-sm font-medium text-gray-700 mt-3 mb-2 first:mt-0">
+                                                {children}
+                                              </h3>
+                                            ),
+                                            p: ({ children }) => (
+                                              <p className="text-gray-700 leading-relaxed mb-3 last:mb-0">
+                                                {children}
+                                              </p>
+                                            ),
+                                            ul: ({ children }) => (
+                                              <ul className="my-3 space-y-1 list-disc ml-4 pl-2">
+                                                {children}
+                                              </ul>
+                                            ),
+                                            ol: ({ children }) => (
+                                              <ol className="my-3 space-y-1 list-decimal ml-4 pl-2">
+                                                {children}
+                                              </ol>
+                                            ),
+                                            li: ({ children }) => (
+                                              <li className="text-gray-700 leading-relaxed">
+                                                {children}
+                                              </li>
+                                            ),
+                                            strong: ({ children }) => (
+                                              <strong className="font-semibold text-gray-900">{children}</strong>
+                                            ),
+                                            em: ({ children }) => (
+                                              <em className="italic text-gray-600">{children}</em>
+                                            ),
+                                            code: ({ children, ...props }) => {
+                                              const isInline = !props.node?.position;
+                                              return isInline ? (
+                                                <code className="px-1.5 py-0.5 bg-gray-100 text-gray-800 rounded text-sm font-mono">
+                                                  {children}
+                                                </code>
+                                              ) : (
+                                                <pre className="bg-gray-100 p-4 rounded-lg text-sm font-mono overflow-x-auto my-3 border border-gray-200">
+                                                  <code className="text-gray-800">{children}</code>
+                                                </pre>
+                                              );
+                                            },
+                                            blockquote: ({ children }) => (
+                                              <blockquote className="pl-4 py-2 my-3 border-l-3 border-gray-300 bg-gray-50 rounded-r text-gray-600 italic">
+                                                {children}
+                                              </blockquote>
+                                            ),
+                                          }}
+                                        >
+                                          {part.content}
+                                        </ReactMarkdown>
+                                      ) : (
+                                        <Button
+                                          onClick={() => handleActionClick(part.action)}
+                                          className="inline-flex items-center gap-2 mx-1 my-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                                        >
+                                          {part.text}
+                                          <ChevronRight className="w-4 h-4" />
+                                        </Button>
+                                      )}
+                                    </React.Fragment>
+                                  ))
+                                )}
                               </div>
                             ) : msg.isStreaming ? (
                               <div className="flex gap-2 py-2">
