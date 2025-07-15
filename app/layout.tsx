@@ -7,6 +7,13 @@ export const metadata: Metadata = {
   description: "MISO AI와 전문가들이 당신의 아이디어를 체계적인 제품 기획서로 만들어드립니다",
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: {
