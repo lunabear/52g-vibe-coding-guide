@@ -28,6 +28,7 @@ export default function PRDResultPage() {
   const [isDatabaseError, setIsDatabaseError] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showVibeCodingModal, setShowVibeCodingModal] = useState(false);
+  const [hasClickedVibeCoding, setHasClickedVibeCoding] = useState(false);
   
   // 편집 모드 상태
   const [isEditingPRD, setIsEditingPRD] = useState(false);
@@ -48,13 +49,13 @@ export default function PRDResultPage() {
   const [isDatabaseFixing, setIsDatabaseFixing] = useState(false);
 
   useEffect(() => {
-    // PRD가 이미 생성되어 있으면 사용
+    // 아이디어 구체화 결과가 이미 있으면 사용
     if (prdContent) {
       setIsLoading(false);
       return;
     }
 
-    // PRD 생성
+    // 아이디어 구체화
     const generatePRD = async () => {
       try {
         const questionsAndAnswers = getAllQuestionsAndAnswers();
@@ -69,14 +70,14 @@ export default function PRDResultPage() {
         if (result) {
           setPRDContent(result);
         } else {
-          setError('PRD 생성에 실패했습니다.');
+          setError('아이디어 구체화에 실패했습니다.');
         }
       } catch (err) {
         console.error('Failed to generate PRD:', err);
         if (err instanceof Error && err.message.includes('fetch')) {
           setError('network');
         } else {
-          setError('PRD 생성 중 오류가 발생했습니다.');
+          setError('아이디어 구체화 중 오류가 발생했습니다.');
         }
       } finally {
         setIsLoading(false);
@@ -86,7 +87,7 @@ export default function PRDResultPage() {
     generatePRD();
   }, [prdContent, getAllQuestionsAndAnswers, setPRDContent, router]);
 
-  // PRD가 완성되면 바로 디자인 생성 시작
+  // 아이디어 구체화가 완성되면 바로 디자인 생성 시작
   useEffect(() => {
     if (prdContent && !hasFetchedDesign) {
       setHasFetchedDesign(true);
@@ -323,7 +324,7 @@ export default function PRDResultPage() {
               className="w-32 h-32 object-contain mx-auto"
             />
           </div>
-          <h3 className="text-2xl font-medium text-gray-900 mb-3">PRD를 생성하고 있습니다</h3>
+          <h3 className="text-2xl font-medium text-gray-900 mb-3">아이디어를 구체화하고 있습니다</h3>
           <p className="text-base text-gray-600 max-w-sm">기획자 Kyle이 당신의 아이디어를 정리하고 있어요...</p>
           <div className="flex gap-1 mt-8 justify-center">
             {[0, 1, 2].map((index) => (
@@ -384,11 +385,22 @@ export default function PRDResultPage() {
               <h1 className="text-lg font-medium text-gray-900">프로젝트 문서</h1>
             </div>
             <button
-              onClick={() => setShowVibeCodingModal(true)}
+              onClick={() => {
+                setHasClickedVibeCoding(true);
+                setShowVibeCodingModal(true);
+              }}
               disabled={!prdContent && !databaseSchema && !designContent}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className={`inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium ${
+                prdContent && designContent && databaseSchema && !hasClickedVibeCoding 
+                  ? 'bg-blue-600 hover:bg-blue-700 animate-subtle-lift' 
+                  : 'bg-black hover:bg-gray-800'
+              }`}
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className={`w-4 h-4 ${
+                prdContent && designContent && databaseSchema && !hasClickedVibeCoding 
+                  ? 'animate-soft-glow' 
+                  : ''
+              }`} />
               바이브코딩에 적용하기
             </button>
           </div>
@@ -398,10 +410,10 @@ export default function PRDResultPage() {
       <main className="pt-20 pb-8">
         <div className="px-6">
           {/* 3 Column Layout - Full Width */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 custom:grid-cols-3 gap-6">
             
             {/* 기획자 - PRD */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow relative">
               {/* Header */}
               <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
                 <div className="flex items-center justify-between">
@@ -543,34 +555,6 @@ export default function PRDResultPage() {
                     </ReactMarkdown>
                   )}
                 </div>
-                
-                {/* 수정 중 오버레이 */}
-                {isPRDFixing && (
-                  <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="mb-4">
-                        <img
-                          src="/assets/mini_kyle_thinking.png"
-                          alt="Kyle thinking"
-                          className="w-20 h-20 object-contain"
-                        />
-                      </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">문서를 수정하고 있습니다</h3>
-                      <div className="flex gap-1 mt-4">
-                        {[0, 1, 2].map((index) => (
-                          <div
-                            key={index}
-                            className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
-                            style={{
-                              animationDelay: `${index * 0.2}s`,
-                              animationDuration: '1.2s'
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
               
               {/* 수정 요청 채팅바 */}
@@ -602,10 +586,38 @@ export default function PRDResultPage() {
                   </div>
                 </div>
               )}
+              
+              {/* 수정 중 오버레이 */}
+              {isPRDFixing && (
+                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="mb-4">
+                      <img
+                        src="/assets/mini_kyle_thinking.png"
+                        alt="Kyle thinking"
+                        className="w-20 h-20 object-contain"
+                      />
+                    </div>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">문서를 수정하고 있습니다</h3>
+                    <div className="flex gap-1 mt-4">
+                      {[0, 1, 2].map((index) => (
+                        <div
+                          key={index}
+                          className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
+                          style={{
+                            animationDelay: `${index * 0.2}s`,
+                            animationDuration: '1.2s'
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 디자이너 - 페이지 설계 */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow relative">
               {/* Header */}
               <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
                 <div className="flex items-center justify-between">
@@ -667,7 +679,7 @@ export default function PRDResultPage() {
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">UI/UX 설계 중</h3>
                       <p className="text-sm text-gray-600 text-center max-w-xs">
-                        PRD를 분석하여 최적의 사용자 경험을 설계하고 있습니다
+                        아이디어를 분석하여 최적의 사용자 경험을 설계하고 있습니다
                       </p>
                       <div className="flex gap-1 mt-6">
                         {[0, 1, 2].map((index) => (
@@ -813,34 +825,6 @@ export default function PRDResultPage() {
                       </ReactMarkdown>
                       )}
                     </div>
-                    
-                    {/* 수정 중 오버레이 */}
-                    {isDesignFixing && (
-                      <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
-                        <div className="flex flex-col items-center justify-center">
-                          <div className="mb-4">
-                            <img
-                              src="/assets/mini_heather_thinking.png"
-                              alt="Heather thinking"
-                              className="w-20 h-20 object-contain"
-                            />
-                          </div>
-                          <h3 className="text-base font-medium text-gray-900 mb-2">디자인을 수정하고 있습니다</h3>
-                          <div className="flex gap-1 mt-4">
-                            {[0, 1, 2].map((index) => (
-                              <div
-                                key={index}
-                                className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"
-                                style={{
-                                  animationDelay: `${index * 0.2}s`,
-                                  animationDuration: '1.2s'
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
@@ -852,7 +836,7 @@ export default function PRDResultPage() {
                         UI/UX 설계 대기 중
                       </h3>
                       <p className="text-sm text-gray-500 leading-relaxed">
-                        PRD 작성이 완료되면 자동으로 시작됩니다
+                        아이디어 구체화가 완료되면 자동으로 시작됩니다
                       </p>
                     </div>
                   </div>
@@ -888,10 +872,38 @@ export default function PRDResultPage() {
                   </div>
                 </div>
               )}
+              
+              {/* 수정 중 오버레이 */}
+              {isDesignFixing && (
+                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="mb-4">
+                      <img
+                        src="/assets/mini_heather_thinking.png"
+                        alt="Heather thinking"
+                        className="w-20 h-20 object-contain"
+                      />
+                    </div>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">디자인을 수정하고 있습니다</h3>
+                    <div className="flex gap-1 mt-4">
+                      {[0, 1, 2].map((index) => (
+                        <div
+                          key={index}
+                          className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"
+                          style={{
+                            animationDelay: `${index * 0.2}s`,
+                            animationDuration: '1.2s'
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 개발자 - 테이블 설계 */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow relative">
               {/* Header */}
               <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
                 <div className="flex items-center justify-between">
@@ -1089,34 +1101,6 @@ export default function PRDResultPage() {
                       </ReactMarkdown>
                       )}
                     </div>
-                    
-                    {/* 수정 중 오버레이 */}
-                    {isDatabaseFixing && (
-                      <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
-                        <div className="flex flex-col items-center justify-center">
-                          <div className="mb-4">
-                            <img
-                              src="/assets/mini_bob_thinking.png"
-                              alt="Bob thinking"
-                              className="w-20 h-20 object-contain"
-                            />
-                          </div>
-                          <h3 className="text-base font-medium text-gray-900 mb-2">데이터베이스를 수정하고 있습니다</h3>
-                          <div className="flex gap-1 mt-4">
-                            {[0, 1, 2].map((index) => (
-                              <div
-                                key={index}
-                                className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"
-                                style={{
-                                  animationDelay: `${index * 0.2}s`,
-                                  animationDuration: '1.2s'
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
@@ -1160,6 +1144,34 @@ export default function PRDResultPage() {
                           <Send className="w-4 h-4" />
                         )}
                       </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* 수정 중 오버레이 */}
+              {isDatabaseFixing && (
+                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="mb-4">
+                      <img
+                        src="/assets/mini_bob_thinking.png"
+                        alt="Bob thinking"
+                        className="w-20 h-20 object-contain"
+                      />
+                    </div>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">데이터베이스를 수정하고 있습니다</h3>
+                    <div className="flex gap-1 mt-4">
+                      {[0, 1, 2].map((index) => (
+                        <div
+                          key={index}
+                          className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"
+                          style={{
+                            animationDelay: `${index * 0.2}s`,
+                            animationDuration: '1.2s'
+                          }}
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>

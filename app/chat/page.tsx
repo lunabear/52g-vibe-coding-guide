@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu } from 'lucide-react';
+import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu, ChevronRight, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getUserId } from '@/lib/user-id';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { usePRDContext } from '@/contexts/PRDContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +41,7 @@ interface Conversation {
 
 export default function ChatPage() {
   const router = useRouter();
+  const { setChatMessages } = usePRDContext();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -55,6 +57,71 @@ export default function ChatPage() {
   const [newName, setNewName] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // ACTION 버튼 파싱 함수
+  const parseActionButtons = (content: string) => {
+    const actionRegex = /\[ACTION:([^\]]+)\]([^\[]+)\[\/ACTION\]/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = actionRegex.exec(content)) !== null) {
+      // 이전 텍스트 추가
+      if (match.index > lastIndex) {
+        parts.push({
+          type: 'text',
+          content: content.slice(lastIndex, match.index)
+        });
+      }
+      
+      // ACTION 버튼 추가
+      parts.push({
+        type: 'action',
+        action: match[1],
+        text: match[2]
+      });
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // 남은 텍스트 추가
+    if (lastIndex < content.length) {
+      parts.push({
+        type: 'text',
+        content: content.slice(lastIndex)
+      });
+    }
+    
+    // 파싱된 부분이 없으면 전체 텍스트를 반환
+    if (parts.length === 0) {
+      parts.push({
+        type: 'text',
+        content: content
+      });
+    }
+    
+    return parts;
+  };
+
+  // ACTION 버튼 클릭 핸들러
+  const handleActionClick = (action: string) => {
+    const actionMap: { [key: string]: string } = {
+      'generate_prd': '/prd-generator',
+      // 필요에 따라 다른 액션들 추가 가능
+    };
+    
+    const baseUrl = actionMap[action];
+    if (baseUrl) {
+      // 메시지를 PRDContext에 저장
+      if (messages.length > 0) {
+        setChatMessages(messages);
+        const url = `${baseUrl}?step=hint`;
+        router.push(url);
+      } else {
+        router.push(baseUrl);
+      }
+    }
+  };
 
   // 스크롤을 맨 아래로
   const scrollToBottom = () => {
@@ -115,7 +182,10 @@ export default function ChatPage() {
       const response = await fetch(`/api/messages?conversationId=${conversationId}&userId=${userId}`);
       if (response.ok) {
         const data = await response.json();
-        setMessages(data.messages || []);
+        const sortedMessages = (data.messages || []).sort((a: any, b: any) => 
+          a.timestamp.localeCompare(b.timestamp)
+        );
+        setMessages(sortedMessages);
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
@@ -312,7 +382,7 @@ export default function ChatPage() {
       {/* 모바일 사이드바 백드롭 */}
       {isMobile && showSidebar && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 custom:hidden"
           onClick={() => setShowSidebar(false)}
         />
       )}
@@ -328,7 +398,7 @@ export default function ChatPage() {
         )}
       >
           {/* 사이드바 헤더 */}
-          <div className="h-[60px] md:h-[72px] px-4 md:px-6 flex items-center justify-between">
+          <div className="h-[60px] custom:h-[72px] px-4 custom:px-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -338,7 +408,7 @@ export default function ChatPage() {
               >
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
               </Button>
-              <h2 className="text-[18px] md:text-[22px] font-light text-gray-900 tracking-tight">대화 목록</h2>
+              <h2 className="text-[18px] custom:text-[22px] font-light text-gray-900 tracking-tight">대화 목록</h2>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -447,7 +517,7 @@ export default function ChatPage() {
       {/* 메인 채팅 영역 */}
       <div className="flex-1 flex flex-col bg-white">
         {/* 헤더 */}
-        <div className="h-[60px] md:h-[72px] px-4 md:px-8 flex items-center justify-between border-b border-gray-100">
+        <div className="h-[60px] custom:h-[72px] px-4 custom:px-8 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center gap-5">
             {/* 모바일에서만 메뉴 버튼 표시 */}
             {isMobile && !showSidebar && (
@@ -455,7 +525,7 @@ export default function ChatPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowSidebar(true)}
-                className="h-8 w-8 md:h-10 md:w-10 hover:bg-gray-100 rounded-lg transition-colors"
+                className="h-8 w-8 custom:h-10 custom:w-10 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <Menu className="w-5 h-5 text-gray-700" />
               </Button>
@@ -464,20 +534,32 @@ export default function ChatPage() {
               <img
                 src="/assets/mini_ally_default.png"
                 alt="Mini Ally"
-                className="w-8 h-8 md:w-10 md:h-10 object-contain"
+                className="w-8 h-8 custom:w-10 custom:h-10 object-contain"
               />
               <div>
-                <h1 className="text-[16px] md:text-[18px] font-normal text-gray-900">Mini Ally</h1>
-                <p className="text-[12px] md:text-[13px] text-gray-500">MISO</p>
+                <h1 className="text-[16px] custom:text-[18px] font-normal text-gray-900">Mini Ally</h1>
+                <p className="text-[12px] custom:text-[13px] text-gray-500">MISO</p>
               </div>
             </div>
           </div>
+          
+          {/* 모바일에서만 홈 버튼 표시 */}
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push('/')}
+              className="h-8 w-8 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Home className="w-5 h-5 text-gray-700" />
+            </Button>
+          )}
         </div>
 
         {/* 메시지 영역 */}
         <div className="flex-1 overflow-hidden flex flex-col">
           <ScrollArea className="flex-1">
-            <div className="max-w-[720px] mx-auto px-4 md:px-8 py-6 md:py-8">
+            <div className="max-w-[720px] mx-auto px-4 custom:px-8 py-6 custom:py-8">
               {isLoadingMessages ? (
                 <div className="flex items-center justify-center min-h-[400px]">
                   <div className="text-center">
@@ -509,7 +591,7 @@ export default function ChatPage() {
                       className="w-full h-full object-contain"
                     />
                   </div>
-                  <h2 className="text-[20px] md:text-[28px] font-light text-gray-900 mb-3 px-4 text-center">
+                  <h2 className="text-[20px] custom:text-[28px] font-light text-gray-900 mb-3 px-4 text-center">
                     {(() => {
                       const hour = new Date().getHours();
                       if (hour >= 5 && hour < 12) {
@@ -523,7 +605,7 @@ export default function ChatPage() {
                       }
                     })()}
                   </h2>
-                  <p className="text-[14px] md:text-[16px] text-gray-500 leading-relaxed max-w-md mx-auto px-4 text-center">
+                  <p className="text-[14px] custom:text-[16px] text-gray-500 leading-relaxed max-w-md mx-auto px-4 text-center">
                     {(() => {
                       const hour = new Date().getHours();
                       if (hour >= 5 && hour < 12) {
@@ -553,7 +635,7 @@ export default function ChatPage() {
                           <img
                             src="/assets/mini_ally_default.png"
                             alt="Mini Ally"
-                            className="w-10 h-10 md:w-12 md:h-12 object-contain"
+                            className="w-10 h-10 custom:w-12 custom:h-12 object-contain"
                           />
                         </div>
                       )}
@@ -566,19 +648,33 @@ export default function ChatPage() {
                         <div className="space-y-2">
                           <div
                             className={cn(
-                              'inline-block px-4 md:px-5 py-3 md:py-3.5',
+                              'inline-block px-4 custom:px-5 py-3 custom:py-3.5',
                               msg.role === 'user'
-                                ? 'bg-gray-900 text-white rounded-[20px] max-w-[280px] md:max-w-[360px]'
+                                ? 'bg-gray-900 text-white rounded-[20px] max-w-[280px] custom:max-w-[360px]'
                                 : 'text-gray-800 max-w-full'
                             )}
                           >
                             {msg.content ? (
-                              <p className={cn(
+                              <div className={cn(
                                 "whitespace-pre-wrap leading-relaxed break-words",
-                                msg.role === 'user' ? 'text-[14px] md:text-[15px]' : 'text-[14px] md:text-[16px] font-light'
+                                msg.role === 'user' ? 'text-[14px] custom:text-[15px]' : 'text-[14px] custom:text-[16px] font-light'
                               )}>
-                                {msg.content}
-                              </p>
+                                {parseActionButtons(msg.content).map((part: any, index: number) => (
+                                  <React.Fragment key={index}>
+                                    {part.type === 'text' ? (
+                                      <span>{part.content}</span>
+                                    ) : (
+                                      <Button
+                                        onClick={() => handleActionClick(part.action)}
+                                        className="inline-flex items-center gap-2 mx-1 my-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                                      >
+                                        {part.text}
+                                        <ChevronRight className="w-4 h-4" />
+                                      </Button>
+                                    )}
+                                  </React.Fragment>
+                                ))}
+                              </div>
                             ) : msg.isStreaming ? (
                               <div className="flex gap-2 py-2">
                                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
@@ -611,7 +707,7 @@ export default function ChatPage() {
 
         {/* 입력 영역 */}
         <div className="border-t border-gray-100 bg-white">
-          <div className="max-w-[720px] mx-auto px-4 md:px-8 py-3 md:py-4">
+          <div className="max-w-[720px] mx-auto px-4 custom:px-8 py-3 custom:py-4">
             <div className="relative">
               <Textarea
                 ref={textareaRef}
@@ -619,26 +715,26 @@ export default function ChatPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="메시지를 입력하세요..."
-                className="w-full min-h-[48px] md:min-h-[56px] max-h-[120px] md:max-h-[150px] px-4 md:px-5 py-3 md:py-4 resize-none border border-gray-200 rounded-2xl text-[14px] md:text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
+                className="w-full min-h-[48px] custom:min-h-[56px] max-h-[120px] custom:max-h-[150px] px-4 custom:px-5 py-3 custom:py-4 resize-none border border-gray-200 rounded-2xl text-[14px] custom:text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
                 disabled={isLoading}
               />
-              <div className="absolute right-2 md:right-3 bottom-2 md:bottom-3">
+              <div className="absolute right-2 custom:right-3 bottom-2 custom:bottom-3">
                 <Button
                   onClick={handleSendMessage}
                   disabled={!message.trim() || isLoading}
                   size="icon"
                   className={cn(
-                    "h-8 w-8 md:h-10 md:w-10 rounded-xl transition-all",
+                    "h-8 w-8 custom:h-10 custom:w-10 rounded-xl transition-all",
                     message.trim() && !isLoading
                       ? "bg-gray-900 hover:bg-gray-800 text-white"
                       : "bg-gray-100 text-gray-400"
                   )}
                 >
-                  <Send className="w-4 h-4 md:w-5 md:h-5" />
+                  <Send className="w-4 h-4 custom:w-5 custom:h-5" />
                 </Button>
               </div>
             </div>
-            <p className="text-[11px] md:text-[13px] text-gray-400 text-center mt-2 md:mt-3">
+            <p className="text-[11px] custom:text-[13px] text-gray-400 text-center mt-2 custom:mt-3">
               Mini Ally는 실수할 수 있습니다. 중요한 정보는 확인해 주세요.
             </p>
           </div>

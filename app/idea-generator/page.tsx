@@ -15,7 +15,7 @@ export default function IdeaGenerator() {
           transition={{ duration: 0.6 }}
           className="max-w-4xl w-full text-center"
         >
-          <h1 className="text-5xl md:text-6xl font-extralight tracking-tight leading-tight mb-8">
+          <h1 className="text-5xl custom:text-6xl font-extralight tracking-tight leading-tight mb-8">
             아이디어 생성기
           </h1>
           <p className="text-xl text-gray-600 font-light max-w-2xl mx-auto leading-relaxed">
