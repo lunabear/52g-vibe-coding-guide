@@ -68,7 +68,14 @@ export default function ChatPage() {
   // 모바일 감지
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const isMobileDevice = window.innerWidth < 768;
+      setIsMobile(isMobileDevice);
+      // PC에서는 사이드바를 기본적으로 표시, 모바일에서는 숨김
+      if (isMobileDevice) {
+        setShowSidebar(false);
+      } else {
+        setShowSidebar(true);
+      }
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -317,11 +324,7 @@ export default function ChatPage() {
           isMobile 
             ? "fixed left-0 top-0 h-full z-50 w-[85%] max-w-[320px]" 
             : "relative w-[320px]",
-          showSidebar 
-            ? "translate-x-0" 
-            : isMobile 
-              ? "-translate-x-full" 
-              : "w-0 -ml-[320px]"
+          isMobile && !showSidebar && "-translate-x-full"
         )}
       >
           {/* 사이드바 헤더 */}
@@ -349,6 +352,7 @@ export default function ChatPage() {
               >
                 <Plus className="w-5 h-5 text-gray-700" />
               </Button>
+              {/* 모바일에서만 닫기 버튼 표시 */}
               {isMobile && (
                 <Button
                   variant="ghost"
@@ -445,18 +449,17 @@ export default function ChatPage() {
         {/* 헤더 */}
         <div className="h-[60px] md:h-[72px] px-4 md:px-8 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center gap-5">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowSidebar(!showSidebar)}
-              className="h-8 w-8 md:h-10 md:w-10 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              {showSidebar && !isMobile ? (
-                <X className="w-5 h-5 text-gray-700" />
-              ) : (
+            {/* 모바일에서만 메뉴 버튼 표시 */}
+            {isMobile && !showSidebar && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSidebar(true)}
+                className="h-8 w-8 md:h-10 md:w-10 hover:bg-gray-100 rounded-lg transition-colors"
+              >
                 <Menu className="w-5 h-5 text-gray-700" />
-              )}
-            </Button>
+              </Button>
+            )}
             <div className="flex items-center gap-3">
               <img
                 src="/assets/mini_ally_default.png"
