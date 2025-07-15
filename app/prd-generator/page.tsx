@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { usePRDContext } from '@/contexts/PRDContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PRD_STEPS } from '@/lib/prd-questions';
@@ -454,5 +454,13 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
 }
 
 export default function PRDGeneratorPage() {
-  return <PRDGeneratorContent />;
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <MISOLoading />
+      </div>
+    }>
+      <PRDGeneratorContent />
+    </Suspense>
+  );
 }
