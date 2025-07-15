@@ -65,7 +65,9 @@ function PRDGeneratorContent() {
         const context = `이전 대화 내용:
 ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
 
-        const request = `${currentStepData?.description || ''}`;
+        const request = `${currentStepData?.description || ''}
+        
+현재 질문: ${currentStepData?.questions?.[0]?.text || ''}`;
 
         const hintResponse = await fetch('/api/miso/generate-hint', {
           method: 'POST',
