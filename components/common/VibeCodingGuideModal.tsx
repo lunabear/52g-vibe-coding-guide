@@ -104,7 +104,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload }: VibeCoding
           <div>
             <div className="flex items-baseline gap-4 mb-4">
               <span className="text-sm font-normal text-gray-400">STEP 2</span>
-              <h3 className="text-lg font-normal text-gray-900">프로젝트 문서 다운로드 및 업로드</h3>
+              <h3 className="text-lg font-normal text-gray-900">프로젝트 문서 다운로드</h3>
             </div>
             <div className="ml-16">
               <div className="flex items-start gap-6">
