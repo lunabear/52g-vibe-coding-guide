@@ -24,13 +24,13 @@ const expertInfo = {
       </div>
     ),
     color: 'border-gray-200 bg-white',
-    description: '비즈니스 관점에서 질문드려요',
+    description: '',
     greeting: '안녕하세요! 기획자 Kyle입니다.',
     questionPrefix: [
-      '이 부분에 대해서 좀 더 자세히 여쭤볼게요.',
       '비즈니스 관점에서 궁금한 점이 있어요.',
       '사용자 가치를 위해 확인하고 싶은 부분이 있어요.',
-      '전략적인 관점에서 질문드릴게요.'
+      '전략적인 관점에서 질문드릴게요.',
+      '프로젝트 성공을 위해 확인하고 싶어요.'
     ]
   },
   designer: {
@@ -46,7 +46,7 @@ const expertInfo = {
       </div>
     ),
     color: 'border-gray-200 bg-white',
-    description: '사용자 경험 관점에서 질문드려요',
+    description: '',
     greeting: '안녕하세요! 디자이너 Heather입니다.',
     questionPrefix: [
       '사용자 경험 측면에서 궁금한 점이 있어요.',
@@ -68,7 +68,7 @@ const expertInfo = {
       </div>
     ),
     color: 'border-gray-200 bg-white',
-    description: '기술적 관점에서 질문드려요',
+    description: '',
     greeting: '안녕하세요! 개발자 Bob입니다.',
     questionPrefix: [
       '기술적인 부분에 대해 확인하고 싶어요.',
@@ -141,9 +141,6 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
                         <span className="text-sm font-medium text-gray-600">{index + 1}</span>
                       </div>
                       <div className="flex-1">
-                        <div className="mb-1 text-sm text-gray-500 font-light">
-                          {expert.questionPrefix[prefixIndex]}
-                        </div>
                         <label className="block mb-4">
                           <span className="text-base custom:text-lg font-medium text-gray-900 leading-relaxed">
                             {question}

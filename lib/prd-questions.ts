@@ -41,9 +41,9 @@ export const PRD_STEPS: IPRDStep[] = [
     questions: [
       {
         id: 'ideal-solution',
-        text: '만약 마법이 있다면, 그 불편함을 어떻게 해결해주고 싶나요?',
-        placeholder: '예: 스마트폰만 보면 "오늘 맥주 10박스 더 시키세요!"라고 알아서 알려주는 것',
-        helpText: '상상력을 마음껏 발휘하세요!',
+        text: '그 불편함을 해결하기 위해 어떤 기능이나 서비스가 있으면 좋겠나요?',
+        placeholder: '예: 재고가 부족해지면 자동으로 발주 알림을 보내주고, 클릭 한 번으로 주문까지 완료되는 시스템. 매출 데이터를 분석해서 언제 어떤 상품이 얼마나 필요한지 미리 알려주는 기능',
+        helpText: '구체적인 기능, 앱, 웹사이트, 또는 서비스를 떠올려보세요. 어떻게 작동하면 좋을지도 함께 적어주세요.',
         type: QuestionType.TEXTAREA,
         required: true,
       },
