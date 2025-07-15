@@ -4,7 +4,7 @@ import { PRDProvider } from '@/contexts/PRDContext';
 
 export const metadata: Metadata = {
   title: "PLAI MAKER - AI와 함께 만드는 프로젝트 기획",
-  description: "MISO AI와 전문가들이 당신의 아이디어를 체계적인 제품 기획서로 만들어드립니다",
+  description: "MISO AI와 전문가들이 당신의 아이디어를 체계적으로 구체화해드립니다",
 };
 
 export const viewport = {

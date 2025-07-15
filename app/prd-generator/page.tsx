@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PRD_STEPS } from '@/lib/prd-questions';
 import { ArrowLeft, ArrowRight, X, Sparkles } from 'lucide-react';
 import { QuestionType } from '@/types/prd.types';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdditionalQuestions } from '@/hooks/useAdditionalQuestions';
 import { ExpertQuestions } from '@/components/prd/ExpertQuestions';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
@@ -14,28 +14,87 @@ import MISOLoading from '@/components/common/MISOLoading';
 
 function PRDGeneratorContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     currentStep,
     answers,
     additionalQuestions,
     expertQuestions,
-    expertAnswers,
+    chatMessages,
     updateAnswer,
     goToNextStep,
     goToPreviousStep,
     getCurrentStepData,
     canProceedToNextStep,
-    setAdditionalQuestions,
     setExpertQuestions,
     setExpertAnswers,
     resetPRD,
   } = usePRDContext();
 
-  const { generateFinalQuestions, isLoading } = useAdditionalQuestions();
+  const { generateFinalQuestions } = useAdditionalQuestions();
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [hasFetchedFinalQuestions, setHasFetchedFinalQuestions] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [hint, setHint] = useState<string>('');
+  const [isLoadingHint, setIsLoadingHint] = useState(false);
+  const [lastHintStep, setLastHintStep] = useState<number | null>(null);
   const currentStepData = getCurrentStepData();
+  
+  // 쿼리 파라미터 확인
+  const step = searchParams.get('step');
+
+  // 힌트 생성 useEffect
+  useEffect(() => {
+    // 힌트 생성 조건: step='hint' 파라미터가 있고, 3단계 이하이며, 단계가 변경되었을 때
+    if (typeof window === 'undefined' || 
+        step !== 'hint' || 
+        currentStep > 3 || 
+        lastHintStep === currentStep ||
+        !currentStepData ||
+        !chatMessages || 
+        chatMessages.length === 0) return;
+    
+    const generateHint = async () => {
+      // 즉시 로딩 상태 설정
+      setIsLoadingHint(true);
+      setLastHintStep(currentStep);
+      setHint(''); // 이전 힌트 초기화
+      
+      try {
+        // workflow를 사용한 힌트 생성 API 호출
+        const context = `이전 대화 내용:
+${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
+
+        const request = `${currentStepData?.description || ''}`;
+
+        const hintResponse = await fetch('/api/miso/generate-hint', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            context: context,
+            request: request
+          }),
+        });
+        
+        if (hintResponse.ok) {
+          const data = await hintResponse.json();
+          setHint(data.hint || '힌트를 가져오지 못했습니다.');
+        } else {
+          setHint('힌트를 가져오지 못했습니다.');
+        }
+      } catch (error) {
+        console.error('Failed to generate hint:', error);
+        setHint('힌트를 가져오는 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoadingHint(false);
+      }
+    };
+    
+    generateHint();
+  }, [step, currentStep, currentStepData, lastHintStep, chatMessages]);
+
 
   // 마지막 단계(인사이트)에 도달했을 때 MISO API 호출
   useEffect(() => {
@@ -121,12 +180,12 @@ function PRDGeneratorContent() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
         onClick={handleGoHome}
-        className="fixed top-6 left-6 z-20 p-2 rounded-full hover:bg-gray-100 transition-colors"
+        className="fixed top-4 custom:top-6 left-4 custom:left-6 z-20 p-2 rounded-full hover:bg-gray-100 transition-colors"
       >
         <X className="w-5 h-5" />
       </motion.button>
 
-      <div className="max-w-3xl mx-auto px-6 pt-20 pb-32">
+      <div className="max-w-3xl mx-auto px-4 custom:px-6 pt-16 custom:pt-20 pb-32">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
@@ -137,7 +196,7 @@ function PRDGeneratorContent() {
           >
             <div className="mb-12">
               <motion.h1 
-                className="text-4xl font-light mb-4"
+                className="text-2xl custom:text-4xl font-light mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
@@ -145,7 +204,7 @@ function PRDGeneratorContent() {
                 {currentStepData.title}
               </motion.h1>
               <motion.p 
-                className="text-lg text-muted-foreground font-light"
+                className="text-base custom:text-lg text-muted-foreground font-light"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -214,37 +273,121 @@ function PRDGeneratorContent() {
                         )}
                       </label>
                       
-                      {question.type === QuestionType.TEXT ? (
-                        <input
-                          type="text"
-                          value={answers[question.id] || ''}
-                          onChange={(e) => updateAnswer(question.id, e.target.value)}
-                          placeholder={question.placeholder}
-                          className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent"
-                        />
-                      ) : (
-                        <div className="space-y-3">
-                          <textarea
+                      <div className="space-y-4">
+                        {question.type === QuestionType.TEXT ? (
+                          <input
+                            type="text"
                             value={answers[question.id] || ''}
                             onChange={(e) => updateAnswer(question.id, e.target.value)}
                             placeholder={question.placeholder}
-                            rows={3}
-                            className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none"
+                            className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent"
                           />
-                          {!isAdditional && currentStepData.id !== 'insight' && (
-                            <button
-                              type="button"
-                              onClick={() => updateAnswer(question.id, '잘 모르겠습니다')}
-                              className="text-sm text-muted-foreground hover:text-black transition-colors"
-                            >
-                              잘 모르겠어요 →
-                            </button>
-                          )}
-                        </div>
-                      )}
+                        ) : (
+                          <div className="space-y-3">
+                            <textarea
+                              value={answers[question.id] || ''}
+                              onChange={(e) => updateAnswer(question.id, e.target.value)}
+                              placeholder={question.placeholder}
+                              rows={3}
+                              className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none"
+                            />
+                            {!isAdditional && currentStepData.id !== 'insight' && (
+                              <button
+                                type="button"
+                                onClick={() => updateAnswer(question.id, '잘 모르겠습니다')}
+                                className="text-sm text-muted-foreground hover:text-black transition-colors"
+                              >
+                                잘 모르겠어요 →
+                              </button>
+                            )}
+                          </div>
+                        )}
+                        
+                      </div>
                     </motion.div>
                   );
                 })
+              )}
+              
+              {/* 힌트 UI - 질문들 아래에 표시 (3단계까지만) */}
+              {step === 'hint' && currentStep <= 3 && currentStepData.id !== 'insight' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-8"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Mini Ally 아바타 */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src="/assets/mini_ally_default.png"
+                        alt="Mini Ally"
+                        className="w-12 h-12 object-contain"
+                      />
+                    </div>
+                    
+                    {/* 말풍선 스타일 콘텐츠 */}
+                    <div className="flex-1">
+                      <div className="relative">
+                        {/* 말풍선 꼬리 */}
+                        <div className="absolute -left-2 top-4 w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-r-[8px] border-r-gray-50"></div>
+                        
+                        {/* 말풍선 본체 */}
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                          {isLoadingHint ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className="flex gap-1">
+                                  <span className="w-1 h-1 bg-gray-400 rounded-full animate-pulse"></span>
+                                  <span className="w-1 h-1 bg-gray-400 rounded-full animate-pulse delay-75"></span>
+                                  <span className="w-1 h-1 bg-gray-400 rounded-full animate-pulse delay-150"></span>
+                                </div>
+                                <span className="text-sm text-gray-500">이전 대화를 분석하고 있어요</span>
+                              </div>
+                            </div>
+                          ) : hint ? (
+                            <div className="space-y-2">
+                              {/* 제목과 버튼을 같은 줄에 배치 */}
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-sm font-medium text-gray-800">이런 답변은 어떤가요?</span>
+                                <button
+                                  onClick={(e) => {
+                                    // 현재 단계의 첫 번째 질문 ID를 찾아서 해당 답변 업데이트
+                                    if (currentStepData.questions.length > 0) {
+                                      const firstQuestionId = currentStepData.questions[0].id;
+                                      updateAnswer(firstQuestionId, hint);
+                                      
+                                      // 적용 완료 피드백
+                                      const button = e.currentTarget;
+                                      button.textContent = '✓ 적용됨';
+                                      button.classList.add('bg-gray-100');
+                                      setTimeout(() => {
+                                        button.textContent = '답변에 적용하기';
+                                        button.classList.remove('bg-gray-100');
+                                      }, 1500);
+                                    }
+                                  }}
+                                  className="text-xs text-gray-600 hover:text-gray-800 px-3 py-1.5 rounded-md border border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all"
+                                >
+                                  답변에 적용하기
+                                </button>
+                              </div>
+                              
+                              <p className="text-sm text-gray-700 leading-relaxed">
+                                {hint}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-500">
+                              <p>{hint || '힌트를 생성하는 중 오류가 발생했습니다.'}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               )}
             </div>
           </motion.div>
@@ -258,7 +401,7 @@ function PRDGeneratorContent() {
             animate={{ y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <div className="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
+            <div className="max-w-3xl mx-auto px-4 custom:px-6 py-4 custom:py-6 flex items-center justify-between">
               <button
                 onClick={goToPreviousStep}
                 disabled={currentStep === 1}

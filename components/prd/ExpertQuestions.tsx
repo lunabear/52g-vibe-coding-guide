@@ -119,14 +119,14 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
 
     return (
       <div key={expertType} className="mb-16">
-        <div className="flex items-start gap-6 mb-10">
+        <div className="flex flex-col custom:flex-row items-start gap-4 custom:gap-6 mb-8 custom:mb-10">
           {expert.character}
           <div className="flex-1">
             <div className="flex items-baseline gap-3 mb-2">
-              <div className="text-2xl font-medium text-gray-900">{expert.name}</div>
-              <div className="text-base text-muted-foreground font-light">{expert.description}</div>
+              <div className="text-xl custom:text-2xl font-medium text-gray-900">{expert.name}</div>
+              <div className="text-sm custom:text-base text-muted-foreground font-light">{expert.description}</div>
             </div>
-            <div className="text-base text-gray-600 font-light mb-8">
+            <div className="text-sm custom:text-base text-gray-600 font-light mb-6 custom:mb-8">
               {expert.greeting} 프로젝트를 더 잘 이해하기 위해 몇 가지 질문드릴게요.
             </div>
             
@@ -145,7 +145,7 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
                           {expert.questionPrefix[prefixIndex]}
                         </div>
                         <label className="block mb-4">
-                          <span className="text-lg font-medium text-gray-900 leading-relaxed">
+                          <span className="text-base custom:text-lg font-medium text-gray-900 leading-relaxed">
                             {question}
                           </span>
                         </label>
@@ -175,9 +175,9 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
   return (
     <div>
       <div className="mb-12">
-        <h1 className="text-4xl font-light mb-4">전문가 추가 질문</h1>
-        <p className="text-lg text-muted-foreground font-light">
-          세 명의 전문가가 더 나은 PRD를 위해 추가 질문을 준비했어요
+        <h1 className="text-2xl custom:text-4xl font-light mb-4">전문가 추가 질문</h1>
+        <p className="text-base custom:text-lg text-muted-foreground font-light">
+          세 명의 전문가가 더 구체적인 아이디어를 위해 추가 질문을 준비했어요
         </p>
       </div>
 
@@ -188,7 +188,7 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-4 custom:px-6 py-4 custom:py-6 flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
             {answeredQuestions}/{totalQuestions} 질문 답변 완료
           </span>
@@ -197,7 +197,7 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
             disabled={!isComplete}
             className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium bg-black text-white rounded-md hover:bg-gray-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            PRD 생성하기
+            아이디어 구체화하기
           </button>
         </div>
       </div>

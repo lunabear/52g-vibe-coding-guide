@@ -47,7 +47,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload }: VibeCoding
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-normal text-gray-900">
             바이브코딩에 적용하기
@@ -137,13 +137,13 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload }: VibeCoding
           </div>
 
           {/* Step 3: 시작하기 */}
-          <div className="relative">
+          <div className="relative min-h-[120px] overflow-hidden">
             {/* Background Image - 우측 하단에 크게 배치 */}
-            <div className="absolute right-8 -bottom-[90px] pointer-events-none">
+            <div className="absolute right-8 bottom-0 pointer-events-none">
               <img 
                 src="/assets/coach_success.png" 
                 alt="" 
-                className="w-64 h-64 object-contain"
+                className="w-40 h-40 object-contain opacity-80"
               />
             </div>
             

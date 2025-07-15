@@ -6,6 +6,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        'custom': '768px',  // 커스텀 반응형 브레이크포인트 (태블릿/데스크톱 경계)
+      },
       fontFamily: {
         sans: [
           'Pretendard', 
@@ -64,8 +67,36 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        'subtle-lift': {
+          '0%': { 
+            'transform': 'translateY(0px)',
+            'box-shadow': '0 1px 3px rgba(0, 0, 0, 0.1)'
+          },
+          '50%': { 
+            'transform': 'translateY(-1px)',
+            'box-shadow': '0 8px 25px rgba(59, 130, 246, 0.15)'
+          },
+          '100%': { 
+            'transform': 'translateY(0px)',
+            'box-shadow': '0 1px 3px rgba(0, 0, 0, 0.1)'
+          },
+        },
+        'soft-glow': {
+          '0%, 100%': { 
+            'opacity': '0.8'
+          },
+          '50%': { 
+            'opacity': '1'
+          },
+        },
+      },
+      animation: {
+        'subtle-lift': 'subtle-lift 2s ease-in-out infinite',
+        'soft-glow': 'soft-glow 2s ease-in-out infinite',
+      },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 }
 

@@ -12,6 +12,7 @@ interface IPRDContext {
   expertQuestions: IExpertQuestions | null;
   expertAnswers: IExpertAnswer[];
   prdContent: string | null;
+  chatMessages: any[];
   
   setCurrentStep: (step: number) => void;
   updateAnswer: (questionId: string, value: string) => void;
@@ -24,6 +25,7 @@ interface IPRDContext {
   setExpertQuestions: (questions: IExpertQuestions) => void;
   setExpertAnswers: (answers: IExpertAnswer[]) => void;
   setPRDContent: (content: string) => void;
+  setChatMessages: (messages: any[]) => void;
   getAllQuestionsAndAnswers: () => Array<{ question: string; answer: string }>;
 }
 
@@ -37,6 +39,7 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [expertQuestions, setExpertQuestions] = useState<IExpertQuestions | null>(null);
   const [expertAnswers, setExpertAnswers] = useState<IExpertAnswer[]>([]);
   const [prdContent, setPRDContent] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
 
   const updateAnswer = useCallback((questionId: string, value: string) => {
     setAnswers(prev => ({
@@ -131,6 +134,7 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setExpertQuestions(null);
     setExpertAnswers([]);
     setPRDContent(null);
+    setChatMessages([]);
   }, []);
 
   const value: IPRDContext = {
@@ -141,6 +145,7 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     expertQuestions,
     expertAnswers,
     prdContent,
+    chatMessages,
     setCurrentStep,
     updateAnswer,
     goToNextStep,
@@ -152,6 +157,7 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setExpertQuestions,
     setExpertAnswers,
     setPRDContent,
+    setChatMessages,
     getAllQuestionsAndAnswers,
   };
 
