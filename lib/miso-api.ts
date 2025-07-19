@@ -139,6 +139,42 @@ export class MISOAPIClient {
       return '';
     }
   }
+
+  async runMisoWorkflow(query: string): Promise<string> {
+    try {
+      const response = await fetch('/api/miso/run-workflow', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
+      });
+
+      console.log('Response status:', response.status, response.statusText);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error - Status:', response.status);
+        console.error('API Error - Data:', errorData);
+        
+        // explanation이 있으면 그것을 반환 (정상적인 응답일 수 있음)
+        if (errorData.explanation) {
+          console.log('Found explanation in error response, treating as success');
+          return errorData.explanation;
+        }
+        
+        return `Error: ${errorData.error || 'Unknown error'}`;
+      }
+
+      const data = await response.json();
+      console.log('Success response data:', data);
+      return data.explanation || '';
+    } catch (error) {
+      console.error('Failed to run Miso workflow:', error);
+      return 'An unexpected error occurred.';
+    }
+  }
 }
 
 export const misoAPI = new MISOAPIClient();
