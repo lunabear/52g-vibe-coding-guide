@@ -46,9 +46,9 @@ export default function StartGeneratorPage() {
                   카일과 함께 미소를<br />설계해보세요.
                 </p>
               </div>
-              <div className="absolute bottom-6 -right-4 w-32 h-32 custom:w-40 custom:h-40 z-20">
+              <div className="absolute bottom-10 -right-4 w-32 h-32 custom:w-40 custom:h-40 z-20">
                 <Image
-                  src="/assets/mini_kyle_default.png"
+                  src="/assets/mini-kyle-miso-head.png"
                   alt="Miso Generator"
                   width={160}
                   height={160}

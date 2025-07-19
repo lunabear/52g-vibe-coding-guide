@@ -118,3 +118,15 @@ export enum ExpertType {
   DESIGNER = 'designer',
   DEVELOPER = 'developer',
 }
+
+export interface WorkflowNode {
+  name: string;
+  order: number;
+  parallel_group: string | null;
+  description: string;
+}
+
+export interface MisoWorkflowResponse {
+  explanation: string;
+  flow: WorkflowNode[];
+}

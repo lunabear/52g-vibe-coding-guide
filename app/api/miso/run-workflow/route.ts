@@ -56,24 +56,21 @@ export async function POST(req: NextRequest) {
     const misoData = JSON.parse(responseText);
     console.log('Parsed Miso data:', JSON.stringify(misoData, null, 2));
 
-    // 다양한 응답 구조를 처리하여 최종 결과(explanation)를 추출합니다.
+    // 다양한 응답 구조를 처리하여 최종 결과(explanation과 flow)를 추출합니다.
     let explanation;
-    if (misoData.data && misoData.data.outputs && misoData.data.outputs.explanation) {
-      // 실제 Miso API 응답 구조
+    let flow;
+    
+    if (misoData.data && misoData.data.outputs) {
+      // 실제 Miso API 응답 구조에서 explanation과 flow 추출
       explanation = misoData.data.outputs.explanation;
-    } else if (misoData.data && misoData.data.outputs && misoData.data.outputs.result) {
-      explanation = misoData.data.outputs.result;
-    } else if (misoData.outputs && misoData.outputs.explanation) {
-      explanation = misoData.outputs.explanation;
-    } else if (misoData.outputs && misoData.outputs.result) {
-      explanation = misoData.outputs.result;
-    } else if (misoData.result) {
-      explanation = misoData.result;
-    } else if (misoData.output && misoData.output.explanation) {
-      explanation = misoData.output.explanation;
+      flow = misoData.data.outputs.flow;
+    } else if (misoData.outputs) {
+      explanation = misoData.outputs.explanation || misoData.outputs.result;
+      flow = misoData.outputs.flow;
     } else {
       // 다른 가능한 구조들도 체크
-      explanation = misoData.explanation || misoData.message || misoData.response;
+      explanation = misoData.explanation || misoData.result || misoData.message || misoData.response;
+      flow = misoData.flow;
     }
 
     // 결과가 배열인 경우, 문자열로 합칩니다.
@@ -82,10 +79,15 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('Extracted explanation:', explanation);
+    console.log('Extracted flow:', flow);
 
-    // 성공적으로 explanation을 추출했는지 확인
+    // 성공적으로 explanation을 추출했는지 확인 (flow는 선택적)
     if (explanation && typeof explanation === 'string') {
-      return NextResponse.json({ explanation }, { status: 200 });
+      const response: any = { explanation };
+      if (flow && Array.isArray(flow)) {
+        response.flow = flow;
+      }
+      return NextResponse.json(response, { status: 200 });
     }
 
     // explanation을 추출하지 못한 경우
