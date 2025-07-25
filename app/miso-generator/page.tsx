@@ -363,7 +363,7 @@ export default function MisoGeneratorPage() {
                 {/* 워크플로우 시각화 */}
                 {flow.length > 0 && (
                   <div className="bg-gray-50 rounded-lg p-6 border border-gray-100">
-                    <WorkflowVisualization flow={flow} />
+                    <WorkflowVisualization flow={flow} explanation={explanation} />
                   </div>
                 )}
               </div>
