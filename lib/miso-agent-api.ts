@@ -258,6 +258,33 @@ export class MISOAgentAPI {
 
     return response.json();
   }
+
+  // 프롬프트 생성
+  async generatePrompt(query: string, flowContext: string, userId: string = 'prd-generator-user'): Promise<{ result: string }> {
+    const response = await fetch(`${this.endpoint}/chat`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: {},
+        query: `프롬프트 생성 요청: ${query}\n\n컨텍스트: ${flowContext}`,
+        mode: 'standard',
+        conversation_id: '',
+        user: userId,
+        files: [],
+        auto_gen_name: false,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Prompt generation error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return { result: data.answer || '프롬프트 생성에 실패했습니다.' };
+  }
 }
 
 export const misoAgentAPI = new MISOAgentAPI();

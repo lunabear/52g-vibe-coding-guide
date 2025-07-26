@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 
 interface SimpleHeaderProps {
   showLogo?: boolean;
@@ -9,20 +8,15 @@ interface SimpleHeaderProps {
 
 export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ showLogo = true }) => {
   return (
-    <motion.header 
+    <header 
       className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-100"
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.3 }}
     >
       <div className="max-w-7xl mx-auto px-6 py-0">
         <div className="flex items-center justify-between">
           {showLogo && (
             <Link href="/" className="flex items-center space-x-2 group">
-              <motion.div 
+              <div 
                 className="flex items-center"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
                 <Image
                   src="/assets/navi_logo.gif"
@@ -32,7 +26,7 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ showLogo = true }) =
                   className="h-[60px] w-auto object-contain"
                   priority
                 />
-              </motion.div>
+              </div>
             </Link>
           )}
           
@@ -41,6 +35,6 @@ export const SimpleHeader: React.FC<SimpleHeaderProps> = ({ showLogo = true }) =
           </div>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 };
