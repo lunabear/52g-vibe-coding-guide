@@ -89,13 +89,13 @@ export default function MisoGeneratorPage() {
               <div className="flex items-center gap-6 mb-8">
                 <div className="w-20 h-20 lg:w-24 lg:h-24 flex items-center justify-center flex-shrink-0 border-2 border-gray-200 rounded-xl overflow-hidden">
                   <img 
-                    src="/assets/mini-kyle-making.png" 
-                    alt="Kyle의 MISO 설계실" 
+                    src="/assets/minian-making.png" 
+                    alt="Minian의 MISO 설계실" 
                     className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="text-xl lg:text-2xl font-medium text-gray-900 mb-3">Kyle의 MISO 설계실 ✨</div>
+                  <div className="text-xl lg:text-2xl font-medium text-gray-900 mb-3">Minian의 MISO 설계실 ✨</div>
                   <div className="text-[14px] lg:text-[16px] text-gray-600 font-light leading-relaxed">
                     여러분들의 MISO 설계를 도와준다고 하니 기대되네요!<br />
                     먼저 프로젝트에 대해 알려주세요!
@@ -291,8 +291,8 @@ export default function MisoGeneratorPage() {
              <div className="h-full flex flex-col items-center justify-center text-center px-8">
                <div className="w-48 h-48 lg:w-56 lg:h-56 mx-auto mb-6 p-2">
                  <img
-                   src="/assets/mini-kyle-drawing.png"
-                   alt="MISO Kyle"
+                   src="/assets/minian-drawing.png"
+                   alt="MISO Minian"
                    className="w-full h-full object-contain object-center"
                  />
                </div>
