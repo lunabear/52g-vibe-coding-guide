@@ -74,7 +74,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              onClick={() => window.location.href = 'http://172.16.70.94:3000/prd-generator'}
+              onClick={() => router.push('/prd-generator')}
               className="group relative bg-gray-50 rounded-2xl p-6 custom:p-10 h-[320px] custom:h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
