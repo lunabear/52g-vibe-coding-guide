@@ -109,7 +109,7 @@ export default function ChatPage() {
   const handleActionClick = (action: string) => {
     const actionMap: { [key: string]: string } = {
       'generate_prd': '/prd-generator',
-      // 필요에 따라 다른 액션들 추가 가능
+      'generate_miso': '/miso-generator'
     };
     
     const baseUrl = actionMap[action];
@@ -514,6 +514,80 @@ export default function ChatPage() {
               )}
             </div>
           </ScrollArea>
+
+          {/* 액션 카드들 */}
+          <div className="p-3 space-y-3">
+            {/* 헤더 */}
+            <div className="px-1 pt-1">
+              <h3 className="text-[18px] custom:text-[20px] font-light text-gray-900 tracking-tight leading-tight">
+                👋 아이디어가 완성되었나요?
+              </h3>
+            </div>
+            
+            {/* MISO Generator 카드 */}
+            <div 
+              onClick={() => handleActionClick('generate_miso')}
+              className="group relative bg-gray-50 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-all duration-200 overflow-hidden"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 flex-shrink-0 relative">
+                  <img
+                    src="/assets/minian-default.png"
+                    alt="Minian"
+                    className="w-full h-full object-contain absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300"
+                  />
+                  <img
+                    src="/assets/minian-hover.png"
+                    alt="Minian Hover"
+                    className="w-full h-full object-contain absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[15px] font-normal text-gray-900 leading-snug">
+                    MISO 설계하기
+                  </h3>
+                  <p className="text-[12px] text-gray-500 font-light mt-0.5 leading-relaxed">
+                    MISO 설계/연동 가이드 생성
+                  </p>
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <span className="text-[11px] text-gray-700 font-normal">시작하기 →</span>
+                </div>
+              </div>
+            </div>
+
+            {/* PRD Generator 카드 */}
+            <div 
+              onClick={() => handleActionClick('generate_prd')}
+              className="group relative bg-gray-50 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-all duration-200 overflow-hidden"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 flex-shrink-0 relative">
+                  <img
+                    src="/assets/coach_default.png"
+                    alt="Coach Team"
+                    className="w-full h-full object-contain absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300"
+                  />
+                  <img
+                    src="/assets/coach_hover.png"
+                    alt="Coach Team Hover"
+                    className="w-full h-full object-contain absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[15px] font-normal text-gray-900 leading-snug">
+                    바이브코딩 설계하기
+                  </h3>
+                  <p className="text-[12px] text-gray-500 font-light mt-0.5 leading-relaxed">
+                    체계적인 개발 설계서 작성
+                  </p>
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <span className="text-[11px] text-gray-700 font-normal">시작하기 →</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
       {/* 메인 채팅 영역 */}
@@ -735,13 +809,53 @@ export default function ChatPage() {
                                           {part.content}
                                         </ReactMarkdown>
                                       ) : (
-                                        <Button
+                                        <div
                                           onClick={() => handleActionClick(part.action)}
-                                          className="inline-flex items-center gap-2 mx-1 my-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                                          className="group relative bg-gray-50 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-all duration-200 overflow-hidden inline-block mx-1 my-2 min-w-[280px]"
                                         >
-                                          {part.text}
-                                          <ChevronRight className="w-4 h-4" />
-                                        </Button>
+                                          <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 flex-shrink-0 relative">
+                                              {part.action === 'generate_prd' ? (
+                                                <>
+                                                  <img
+                                                    src="/assets/coach_default.png"
+                                                    alt="Coach Team"
+                                                    className="w-full h-full object-contain absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300"
+                                                  />
+                                                  <img
+                                                    src="/assets/coach_hover.png"
+                                                    alt="Coach Team Hover"
+                                                    className="w-full h-full object-contain absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                                  />
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <img
+                                                    src="/assets/minian-default.png"
+                                                    alt="Minian"
+                                                    className="w-full h-full object-contain absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300"
+                                                  />
+                                                  <img
+                                                    src="/assets/minian-hover.png"
+                                                    alt="Minian Hover"
+                                                    className="w-full h-full object-contain absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                                  />
+                                                </>
+                                              )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                              <h3 className="text-[15px] font-normal text-gray-900 leading-snug">
+                                                {part.action === 'generate_prd' ? '바이브코딩 설계하기' : 'MISO 설계하기'}
+                                              </h3>
+                                              <p className="text-[12px] text-gray-500 font-light mt-0.5 leading-relaxed">
+                                                {part.action === 'generate_prd' ? '체계적인 개발 설계서 작성' : 'MISO 설계/연동 가이드 생성'}
+                                              </p>
+                                            </div>
+                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                              <span className="text-[11px] text-gray-700 font-normal">시작하기 →</span>
+                                            </div>
+                                          </div>
+                                        </div>
                                       )}
                                     </React.Fragment>
                                   ))
