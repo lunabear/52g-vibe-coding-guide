@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { usePRDContext } from '@/contexts/PRDContext';
+import { MiniAllySummaryModal } from '@/components/common/MiniAllySummaryModal';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +62,13 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Mini Ally Summary 모달 관련 상태
+  const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [summaryResult, setSummaryResult] = useState('');
+  const [summaryFeedback, setSummaryFeedback] = useState('');
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+
   // ACTION 버튼 파싱 함수
   const parseActionButtons = (content: string) => {
     const actionRegex = /\[ACTION:([^\]]+)\]([^\[]+)\[\/ACTION\]/g;
@@ -106,23 +115,85 @@ export default function ChatPage() {
   };
 
   // ACTION 버튼 클릭 핸들러
-  const handleActionClick = (action: string) => {
-    const actionMap: { [key: string]: string } = {
-      'generate_prd': '/prd-generator',
-      'generate_miso': '/miso-generator'
-    };
+  const handleActionClick = async (action: string) => {
+    // 대화가 없으면 토스트 표시하고 차단
+    if (messages.length === 0) {
+      toast.error('먼저 대화를 시작해주세요', {
+        description: 'Mini Ally와 대화를 나눈 후 이용하실 수 있습니다.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    // 대화가 있으면 API 호출 후 모달 표시
+    setPendingAction(action);
+    setSummaryLoading(true);
+    setSummaryModalOpen(true);
+
+    try {
+      // 대화 내용을 문자열로 변환
+      const context = messages.map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n\n');
+
+      const response = await fetch('/api/miso/mini-ally-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentType: 'chat',
+          currentContent: context,
+          fixRequest: 'mini_ally_summary',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get summary');
+      }
+
+      const data = await response.json();
+      setSummaryResult(data.result || data.fixedContent || '');
+      setSummaryFeedback(data.feedback || '');
+      
+      // 성공 토스트 표시
+      toast.success('요약이 완성되었습니다', {
+        description: '내용을 확인하신 후 다음 단계로 진행해주세요.',
+        duration: 2500,
+      });
+    } catch (error) {
+      console.error('Failed to get summary:', error);
+      setSummaryResult('요약을 생성하는 중 오류가 발생했습니다.');
+      setSummaryFeedback('');
+      toast.error('요약 생성에 실패했습니다', {
+        description: '잠시 후 다시 시도해주세요.',
+        duration: 3500,
+      });
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  // 모달 확인 후 페이지 이동
+  const handleSummaryConfirm = () => {
+    setSummaryModalOpen(false);
     
-    const baseUrl = actionMap[action];
-    if (baseUrl) {
-      // 메시지를 PRDContext에 저장
-      if (messages.length > 0) {
+    if (pendingAction) {
+      const actionMap: { [key: string]: string } = {
+        'generate_prd': '/prd-generator',
+        'generate_miso': '/miso-generator'
+      };
+      
+      const baseUrl = actionMap[pendingAction];
+      if (baseUrl) {
+        // 메시지를 PRDContext에 저장
         setChatMessages(messages);
         const url = `${baseUrl}?step=hint`;
         router.push(url);
-      } else {
-        router.push(baseUrl);
       }
     }
+    
+    setPendingAction(null);
+    setSummaryResult('');
+    setSummaryFeedback('');
   };
 
   // 스크롤을 맨 아래로
@@ -520,7 +591,7 @@ export default function ChatPage() {
             {/* 헤더 */}
             <div className="px-1 pt-1">
               <h3 className="text-[18px] custom:text-[20px] font-light text-gray-900 tracking-tight leading-tight">
-                👋 아이디어가 완성되었나요?
+                아이디어가 완성되었나요?
               </h3>
             </div>
             
@@ -996,6 +1067,16 @@ export default function ChatPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Mini Ally Summary 모달 */}
+      <MiniAllySummaryModal
+        open={summaryModalOpen}
+        onOpenChange={setSummaryModalOpen}
+        loading={summaryLoading}
+        result={summaryResult}
+        feedback={summaryFeedback}
+        onConfirm={handleSummaryConfirm}
+      />
     </div>
   );
 }
