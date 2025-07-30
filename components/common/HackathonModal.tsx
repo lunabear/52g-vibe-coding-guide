@@ -139,7 +139,7 @@ export default function HackathonModal() {
               <Button
                 className="flex-1 bg-gray-900 hover:bg-gray-800 text-white h-10 text-[14px]"
                 onClick={() => {
-                  window.open('https://v0-gs-group-hackathon.vercel.app', '_blank');
+                  window.open('https://25-52g-hackathon.vercel.app', '_blank');
                 }}
               >
                 해커톤 자세히 보기

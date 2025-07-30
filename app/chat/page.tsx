@@ -43,9 +43,19 @@ interface Conversation {
   updatedAt: Date;
 }
 
+interface ProjectData {
+  personaProfile: string;
+  painPointContext: string;
+  painPointReason: string;
+  coreProblemStatement: string;
+  solutionNameIdea: string;
+  solutionMechanism: string;
+  expectedOutcome: string;
+}
+
 export default function ChatPage() {
   const router = useRouter();
-  const { setChatMessages } = usePRDContext();
+  const { setChatMessages, setProjectSummary } = usePRDContext();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -64,8 +74,7 @@ export default function ChatPage() {
 
   // Mini Ally Summary 모달 관련 상태
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
-  const [summaryResult, setSummaryResult] = useState('');
-  const [summaryFeedback, setSummaryFeedback] = useState('');
+  const [projectData, setProjectData] = useState<ProjectData | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
@@ -151,8 +160,17 @@ export default function ChatPage() {
       }
 
       const data = await response.json();
-      setSummaryResult(data.result || data.fixedContent || '');
-      setSummaryFeedback(data.feedback || '');
+      
+      // 새로운 구조화된 데이터 설정
+      setProjectData({
+        personaProfile: data.personaProfile || '',
+        painPointContext: data.painPointContext || '',
+        painPointReason: data.painPointReason || '',
+        coreProblemStatement: data.coreProblemStatement || '',
+        solutionNameIdea: data.solutionNameIdea || '',
+        solutionMechanism: data.solutionMechanism || '',
+        expectedOutcome: data.expectedOutcome || '',
+      });
       
       // 성공 토스트 표시
       toast.success('요약이 완성되었습니다', {
@@ -161,8 +179,7 @@ export default function ChatPage() {
       });
     } catch (error) {
       console.error('Failed to get summary:', error);
-      setSummaryResult('요약을 생성하는 중 오류가 발생했습니다.');
-      setSummaryFeedback('');
+      setProjectData(null);
       toast.error('요약 생성에 실패했습니다', {
         description: '잠시 후 다시 시도해주세요.',
         duration: 3500,
@@ -173,7 +190,7 @@ export default function ChatPage() {
   };
 
   // 모달 확인 후 페이지 이동
-  const handleSummaryConfirm = () => {
+  const handleSummaryConfirm = (editedContent: string) => {
     setSummaryModalOpen(false);
     
     if (pendingAction) {
@@ -184,16 +201,17 @@ export default function ChatPage() {
       
       const baseUrl = actionMap[pendingAction];
       if (baseUrl) {
-        // 메시지를 PRDContext에 저장
+        // 메시지와 편집된 프로젝트 요약을 PRDContext에 저장
         setChatMessages(messages);
+        setProjectSummary(editedContent);
+        
         const url = `${baseUrl}?step=hint`;
         router.push(url);
       }
     }
     
     setPendingAction(null);
-    setSummaryResult('');
-    setSummaryFeedback('');
+    setProjectData(null);
   };
 
   // 스크롤을 맨 아래로
@@ -1073,8 +1091,7 @@ export default function ChatPage() {
         open={summaryModalOpen}
         onOpenChange={setSummaryModalOpen}
         loading={summaryLoading}
-        result={summaryResult}
-        feedback={summaryFeedback}
+        projectData={projectData}
         onConfirm={handleSummaryConfirm}
       />
     </div>

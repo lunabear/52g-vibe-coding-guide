@@ -41,23 +41,30 @@ export async function POST(request: Request) {
 
     const data = await response.json();
     
-    // Extract both result and feedback from the response
+    // Extract the new structured data from the response
     const outputs = data?.data?.outputs || {};
-    const resultData = outputs?.result || [];
-    const feedbackData = outputs?.feedback || '';
     
-    const result = Array.isArray(resultData) ? resultData.join('\n\n') : resultData;
-    const feedback = Array.isArray(feedbackData) ? feedbackData.join('\n\n') : feedbackData;
+    // Extract all the new variables
+    const personaProfile = outputs?.persona_profile || '';
+    const painPointContext = outputs?.pain_point_context || '';
+    const painPointReason = outputs?.pain_point_reason || '';
+    const coreProblemStatement = outputs?.core_problem_statement || '';
+    const solutionNameIdea = outputs?.solution_name_idea || '';
+    const solutionMechanism = outputs?.solution_mechanism || '';
+    const expectedOutcome = outputs?.expected_outcome || '';
 
-    // Return new format with both result and feedback
+    // Return the new structured format
     return NextResponse.json({ 
-      result,
-      feedback,
-      // Keep fixedContent for backward compatibility
-      fixedContent: result 
+      personaProfile,
+      painPointContext,
+      painPointReason,
+      coreProblemStatement,
+      solutionNameIdea,
+      solutionMechanism,
+      expectedOutcome
     });
   } catch (error) {
-    console.error('Error in fix-document route:', error);
+    console.error('Error in mini-ally-summary route:', error);
     return NextResponse.json(
       { error: 'Internal server error', details: error },
       { status: 500 }
