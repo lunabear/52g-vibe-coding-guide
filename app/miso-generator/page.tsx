@@ -33,11 +33,14 @@ export default function MisoGeneratorPage() {
       const session = loadMiniAllySession();
       
       if (session) {
-        console.log('🔄 MISO Generator - Mini-Ally 세션 데이터:', {
-          timestamp: session.timestamp,
-          step: session.step,
-          projectData: session.projectData,
-          expertAnswers: session.expertAnswers
+        console.log('📊 MISO Generator - Mini-Ally 세션 데이터:', {
+          '타겟 사용자': session.projectData.personaProfile,
+          '불편함 시점': session.projectData.painPointContext,
+          '불편함 이유': session.projectData.painPointReason,
+          '핵심 문제': session.projectData.coreProblemStatement,
+          '솔루션 이름': session.projectData.solutionNameIdea,
+          '솔루션 메커니즘': session.projectData.solutionMechanism,
+          '기대 효과': session.projectData.expectedOutcome
         });
         
       } else {
