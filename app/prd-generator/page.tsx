@@ -10,7 +10,16 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdditionalQuestions } from '@/hooks/useAdditionalQuestions';
 import { ExpertQuestions } from '@/components/prd/ExpertQuestions';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
+import { RestoreSessionModal } from '@/components/common/RestoreSessionModal';
 import MISOLoading from '@/components/common/MISOLoading';
+import { 
+  loadMiniAllySession, 
+  clearMiniAllySession, 
+  convertProjectDataToContext,
+  updateMiniAllySessionAnswers,
+  updateMiniAllySessionStep,
+  MiniAllySession 
+} from '@/lib/mini-ally-utils';
 
 function PRDGeneratorContent() {
   const router = useRouter();
@@ -26,6 +35,7 @@ function PRDGeneratorContent() {
     goToPreviousStep,
     getCurrentStepData,
     canProceedToNextStep,
+    setCurrentStep,
     setExpertQuestions,
     setExpertAnswers,
     resetPRD,
@@ -38,10 +48,32 @@ function PRDGeneratorContent() {
   const [hint, setHint] = useState<string>('');
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const [lastHintStep, setLastHintStep] = useState<number | null>(null);
+  
+  // Mini-Ally 세션 관련 상태
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [savedSession, setSavedSession] = useState<MiniAllySession | null>(null);
+  const [isMiniAllyFlow, setIsMiniAllyFlow] = useState(false);
+  
   const currentStepData = getCurrentStepData();
   
   // 쿼리 파라미터 확인
   const step = searchParams.get('step');
+  const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
+
+  // Mini-Ally 세션 체크 및 복구 모달 표시
+  useEffect(() => {
+    const session = loadMiniAllySession();
+    
+    if (fromMiniAlly) {
+      // Mini-Ally에서 직접 온 경우
+      setIsMiniAllyFlow(true);
+      setCurrentStep(4); // insight 단계로 바로 이동
+    } else if (session && !fromMiniAlly) {
+      // 이전 세션이 있고, Mini-Ally에서 직접 오지 않은 경우 복구 모달 표시
+      setSavedSession(session);
+      setShowRestoreModal(true);
+    }
+  }, [fromMiniAlly, setCurrentStep]);
 
   // 힌트 생성 useEffect
   useEffect(() => {
@@ -103,15 +135,32 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
     if (currentStepData && currentStepData.id === 'insight' && !hasFetchedFinalQuestions && !expertQuestions) {
       setIsGeneratingQuestions(true);
       
-      // 모든 답변을 수집
-      generateFinalQuestions(answers).then((finalQuestions) => {
-        console.log('MISO API Response:', finalQuestions); // 디버깅용
-        setExpertQuestions(finalQuestions);
-        setIsGeneratingQuestions(false);
-        setHasFetchedFinalQuestions(true);
-      });
+      if (isMiniAllyFlow) {
+        // Mini-Ally 플로우: 세션에서 데이터 가져오기
+        const session = loadMiniAllySession();
+        if (session) {
+          const context = convertProjectDataToContext(session.projectData);
+          generateFinalQuestions(context).then((finalQuestions) => {
+            console.log('Mini-Ally MISO API Response:', finalQuestions);
+            setExpertQuestions(finalQuestions);
+            setIsGeneratingQuestions(false);
+            setHasFetchedFinalQuestions(true);
+          });
+        } else {
+          // 세션이 없으면 홈으로 이동
+          router.push('/');
+        }
+      } else {
+        // 기존 플로우: 폼 답변 사용
+        generateFinalQuestions(answers).then((finalQuestions) => {
+          console.log('MISO API Response:', finalQuestions);
+          setExpertQuestions(finalQuestions);
+          setIsGeneratingQuestions(false);
+          setHasFetchedFinalQuestions(true);
+        });
+      }
     }
-  }, [currentStepData, hasFetchedFinalQuestions, expertQuestions, answers, generateFinalQuestions, setExpertQuestions]);
+  }, [currentStepData, hasFetchedFinalQuestions, expertQuestions, answers, generateFinalQuestions, setExpertQuestions, isMiniAllyFlow, router]);
 
   if (!currentStepData) {
     return null;
@@ -139,6 +188,10 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
 
   // 인사이트 단계에서 전문가 질문 완료 핸들러
   const handleExpertQuestionsComplete = () => {
+    if (isMiniAllyFlow) {
+      // Mini-Ally 플로우에서는 세션 단계 업데이트
+      updateMiniAllySessionStep('prd-result');
+    }
     router.push('/prd-result');
   };
 
@@ -162,6 +215,38 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
   // 모달에서 취소 버튼 클릭
   const handleCancelExit = () => {
     setShowExitModal(false);
+  };
+
+  // 세션 복구 핸들러
+  const handleRestoreSession = () => {
+    if (savedSession) {
+      setIsMiniAllyFlow(true);
+      setCurrentStep(4); // insight 단계로 이동
+      setShowRestoreModal(false);
+      
+      // 세션에 저장된 전문가 답변이 있다면 복원
+      if (savedSession.expertAnswers) {
+        setExpertAnswers(savedSession.expertAnswers);
+      }
+    }
+  };
+
+  // 새로 시작 핸들러
+  const handleStartNew = () => {
+    clearMiniAllySession();
+    setShowRestoreModal(false);
+    setSavedSession(null);
+    // 현재 페이지는 일반 폼 플로우로 진행
+  };
+
+  // 전문가 답변 변경 핸들러
+  const handleExpertAnswersChange = (answers: any[]) => {
+    setExpertAnswers(answers);
+    
+    // Mini-Ally 플로우인 경우 세션에도 저장
+    if (isMiniAllyFlow) {
+      updateMiniAllySessionAnswers(answers);
+    }
   };
 
   return (
@@ -236,7 +321,7 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
                     >
                       <ExpertQuestions
                         questions={expertQuestions}
-                        onAnswersChange={setExpertAnswers}
+                        onAnswersChange={handleExpertAnswersChange}
                         onComplete={handleExpertQuestionsComplete}
                       />
                     </motion.div>
@@ -451,6 +536,17 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
         onConfirm={handleConfirmExit}
         onCancel={handleCancelExit}
       />
+
+      {/* Session Restore Modal */}
+      {savedSession && (
+        <RestoreSessionModal
+          open={showRestoreModal}
+          onOpenChange={setShowRestoreModal}
+          session={savedSession}
+          onRestore={handleRestoreSession}
+          onStartNew={handleStartNew}
+        />
+      )}
     </div>
   );
 }

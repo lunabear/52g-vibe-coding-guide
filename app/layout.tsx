@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 import { PRDProvider } from '@/contexts/PRDContext';
+import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
   title: "PLAI MAKER - AI와 함께 만드는 프로젝트 기획",
@@ -25,6 +26,7 @@ export default function RootLayout({
         <PRDProvider>
           {children}
         </PRDProvider>
+        <Toaster />
       </body>
     </html>
   );
