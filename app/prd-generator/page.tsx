@@ -5,7 +5,7 @@ import { usePRDContext } from '@/contexts/PRDContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PRD_STEPS } from '@/lib/prd-questions';
 import { ArrowLeft, ArrowRight, X, Sparkles } from 'lucide-react';
-import { QuestionType } from '@/types/prd.types';
+import { QuestionType, ExpertType } from '@/types/prd.types';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdditionalQuestions } from '@/hooks/useAdditionalQuestions';
 import { ExpertQuestions } from '@/components/prd/ExpertQuestions';
@@ -226,7 +226,11 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
       
       // 세션에 저장된 전문가 답변이 있다면 복원
       if (savedSession.expertAnswers) {
-        setExpertAnswers(savedSession.expertAnswers);
+        const convertedAnswers = savedSession.expertAnswers.map((answer: any) => ({
+          ...answer,
+          expert: answer.expert as ExpertType
+        }));
+        setExpertAnswers(convertedAnswers);
       }
     }
   };

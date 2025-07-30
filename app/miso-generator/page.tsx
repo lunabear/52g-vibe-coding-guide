@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +14,7 @@ import { WorkflowNode } from '@/types/prd.types';
 import { cn } from '@/lib/utils';
 import { loadMiniAllySession } from '@/lib/mini-ally-utils';
 
-export default function MisoGeneratorPage() {
+function MisoGeneratorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [expectedInput, setExpectedInput] = useState('');
@@ -401,5 +401,13 @@ export default function MisoGeneratorPage() {
 
       
     </div>
+  );
+}
+
+export default function MisoGeneratorPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+      <MisoGeneratorContent />
+    </Suspense>
   );
 }
