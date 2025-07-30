@@ -1076,6 +1076,7 @@ export default function ChatPage() {
         loading={summaryLoading}
         projectData={projectData}
         onConfirm={handleSummaryConfirm}
+        action={pendingAction || undefined}
       />
     </div>
   );

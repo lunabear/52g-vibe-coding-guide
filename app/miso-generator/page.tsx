@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { misoAPI } from '@/lib/miso-api';
@@ -12,9 +12,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { WorkflowNode } from '@/types/prd.types';
 import { cn } from '@/lib/utils';
+import { loadMiniAllySession } from '@/lib/mini-ally-utils';
 
 export default function MisoGeneratorPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [expectedInput, setExpectedInput] = useState('');
   const [expectedOutput, setExpectedOutput] = useState('');
   const [desiredAction, setDesiredAction] = useState('');
@@ -22,6 +24,29 @@ export default function MisoGeneratorPage() {
   const [flow, setFlow] = useState<WorkflowNode[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Mini-Ally 세션 체크 및 로깅
+  useEffect(() => {
+    const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
+    
+    if (fromMiniAlly) {
+      const session = loadMiniAllySession();
+      
+      if (session) {
+        console.log('🔄 MISO Generator - Mini-Ally 세션 데이터:', {
+          timestamp: session.timestamp,
+          step: session.step,
+          projectData: session.projectData,
+          expertAnswers: session.expertAnswers
+        });
+        
+      } else {
+        console.log('⚠️ MISO Generator - Mini-Ally 세션을 찾을 수 없습니다.');
+      }
+    } else {
+      console.log('📝 MISO Generator - 일반 플로우로 시작됨');
+    }
+  }, [searchParams]);
 
   // 폼 유효성 검사
   const canSubmit = () => {

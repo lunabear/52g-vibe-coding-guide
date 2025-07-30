@@ -31,6 +31,7 @@ interface MiniAllySummaryModalProps {
   loading: boolean;
   projectData: ProjectData | null;
   onConfirm?: (content: string) => void; // optional로 변경 (하위 호환성)
+  action?: string; // 액션 타입 추가
 }
 
 export function MiniAllySummaryModal({
@@ -39,6 +40,7 @@ export function MiniAllySummaryModal({
   loading,
   projectData,
   onConfirm,
+  action,
 }: MiniAllySummaryModalProps) {
   const router = useRouter();
   const [editableData, setEditableData] = useState<ProjectData | null>(null);
@@ -123,8 +125,13 @@ ${data.expectedOutcome || ''}`;
       // 모달 닫기
       onOpenChange(false);
       
-      // prd-generator 페이지로 이동 (전문가 질문 단계)
-      router.push('/prd-generator?fromMiniAlly=true&step=insight');
+      // 액션에 따라 다른 페이지로 이동
+      if (action === 'generate_miso') {
+        router.push('/miso-generator?fromMiniAlly=true');
+      } else {
+        // 기본값: prd-generator 페이지로 이동 (전문가 질문 단계)
+        router.push('/prd-generator?fromMiniAlly=true&step=insight');
+      }
     }
   };
 
