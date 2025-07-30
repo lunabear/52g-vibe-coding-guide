@@ -3,6 +3,9 @@ import { Loader2, ArrowRight, CheckCircle2, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { saveMiniAllySession } from '@/lib/mini-ally-utils';
 import {
   Dialog,
   DialogContent,
@@ -27,7 +30,7 @@ interface MiniAllySummaryModalProps {
   onOpenChange: (open: boolean) => void;
   loading: boolean;
   projectData: ProjectData | null;
-  onConfirm: (content: string) => void;
+  onConfirm?: (content: string) => void; // optional로 변경 (하위 호환성)
 }
 
 export function MiniAllySummaryModal({
@@ -37,6 +40,7 @@ export function MiniAllySummaryModal({
   projectData,
   onConfirm,
 }: MiniAllySummaryModalProps) {
+  const router = useRouter();
   const [editableData, setEditableData] = useState<ProjectData | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
 
@@ -46,6 +50,30 @@ export function MiniAllySummaryModal({
       setEditableData({ ...projectData });
     }
   }, [projectData]);
+
+  // 필드별 라벨 정의
+  const fieldLabels: Record<keyof ProjectData, string> = {
+    personaProfile: '타겟 사용자',
+    painPointContext: '문제 상황',
+    painPointReason: '문제의 원인',
+    coreProblemStatement: '핵심 문제',
+    solutionNameIdea: '아이디어 이름',
+    solutionMechanism: '작동 방식',
+    expectedOutcome: '기대 효과'
+  };
+
+  // 빈 필드 검증 함수
+  const validateFields = (data: ProjectData): string[] => {
+    const emptyFields: string[] = [];
+    
+    Object.entries(data).forEach(([key, value]) => {
+      if (!value || value.trim().length === 0) {
+        emptyFields.push(fieldLabels[key as keyof ProjectData]);
+      }
+    });
+    
+    return emptyFields;
+  };
 
   // 프로젝트 데이터를 일반 텍스트 형태로 포맷팅
   const formatProjectData = (data: ProjectData): string => {
@@ -80,8 +108,23 @@ ${data.expectedOutcome || ''}`;
   // 확인 버튼 클릭 시 편집된 내용으로 진행
   const handleConfirm = () => {
     if (editableData) {
-      const formattedContent = formatProjectData(editableData);
-      onConfirm(formattedContent);
+      const emptyFields = validateFields(editableData);
+      
+      if (emptyFields.length > 0) {
+        toast.error('내용이 부족합니다', {
+          description: `다음 항목들을 클릭해서 작성해주세요: ${emptyFields.join(', ')}`
+        });
+        return;
+      }
+      
+      // mini-ally 세션 저장
+      saveMiniAllySession(editableData, 'expert-questions');
+      
+      // 모달 닫기
+      onOpenChange(false);
+      
+      // prd-generator 페이지로 이동 (전문가 질문 단계)
+      router.push('/prd-generator?fromMiniAlly=true&step=insight');
     }
   };
 
@@ -257,7 +300,7 @@ ${data.expectedOutcome || ''}`;
           <DialogTitle className="font-normal text-gray-900 text-[18px] custom:text-[20px]">
             {loading 
               ? "대화 내용을 정리하고 있어요" 
-              : "정리 완료"
+              : "대화 내용을 정리해봤어요"
             }
           </DialogTitle>
           <DialogDescription className="text-gray-500 leading-relaxed text-[14px] custom:text-[15px] mt-1">

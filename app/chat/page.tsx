@@ -189,29 +189,12 @@ export default function ChatPage() {
     }
   };
 
-  // 모달 확인 후 페이지 이동
-  const handleSummaryConfirm = (editedContent: string) => {
+  // 모달 확인 후 정리 (MiniAllySummaryModal에서 직접 페이지 이동 처리)
+  const handleSummaryConfirm = () => {
     setSummaryModalOpen(false);
-    
-    if (pendingAction) {
-      const actionMap: { [key: string]: string } = {
-        'generate_prd': '/prd-generator',
-        'generate_miso': '/miso-generator'
-      };
-      
-      const baseUrl = actionMap[pendingAction];
-      if (baseUrl) {
-        // 메시지와 편집된 프로젝트 요약을 PRDContext에 저장
-        setChatMessages(messages);
-        setProjectSummary(editedContent);
-        
-        const url = `${baseUrl}?step=hint`;
-        router.push(url);
-      }
-    }
-    
     setPendingAction(null);
     setProjectData(null);
+    // MiniAllySummaryModal이 직접 세션 저장 및 페이지 이동을 처리합니다
   };
 
   // 스크롤을 맨 아래로

@@ -12,12 +12,14 @@ import { misoAPI } from '@/lib/miso-api';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ErrorPage } from '@/components/common/ErrorPage';
 import { VibeCodingGuideModal } from '@/components/common/VibeCodingGuideModal';
+import { loadMiniAllySession, clearMiniAllySession } from '@/lib/mini-ally-utils';
 
 export default function PRDResultPage() {
   const router = useRouter();
   const { getAllQuestionsAndAnswers, prdContent, setPRDContent, resetPRD } = usePRDContext();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMiniAllyFlow, setIsMiniAllyFlow] = useState(false);
   const [databaseSchema, setDatabaseSchema] = useState<string | null>(null);
   const [isDatabaseLoading, setIsDatabaseLoading] = useState(false);
   const [hasFetchedDatabase, setHasFetchedDatabase] = useState(false);
@@ -49,6 +51,12 @@ export default function PRDResultPage() {
   const [isDatabaseFixing, setIsDatabaseFixing] = useState(false);
 
   useEffect(() => {
+    // Mini-Ally 세션 체크
+    const session = loadMiniAllySession();
+    if (session && session.step === 'prd-result') {
+      setIsMiniAllyFlow(true);
+    }
+
     // 아이디어 구체화 결과가 이미 있으면 사용
     if (prdContent) {
       setIsLoading(false);
@@ -58,7 +66,28 @@ export default function PRDResultPage() {
     // 아이디어 구체화
     const generatePRD = async () => {
       try {
-        const questionsAndAnswers = getAllQuestionsAndAnswers();
+        let questionsAndAnswers: Array<{ question: string; answer: string }> = [];
+        
+        if (isMiniAllyFlow && session) {
+          // Mini-Ally 플로우: 세션에서 데이터 구성
+          const projectData = session.projectData;
+          const expertAnswers = session.expertAnswers || [];
+          
+          // ProjectData를 question-answer 형태로 변환
+          questionsAndAnswers = [
+            { question: '이 서비스의 핵심 타겟 사용자는 누구인가요?', answer: projectData.personaProfile || '' },
+            { question: '사용자는 언제 불편함을 경험하나요?', answer: projectData.painPointContext || '' },
+            { question: '왜 이 상황을 불편하게 느끼나요?', answer: projectData.painPointReason || '' },
+            { question: '해결해야 할 핵심 문제는 무엇인가요?', answer: projectData.coreProblemStatement || '' },
+            { question: '솔루션의 이름은 무엇인가요?', answer: projectData.solutionNameIdea || '' },
+            { question: '솔루션이 어떻게 작동하나요?', answer: projectData.solutionMechanism || '' },
+            { question: '기대되는 효과는 무엇인가요?', answer: projectData.expectedOutcome || '' },
+            ...expertAnswers
+          ];
+        } else {
+          // 기존 플로우: PRDContext에서 데이터 가져오기
+          questionsAndAnswers = getAllQuestionsAndAnswers();
+        }
         
         if (questionsAndAnswers.length === 0) {
           router.push('/');
@@ -85,7 +114,7 @@ export default function PRDResultPage() {
     };
 
     generatePRD();
-  }, [prdContent, getAllQuestionsAndAnswers, setPRDContent, router]);
+  }, [prdContent, getAllQuestionsAndAnswers, setPRDContent, router, isMiniAllyFlow]);
 
   // 아이디어 구체화가 완성되면 바로 디자인 생성 시작
   useEffect(() => {
@@ -207,6 +236,12 @@ export default function PRDResultPage() {
   // 모달에서 확인 버튼 클릭
   const handleConfirmExit = () => {
     resetPRD();
+    
+    // Mini-Ally 세션도 정리
+    if (isMiniAllyFlow) {
+      clearMiniAllySession();
+    }
+    
     router.push('/');
   };
 
