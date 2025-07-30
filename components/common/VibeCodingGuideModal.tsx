@@ -184,7 +184,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload }: VibeCoding
               </div>
               <div className="mt-6 space-y-2">
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  "복사하기" 버튼을 눌러 기본 지침을 복사한 후, v0의 Interaction → Introduction 섹션에 붙여넣으세요.
+                  &quot;복사하기&quot; 버튼을 눌러 기본 지침을 복사한 후, v0의 Interaction → Introduction 섹션에 붙여넣으세요.
                 </p>
                 <a
                   href={EXTERNAL_LINKS.V0_INTRODUCTION_GUIDE}
