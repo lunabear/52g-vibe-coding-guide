@@ -122,10 +122,11 @@ function MisoGeneratorContent() {
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="text-xl lg:text-2xl font-medium text-gray-900 mb-3">Minian의 MISO 설계실 ✨</div>
+                  <div className="text-xl lg:text-2xl font-medium text-gray-900 mb-3">MISO 설계실 ✨</div>
                   <div className="text-[14px] lg:text-[16px] text-gray-600 font-light leading-relaxed">
-                    여러분들의 MISO 설계를 도와준다고 하니 기대되네요!<br />
-                    먼저 프로젝트에 대해 알려주세요!
+                  만들고 싶은 서비스가 어떻게 작동하면 좋을지 알려주세요. 
+                  <br /> MISO설계 가이드를 만들어 줄게요!
+                  
                   </div>
                 </div>
               </div>
@@ -142,18 +143,18 @@ function MisoGeneratorContent() {
                                      <div className="flex-1">
                      <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                        어떤 입력을 예상하시나요?
+                      사용자는 처음에 무엇을 입력하나요?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                        사용자가 시스템에 제공할 데이터나 정보를 설명해주세요
+                      💡 Tip: “서비스를 시작하기 위해 사용자가 하는 첫 행동”을 적어주세요.
                       </span>
                     </label>
                     <div className="space-y-3">
                       <textarea
                         value={expectedInput}
                         onChange={(e) => setExpectedInput(e.target.value)}
-                        placeholder="예: 사용자의 구매 이력, 선호도, 검색 키워드"
+                        placeholder="예: 이름 입력, 상품 검색, 위치 선택, 사진 업로드"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
@@ -179,18 +180,18 @@ function MisoGeneratorContent() {
                                      <div className="flex-1">
                      <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                        어떤 출력을 예상하시나요?
+                      서비스는 사용자에게 어떤 결과를 보여주나요?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                        시스템이 생성해야 할 결과나 응답을 설명해주세요
+                      💡 Tip: “사용자가 서비스를 쓰고 나서 얻게 되는 것”을 적어주세요.
                       </span>
                     </label>
                     <div className="space-y-3">
                       <textarea
                         value={expectedOutput}
                         onChange={(e) => setExpectedOutput(e.target.value)}
-                        placeholder="예: 개인화된 상품 추천 목록, 추천 이유, 신뢰도 점수"
+                        placeholder="예: 추천 상품 목록, 날씨 정보, 분석 결과, 번역문"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
@@ -216,18 +217,18 @@ function MisoGeneratorContent() {
                                      <div className="flex-1">
                      <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                        원하는 동작은 무엇인가요?
+                        결과를 보여주기 위해 서비스는 어떤 일을 해야하나요?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                        시스템이 수행해야 할 핵심 기능이나 처리 과정을 설명해주세요
+                      💡 Tip: “사용자가 모르는 사이에 서비스가 뒤에서 해주는 일”을 적어주세요.
                       </span>
                     </label>
                     <div className="space-y-3">
                       <textarea
                         value={desiredAction}
                         onChange={(e) => setDesiredAction(e.target.value)}
-                        placeholder="예: 사용자 행동 패턴을 분석하여 실시간으로 개인화된 추천을 제공"
+                        placeholder="예: 입력한 내용을 분석, 조건에 맞는 결과 찾기, 이미지 변환"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
