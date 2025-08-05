@@ -28,14 +28,15 @@ export default function Home() {
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
               <div className="absolute top-6 custom:top-10 left-6 custom:left-10 space-y-4 max-w-[280px]">
-                <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
-                  아이디어가<br />
-                  필요하신가요?
-                </h2>
+                <div className="space-y-1">
+                  <span className="text-[16px] custom:text-[20px] font-bold text-gray-900">1단계</span>
+                  <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
+                    아이디어 발굴
+                  </h2>
+                </div>
                 <p className="text-sm custom:text-base text-gray-600 font-light leading-relaxed">
-                  Mini Ally에게 실시간으로<br />
-                  질문하고 고민을 해결해 보세요.
-                
+                Mini Ally가 대화를 통해 생각을 구체화하고,<br />
+                실행 가능한 아이디어로 발전시킵니다.
                 </p>
               </div>
 
@@ -79,13 +80,16 @@ export default function Home() {
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
               <div className="absolute top-6 custom:top-10 left-6 custom:left-10 space-y-4 max-w-[280px]">
-                <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
-                  바이브코딩에 필요한<br />
-                  지침이 필요한가요?
-                </h2>
+                <div className="space-y-1">
+                  <span className="text-[16px] custom:text-[20px] font-bold text-gray-900">2단계</span>
+                  <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
+                    개발 지침 작성
+                  </h2>
+                </div>
                 <p className="text-sm custom:text-base text-gray-600 font-light leading-relaxed">
-                  체계적인 지침 작성으로 개발 효율성 UP!<br />
-                  전문가와 핵심 요구사항을 정리해 보세요.
+                전문가와 함께 서비스의 기능, 요구사항을<br />
+                개발 지침으로 만듭니다.
+                  
                 </p>
               </div>
 
@@ -129,13 +133,15 @@ export default function Home() {
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
               <div className="absolute top-6 custom:top-10 left-6 custom:left-10 space-y-4 max-w-[280px]">
-                <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
-                  MISO 워크플로우<br />
-                  설계가 필요한가요?
-                </h2>
+                <div className="space-y-1">
+                  <span className="text-[16px] custom:text-[20px] font-bold text-gray-900">3단계</span>
+                  <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
+                    워크플로우·챗봇 설계
+                  </h2>
+                </div>
                 <p className="text-sm custom:text-base text-gray-600 font-light leading-relaxed">
-                  Minian과 함께 입력-출력-동작을<br />
-                  체계적으로 설계해 보세요.
+                MISO로 서비스의 흐름을 시각화하고<br />
+                워크플로우, 챗봇을 설계를 돕습니다.
                 </p>
               </div>
 
