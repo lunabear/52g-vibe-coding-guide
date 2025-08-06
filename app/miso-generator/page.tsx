@@ -12,7 +12,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { WorkflowNode } from '@/types/prd.types';
 import { cn } from '@/lib/utils';
-import { loadMiniAllySession } from '@/lib/mini-ally-utils';
+import { loadMiniAllySession, saveMisoDesignToSession, getMisoDesignFromSession, type MisoDesignData } from '@/lib/mini-ally-utils';
 
 function MisoGeneratorContent() {
   const router = useRouter();
@@ -27,7 +27,7 @@ function MisoGeneratorContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Mini-Ally 세션 체크 및 로깅
+  // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
     const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
     
@@ -50,6 +50,17 @@ function MisoGeneratorContent() {
       }
     } else {
       console.log('📝 MISO Generator - 일반 플로우로 시작됨');
+      
+      // 이전에 저장된 MISO 설계 데이터가 있으면 불러오기
+      const savedMisoDesign = getMisoDesignFromSession();
+      if (savedMisoDesign) {
+        console.log('📋 MISO Generator - 이전 설계 데이터 발견:', savedMisoDesign);
+        setExpectedInput(savedMisoDesign.inputData);
+        setExpectedOutput(savedMisoDesign.resultData);
+        setDesiredAction(savedMisoDesign.businessLogic);
+        setUserExperience(savedMisoDesign.referenceData);
+        setErrorHandling(savedMisoDesign.misoAppType === 'agent' ? '챗봇 대화형식' : '단일 결과물 생성');
+      }
     }
   }, [searchParams]);
   // 폼 유효성 검사
@@ -67,6 +78,16 @@ function MisoGeneratorContent() {
       setError('모든 항목을 입력해주세요.');
       return;
     }
+
+    // MISO 설계 데이터를 세션에 저장
+    const misoDesignData: MisoDesignData = {
+      inputData: expectedInput.trim(),
+      resultData: expectedOutput.trim(),
+      businessLogic: desiredAction.trim(),
+      referenceData: userExperience.trim(),
+      misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow'
+    };
+    saveMisoDesignToSession(misoDesignData);
 
     const query = generateQuery();
     setIsLoading(true);

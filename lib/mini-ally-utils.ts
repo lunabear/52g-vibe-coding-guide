@@ -8,6 +8,14 @@ interface ProjectData {
   expectedOutcome: string | null;
 }
 
+interface MisoDesignData {
+  inputData: string;
+  resultData: string;
+  businessLogic: string;
+  referenceData: string;
+  misoAppType: 'agent' | 'workflow';
+}
+
 interface MiniAllySession {
   type: 'miniAlly';
   timestamp: string;
@@ -18,6 +26,7 @@ interface MiniAllySession {
     answer: string;
     expert: 'planner' | 'designer' | 'developer';
   }>;
+  misoDesign?: MisoDesignData;
 }
 
 /**
@@ -137,4 +146,41 @@ export function getSessionTimeAgo(session: MiniAllySession): string {
   }
 }
 
-export type { ProjectData, MiniAllySession };
+/**
+ * MISO 설계 데이터를 세션에 저장
+ */
+export function saveMisoDesignToSession(misoDesignData: MisoDesignData) {
+  const session = loadMiniAllySession();
+  if (session) {
+    // 기존 mini-ally 세션이 있으면 업데이트
+    session.misoDesign = misoDesignData;
+    session.timestamp = new Date().toISOString();
+    sessionStorage.setItem('prdSession', JSON.stringify(session));
+  } else {
+    // MISO 설계만 있는 세션 생성
+    const newSession = {
+      type: 'miso',
+      timestamp: new Date().toISOString(),
+      misoDesign: misoDesignData
+    };
+    sessionStorage.setItem('prdSession', JSON.stringify(newSession));
+  }
+}
+
+/**
+ * 세션에서 MISO 설계 데이터 가져오기
+ */
+export function getMisoDesignFromSession(): MisoDesignData | null {
+  try {
+    const sessionData = sessionStorage.getItem('prdSession');
+    if (!sessionData) return null;
+    
+    const session = JSON.parse(sessionData);
+    return session.misoDesign || null;
+  } catch (error) {
+    console.error('Failed to get MISO design from session:', error);
+    return null;
+  }
+}
+
+export type { ProjectData, MiniAllySession, MisoDesignData };
