@@ -20,6 +20,8 @@ function MisoGeneratorContent() {
   const [expectedInput, setExpectedInput] = useState('');
   const [expectedOutput, setExpectedOutput] = useState('');
   const [desiredAction, setDesiredAction] = useState('');
+  const [userExperience, setUserExperience] = useState('');
+  const [errorHandling, setErrorHandling] = useState('');
   const [explanation, setExplanation] = useState('');
   const [flow, setFlow] = useState<WorkflowNode[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,12 +54,12 @@ function MisoGeneratorContent() {
   }, [searchParams]);
   // 폼 유효성 검사
   const canSubmit = () => {
-    return expectedInput.trim() && expectedOutput.trim() && desiredAction.trim();
+    return expectedInput.trim() && expectedOutput.trim() && desiredAction.trim() && userExperience.trim() && errorHandling.trim();
   };
 
   // XML 태그로 조합된 쿼리 생성
   const generateQuery = () => {
-    return `<input>${expectedInput.trim()}</input><output>${expectedOutput.trim()}</output><action>${desiredAction.trim()}</action>`;
+    return `<input>${expectedInput.trim()}</input><output>${expectedOutput.trim()}</output><action>${desiredAction.trim()}</action><experience>${userExperience.trim()}</experience><error_handling>${errorHandling.trim()}</error_handling>`;
   };
 
   const handleSubmit = async () => {
@@ -124,8 +126,8 @@ function MisoGeneratorContent() {
                 <div className="flex-1">
                   <div className="text-xl lg:text-2xl font-medium text-gray-900 mb-3">MISO 설계실 ✨</div>
                   <div className="text-[14px] lg:text-[16px] text-gray-600 font-light leading-relaxed">
-                  만들고 싶은 서비스가 어떻게 작동하면 좋을지 알려주세요. 
-                  <br /> MISO설계 가이드를 만들어 줄게요!
+                  서비스가 어떻게 작동하면 좋을지 알려주세요. 
+                  <br /> MISO활용 가이드를 만들어 줄게요!
                   
                   </div>
                 </div>
@@ -147,7 +149,7 @@ function MisoGeneratorContent() {
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                      💡 Tip: “서비스를 시작하기 위해 사용자가 하는 첫 행동”을 적어주세요.
+                      👉 서비스 시작할 때 입력하는 내용
                       </span>
                     </label>
                     <div className="space-y-3">
@@ -180,11 +182,11 @@ function MisoGeneratorContent() {
                                      <div className="flex-1">
                      <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                      서비스는 사용자에게 어떤 결과를 보여주나요?
+                      서비스를 통해 무엇을 받게 되나요?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                      💡 Tip: “사용자가 서비스를 쓰고 나서 얻게 되는 것”을 적어주세요.
+                      👉 사용자가 얻게 되는 '최종 결과'
                       </span>
                     </label>
                     <div className="space-y-3">
@@ -217,18 +219,18 @@ function MisoGeneratorContent() {
                                      <div className="flex-1">
                      <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                        결과를 보여주기 위해 서비스는 어떤 일을 해야하나요?
+                        그 결과를 만들기 위해 서비스는 어떤 기능이 필요한가요?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                      💡 Tip: “사용자가 모르는 사이에 서비스가 뒤에서 해주는 일”을 적어주세요.
+                      👉 서비스가 자동으로 처리하는 일
                       </span>
                     </label>
                     <div className="space-y-3">
                       <textarea
                         value={desiredAction}
                         onChange={(e) => setDesiredAction(e.target.value)}
-                        placeholder="예: 입력한 내용을 분석, 조건에 맞는 결과 찾기, 이미지 변환"
+                        placeholder="예: 입력 분석, 조건에 맞는 결과 검색, 이미지 변환"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
@@ -245,6 +247,136 @@ function MisoGeneratorContent() {
                 </div>
               </div>
 
+              {/* 4. 참조 데이터 */}
+              <div className="group">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-sm font-medium text-gray-600">4</span>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block mb-4">
+                      <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
+                        서비스가 참고해야 하는 자료는 무엇인가요?
+                        <span className="text-red-500 ml-1">*</span>
+                      </span>
+                      <span className="block text-sm text-gray-500 mt-1 font-light">
+                        👉 결과를 만들 때 반드시 근거로 삼아야 하는 자료나 규칙
+                      </span>
+                    </label>
+                    <div className="space-y-3">
+                      <textarea
+                        value={userExperience}
+                        onChange={(e) => setUserExperience(e.target.value)}
+                        placeholder="예: 사내 규정 문서, 제품 매뉴얼, 고객 응대 가이드"
+                        rows={3}
+                        className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
+                        disabled={isLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setUserExperience('잘 모르겠습니다')}
+                        className="text-sm text-gray-500 hover:text-black transition-colors font-light"
+                      >
+                        잘 모르겠어요 →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. 서비스 경험 형식 */}
+              <div className="group">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-sm font-medium text-gray-600">5</span>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block mb-4">
+                      <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
+                        서비스를 어떤 형식으로 이용하나요?
+                        <span className="text-red-500 ml-1">*</span>
+                      </span>
+                    </label>
+                    <div className="space-y-4">
+                      {/* 대화형식 선택 */}
+                      <div 
+                        className={cn(
+                          "border-2 rounded-xl p-4 cursor-pointer transition-all",
+                          errorHandling === '챗봇 대화형식' 
+                            ? "border-blue-300 bg-blue-50" 
+                            : "border-gray-200 hover:border-gray-300"
+                        )}
+                        onClick={() => setErrorHandling('챗봇 대화형식')}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={cn(
+                            "w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5",
+                            errorHandling === '챗봇 대화형식'
+                              ? "border-blue-500 bg-blue-500"
+                              : "border-gray-300"
+                          )}>
+                            {errorHandling === '챗봇 대화형식' && (
+                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-lg">💬</span>
+                              <span className="font-medium text-gray-900">챗봇 대화형식</span>
+                            </div>
+                            <p className="text-sm text-gray-600 font-light">
+                              사용자와 AI가 대화를 통해 결과물이 제공되는 방식입니다.<br />
+                              질문에 대한 답변 후 추가 질문이 이어집니다.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 보고서 형식 선택 */}
+                      <div 
+                        className={cn(
+                          "border-2 rounded-xl p-4 cursor-pointer transition-all",
+                          errorHandling === '단일 결과물 생성' 
+                            ? "border-blue-300 bg-blue-50" 
+                            : "border-gray-200 hover:border-gray-300"
+                        )}
+                        onClick={() => setErrorHandling('단일 결과물 생성')}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={cn(
+                            "w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5",
+                            errorHandling === '단일 결과물 생성'
+                              ? "border-blue-500 bg-blue-500"
+                              : "border-gray-300"
+                          )}>
+                            {errorHandling === '단일 결과물 생성' && (
+                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-lg">📄</span>
+                              <span className="font-medium text-gray-900">단일 결과물 생성</span>
+                            </div>
+                            <p className="text-sm text-gray-600 font-light">
+                              사용자가 하나의 완성된 결과물을 받는 방식입니다.<br />
+                              분석 보고서, 정리된 문서 등을 생성합니다.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setErrorHandling('잘 모르겠습니다')}
+                        className="text-sm text-gray-500 hover:text-black transition-colors font-light"
+                      >
+                        잘 모르겠어요 →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
             </div>
 
@@ -261,7 +393,7 @@ function MisoGeneratorContent() {
           <div className="bg-white border-t border-gray-100 p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500 font-light">
-                {[expectedInput, expectedOutput, desiredAction].filter(v => v.trim().length > 0).length}/3 질문 답변 완료
+                {[expectedInput, expectedOutput, desiredAction, userExperience, errorHandling].filter(v => v.trim().length > 0).length}/5 질문 답변 완료
               </span>
               <Button 
                 onClick={handleSubmit}

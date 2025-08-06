@@ -24,14 +24,17 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               onClick={() => router.push('/chat')}
-              className="group relative bg-gray-50 rounded-2xl p-6 custom:p-10 h-[320px] custom:h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+              className="group relative bg-blue-50 rounded-2xl p-6 custom:p-10 h-[380px] custom:h-[480px] text-left hover:bg-blue-100 transition-all duration-200 overflow-visible border border-blue-100"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
               <div className="absolute top-6 custom:top-10 left-6 custom:left-10 space-y-4 max-w-[280px]">
-                <div className="space-y-1">
-                  <span className="text-[16px] custom:text-[20px] font-bold text-gray-900">1단계</span>
+                <div className="space-y-3">
+                  {/* 배지 */}
+                  <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">
+                    시작하는 단계
+                  </span>
                   <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
-                    아이디어 발굴
+                    AI 코치와 대화하며 <br />아이디어 및 진행 가이드를 받아보세요.
                   </h2>
                 </div>
                 <p className="text-sm custom:text-base text-gray-600 font-light leading-relaxed">
@@ -76,14 +79,17 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               onClick={() => router.push('/prd-generator')}
-              className="group relative bg-gray-50 rounded-2xl p-6 custom:p-10 h-[320px] custom:h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
+              className="group relative bg-gray-50 rounded-2xl p-6 custom:p-10 h-[380px] custom:h-[480px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
               <div className="absolute top-6 custom:top-10 left-6 custom:left-10 space-y-4 max-w-[280px]">
-                <div className="space-y-1">
-                  <span className="text-[16px] custom:text-[20px] font-bold text-gray-900">2단계</span>
+                <div className="space-y-3">
+                  {/* 배지 */}
+                  <span className="inline-block bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full">
+                    v0 구현 준비 단계
+                  </span>
                   <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
-                    개발 지침 작성
+                    개발 요구사항 정리가 <br /> 필요한가요?
                   </h2>
                 </div>
                 <p className="text-sm custom:text-base text-gray-600 font-light leading-relaxed">
@@ -129,14 +135,17 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               onClick={() => router.push('/miso-generator')}
-              className="group relative bg-gray-50 rounded-2xl p-6 custom:p-10 h-[320px] custom:h-[400px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible xl:col-span-1 lg:col-span-2 lg:xl:col-span-1"
+              className="group relative bg-gray-50 rounded-2xl p-6 custom:p-10 h-[380px] custom:h-[480px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible xl:col-span-1 lg:col-span-2 lg:xl:col-span-1"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
               <div className="absolute top-6 custom:top-10 left-6 custom:left-10 space-y-4 max-w-[280px]">
-                <div className="space-y-1">
-                  <span className="text-[16px] custom:text-[20px] font-bold text-gray-900">3단계</span>
+                <div className="space-y-3">
+                  {/* 배지 */}
+                  <span className="inline-block bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full">
+                  MISO 구현 준비 단계
+                  </span>
                   <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
-                    워크플로우·챗봇 설계
+                    MISO 워크플로우·챗봇 설계가 필요한가요?
                   </h2>
                 </div>
                 <p className="text-sm custom:text-base text-gray-600 font-light leading-relaxed">
