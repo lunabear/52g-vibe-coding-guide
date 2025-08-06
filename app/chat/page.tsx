@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu, ChevronRight, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -228,9 +228,10 @@ export default function ChatPage() {
     const id = getUserId();
     setUserId(id);
     fetchConversations(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchConversations = async (uid?: string) => {
+  const fetchConversations = useCallback(async (uid?: string) => {
     try {
       const userIdToUse = uid || userId;
       const response = await fetch(`/api/chat?userId=${userIdToUse}`);
@@ -247,7 +248,7 @@ export default function ChatPage() {
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
     }
-  };
+  }, [userId]);
 
   // 대화 메시지 불러오기
   const fetchMessages = async (conversationId: string) => {

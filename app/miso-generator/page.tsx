@@ -186,7 +186,7 @@ function MisoGeneratorContent() {
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                      👉 사용자가 얻게 되는 '최종 결과'
+                      👉 사용자가 얻게 되는 &apos;최종 결과&apos;
                       </span>
                     </label>
                     <div className="space-y-3">
