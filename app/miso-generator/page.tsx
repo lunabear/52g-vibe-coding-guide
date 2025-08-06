@@ -26,6 +26,8 @@ function MisoGeneratorContent() {
   const [flow, setFlow] = useState<WorkflowNode[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState('');
+  const [isLoadingMisoApp, setIsLoadingMisoApp] = useState(false);
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -68,9 +70,14 @@ function MisoGeneratorContent() {
     return expectedInput.trim() && expectedOutput.trim() && desiredAction.trim() && userExperience.trim() && errorHandling.trim();
   };
 
-  // XML 태그로 조합된 쿼리 생성
+  // XML 태그로 조합된 쿼리 생성 (워크플로우용)
   const generateQuery = () => {
     return `<input>${expectedInput.trim()}</input><output>${expectedOutput.trim()}</output><action>${desiredAction.trim()}</action><experience>${userExperience.trim()}</experience><error_handling>${errorHandling.trim()}</error_handling>`;
+  };
+
+  // XML 태그로 조합된 쿼리 생성 (미소 앱용)
+  const generateMisoAppQuery = () => {
+    return `<inputData>${expectedInput.trim()}</inputData><resultData>${expectedOutput.trim()}</resultData><businessLogic>${desiredAction.trim()}</businessLogic><referenceData>${userExperience.trim()}</referenceData>`;
   };
 
   const handleSubmit = async () => {
@@ -109,6 +116,51 @@ function MisoGeneratorContent() {
       setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleMisoAppSubmit = async () => {
+    if (!canSubmit()) {
+      setError('모든 항목을 입력해주세요.');
+      return;
+    }
+
+    // MISO 설계 데이터를 세션에 저장
+    const misoDesignData: MisoDesignData = {
+      inputData: expectedInput.trim(),
+      resultData: expectedOutput.trim(),
+      businessLogic: desiredAction.trim(),
+      referenceData: userExperience.trim(),
+      misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow'
+    };
+    saveMisoDesignToSession(misoDesignData);
+
+    const query = generateMisoAppQuery();
+    const misoAppType = errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow';
+    
+    setIsLoadingMisoApp(true);
+    setError(null);
+    setExplanation('');
+    setFlow([]);
+    setPrompt('');
+
+    try {
+      const result = await misoAPI.runMisoWorkflowWithType(query, misoAppType);
+      
+      // 에러 체크
+      if (result.explanation && result.explanation.startsWith('Error:')) {
+        setError(result.explanation);
+      } else if (result.prompt) {
+        // MISO 앱의 경우 prompt가 있음
+        setPrompt(result.prompt);
+      } else {
+        // prompt가 없으면 에러
+        setError('MISO 앱 프롬프트를 생성하지 못했습니다.');
+      }
+    } catch (e) {
+      setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoadingMisoApp(false);
     }
   };
 
@@ -416,25 +468,47 @@ function MisoGeneratorContent() {
               <span className="text-sm text-gray-500 font-light">
                 {[expectedInput, expectedOutput, desiredAction, userExperience, errorHandling].filter(v => v.trim().length > 0).length}/5 질문 답변 완료
               </span>
-              <Button 
-                onClick={handleSubmit}
-                disabled={isLoading || !canSubmit()}
-                className={cn(
-                  "text-[14px] lg:text-[16px] px-6 py-3 rounded-md transition-all font-medium",
-                  canSubmit() && !isLoading
-                    ? "bg-gray-900 hover:bg-gray-800 text-white"
-                    : "bg-gray-100 text-gray-400"
-                )}
-              >
-                {isLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>설계 중...</span>
-                  </div>
-                ) : (
-                  <span>워크플로우 생성하기</span>
-                )}
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button 
+                  onClick={handleMisoAppSubmit}
+                  disabled={isLoading || isLoadingMisoApp || !canSubmit()}
+                  variant="outline"
+                  className={cn(
+                    "text-[14px] lg:text-[16px] px-6 py-3 rounded-md transition-all font-medium",
+                    canSubmit() && !isLoading && !isLoadingMisoApp
+                      ? "border-gray-300 hover:bg-gray-50 text-gray-700"
+                      : "bg-gray-50 text-gray-400 border-gray-200"
+                  )}
+                >
+                  {isLoadingMisoApp ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                      <span>설계 중...</span>
+                    </div>
+                  ) : (
+                    <span>미소 앱 설계하기</span>
+                  )}
+                </Button>
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={isLoading || isLoadingMisoApp || !canSubmit()}
+                  className={cn(
+                    "text-[14px] lg:text-[16px] px-6 py-3 rounded-md transition-all font-medium",
+                    canSubmit() && !isLoading && !isLoadingMisoApp
+                      ? "bg-gray-900 hover:bg-gray-800 text-white"
+                      : "bg-gray-100 text-gray-400"
+                  )}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>설계 중...</span>
+                    </div>
+                  ) : (
+                    <span>워크플로우 생성하기</span>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -452,13 +526,15 @@ function MisoGeneratorContent() {
          
          {/* 결과 영역 */}
          <div className="flex-1 overflow-hidden">
-           {isLoading && (
+           {(isLoading || isLoadingMisoApp) && (
              <div className="h-full flex flex-col items-center justify-center px-8">
                <div className="w-16 h-16 mb-6 bg-gray-50 rounded-full flex items-center justify-center">
                  <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin"></div>
                </div>
                <div className="text-center">
-                 <p className="text-sm text-gray-600 font-light mb-2">워크플로우 설계 중</p>
+                 <p className="text-sm text-gray-600 font-light mb-2">
+                   {isLoadingMisoApp ? '미소 앱 설계 중' : '워크플로우 설계 중'}
+                 </p>
                  <div className="flex justify-center gap-1">
                    <span className="w-1 h-1 bg-gray-300 rounded-full animate-pulse"></span>
                    <span className="w-1 h-1 bg-gray-300 rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></span>
@@ -468,7 +544,7 @@ function MisoGeneratorContent() {
              </div>
            )}
 
-           {!isLoading && !explanation && !error && (
+           {!isLoading && !isLoadingMisoApp && !explanation && !prompt && !error && (
              <div className="h-full flex flex-col items-center justify-center text-center px-8">
                <div className="w-48 h-48 lg:w-56 lg:h-56 mx-auto mb-6 p-2">
                  <img
@@ -487,7 +563,7 @@ function MisoGeneratorContent() {
              </div>
            )}
 
-           {!isLoading && error && (
+           {!isLoading && !isLoadingMisoApp && error && (
              <div className="h-full flex flex-col items-center justify-center text-center px-8">
                <div className="w-32 h-32 mx-auto mb-6">
                  <img
@@ -509,7 +585,7 @@ function MisoGeneratorContent() {
 
           {explanation && (
             <div className="h-full overflow-y-auto">
-                             <div className="mx-auto px-4 lg:px-8 py-8 space-y-6">
+              <div className="mx-auto px-4 lg:px-8 py-8 space-y-6">
                 {/* 설명 섹션 */}
                 <div className="bg-white rounded-lg p-6 border border-gray-200">
                   <h3 className="text-base font-medium text-gray-900 mb-4">
@@ -547,6 +623,49 @@ function MisoGeneratorContent() {
                     <WorkflowVisualization flow={flow} explanation={explanation} />
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {prompt && (
+            <div className="h-full overflow-y-auto">
+              <div className="mx-auto px-4 lg:px-8 py-8 space-y-6">
+                {/* 미소 앱 프롬프트 섹션 */}
+                <div className="bg-white rounded-lg p-6 border border-gray-200">
+                  <h3 className="text-base font-medium text-gray-900 mb-4">
+                    미소 앱 프롬프트
+                  </h3>
+                  <div className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">
+                    {prompt}
+                  </div>
+                </div>
+                
+                {/* 복사 버튼 추가 */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(prompt);
+                      // 복사 완료 피드백
+                      const button = document.getElementById('copy-btn');
+                      if (button) {
+                        const originalText = button.textContent;
+                        button.textContent = '✓ 복사됨';
+                        button.classList.add('bg-green-100', 'text-green-700');
+                        setTimeout(() => {
+                          button.textContent = originalText || '';
+                          button.classList.remove('bg-green-100', 'text-green-700');
+                        }, 2000);
+                      }
+                    }}
+                    id="copy-btn"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                    프롬프트 복사
+                  </button>
+                </div>
               </div>
             </div>
           )}

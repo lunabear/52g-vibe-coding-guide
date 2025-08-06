@@ -13,7 +13,8 @@ interface MisoResponse {
 
 export async function POST(req: NextRequest) {
   const {
-    query
+    query,
+    miso_app_type
   } = await req.json();
 
   if (!query) {
@@ -29,19 +30,26 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const requestBody: any = {
+      inputs: {
+        query: query,
+      },
+      mode: 'blocking',
+      user: 'prd-generator',
+    };
+
+    // miso_app_type이 있으면 inputs에 추가
+    if (miso_app_type) {
+      requestBody.inputs.miso_app_type = miso_app_type;
+    }
+
     const response = await fetch(`${misoEndpoint}/workflows/run`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        inputs: {
-          query: query,
-        },
-        mode: 'blocking',
-        user: 'prd-generator',
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -56,46 +64,84 @@ export async function POST(req: NextRequest) {
     const misoData = JSON.parse(responseText);
     console.log('Parsed Miso data:', JSON.stringify(misoData, null, 2));
 
-    // 다양한 응답 구조를 처리하여 최종 결과(explanation과 flow)를 추출합니다.
-    let explanation;
-    let flow;
-    
-    if (misoData.data && misoData.data.outputs) {
-      // 실제 Miso API 응답 구조에서 explanation과 flow 추출
-      explanation = misoData.data.outputs.explanation;
-      flow = misoData.data.outputs.flow;
-    } else if (misoData.outputs) {
-      explanation = misoData.outputs.explanation || misoData.outputs.result;
-      flow = misoData.outputs.flow;
-    } else {
-      // 다른 가능한 구조들도 체크
-      explanation = misoData.explanation || misoData.result || misoData.message || misoData.response;
-      flow = misoData.flow;
-    }
-
-    // 결과가 배열인 경우, 문자열로 합칩니다.
-    if (Array.isArray(explanation)) {
-      explanation = explanation.join('\n\n');
-    }
-
-    console.log('Extracted explanation:', explanation);
-    console.log('Extracted flow:', flow);
-
-    // 성공적으로 explanation을 추출했는지 확인 (flow는 선택적)
-    if (explanation && typeof explanation === 'string') {
-      const response: any = { explanation };
-      if (flow && Array.isArray(flow)) {
-        response.flow = flow;
+    // miso_app_type이 있는 경우 (미소 앱 설계하기)와 없는 경우 (워크플로우 생성하기) 구분
+    if (miso_app_type) {
+      // 미소 앱 설계하기의 경우 - prompt 추출에 집중
+      let prompt;
+      
+      // details.data.outputs.prompt 구조 확인
+      if (misoData.details && misoData.details.data && misoData.details.data.outputs && misoData.details.data.outputs.prompt) {
+        prompt = misoData.details.data.outputs.prompt;
       }
-      return NextResponse.json(response, { status: 200 });
+      // data.outputs.prompt 구조 확인
+      else if (misoData.data && misoData.data.outputs && misoData.data.outputs.prompt) {
+        prompt = misoData.data.outputs.prompt;
+      }
+      // outputs.prompt 직접 확인
+      else if (misoData.outputs && misoData.outputs.prompt) {
+        prompt = misoData.outputs.prompt;
+      }
+      
+      console.log('Extracted prompt for MISO App:', prompt);
+      
+      // prompt가 있으면 성공 응답
+      if (prompt && typeof prompt === 'string') {
+        return NextResponse.json({ 
+          explanation: '', // 빈 문자열로 설정
+          prompt: prompt 
+        }, { status: 200 });
+      }
+      
+      // prompt를 찾지 못한 경우
+      console.error('Could not extract prompt from MISO App response:', misoData);
+      return NextResponse.json({ 
+        error: 'Invalid MISO App response structure - prompt not found',
+        details: misoData 
+      }, { status: 500 });
+      
+    } else {
+      // 기존 워크플로우 생성하기의 경우 - explanation과 flow 추출
+      let explanation;
+      let flow;
+      
+      if (misoData.data && misoData.data.outputs) {
+        // 실제 Miso API 응답 구조에서 explanation, flow 추출
+        explanation = misoData.data.outputs.explanation;
+        flow = misoData.data.outputs.flow;
+      } else if (misoData.outputs) {
+        explanation = misoData.outputs.explanation || misoData.outputs.result;
+        flow = misoData.outputs.flow;
+      } else {
+        // 다른 가능한 구조들도 체크
+        explanation = misoData.explanation || misoData.result || misoData.message || misoData.response;
+        flow = misoData.flow;
+      }
+      
+      // 결과가 배열인 경우, 문자열로 합칩니다.
+      if (Array.isArray(explanation)) {
+        explanation = explanation.join('\n\n');
+      }
+      
+      console.log('Extracted explanation:', explanation);
+      console.log('Extracted flow:', flow);
+      
+      // 성공적으로 explanation을 추출했는지 확인 (flow는 선택적)
+      if (explanation && typeof explanation === 'string') {
+        const response: any = { explanation };
+        if (flow && Array.isArray(flow)) {
+          response.flow = flow;
+        }
+        return NextResponse.json(response, { status: 200 });
+      }
+      
+      // explanation을 추출하지 못한 경우
+      console.error('Could not extract explanation from Workflow response:', misoData);
+      return NextResponse.json({ 
+        error: 'Invalid Workflow response structure - explanation not found',
+        details: misoData 
+      }, { status: 500 });
     }
 
-    // explanation을 추출하지 못한 경우
-    console.error('Could not extract explanation from Miso API response:', misoData);
-    return NextResponse.json({ 
-      error: 'Invalid response structure from Miso API',
-      details: misoData 
-    }, { status: 500 });
 
   } catch (error) {
     console.error('Error calling Miso workflow:', error);

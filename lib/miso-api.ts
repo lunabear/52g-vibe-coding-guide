@@ -9,6 +9,46 @@ interface MISOWorkflowResponse {
 }
 
 export class MISOAPIClient {
+  async runMisoWorkflowWithType(query: string, misoAppType?: string): Promise<{ explanation: string; flow?: WorkflowNode[]; prompt?: string }> {
+    try {
+      const body: any = { query };
+      if (misoAppType) {
+        body.miso_app_type = misoAppType;
+      }
+
+      const response = await fetch('/api/miso/run-workflow', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      console.log('Response status:', response.status, response.statusText);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error - Status:', response.status);
+        console.error('API Error - Data:', errorData);
+        
+        // explanation이 있으면 그것을 반환 (정상적인 응답일 수 있음)
+        if (errorData.explanation) {
+          console.log('Found explanation in error response, treating as success');
+          return { explanation: errorData.explanation, flow: errorData.flow, prompt: errorData.prompt };
+        }
+        
+        return { explanation: `Error: ${errorData.error || 'Unknown error'}` };
+      }
+
+      const data = await response.json();
+      console.log('Success response data:', data);
+      return { explanation: data.explanation || '', flow: data.flow, prompt: data.prompt };
+    } catch (error) {
+      console.error('Failed to run Miso workflow:', error);
+      return { explanation: 'An unexpected error occurred.' };
+    }
+  }
   async generateFinalQuestions(
     context: Record<string, string>
   ): Promise<{ planner: string[]; designer: string[]; developer: string[] }> {
@@ -142,7 +182,7 @@ export class MISOAPIClient {
     }
   }
 
-  async runMisoWorkflow(query: string): Promise<{ explanation: string; flow?: WorkflowNode[] }> {
+  async runMisoWorkflow(query: string): Promise<{ explanation: string; flow?: WorkflowNode[]; prompt?: string }> {
     try {
       const response = await fetch('/api/miso/run-workflow', {
         method: 'POST',
@@ -163,7 +203,7 @@ export class MISOAPIClient {
         // explanation이 있으면 그것을 반환 (정상적인 응답일 수 있음)
         if (errorData.explanation) {
           console.log('Found explanation in error response, treating as success');
-          return { explanation: errorData.explanation, flow: errorData.flow };
+          return { explanation: errorData.explanation, flow: errorData.flow, prompt: errorData.prompt };
         }
         
         return { explanation: `Error: ${errorData.error || 'Unknown error'}` };
@@ -171,7 +211,7 @@ export class MISOAPIClient {
 
       const data = await response.json();
       console.log('Success response data:', data);
-      return { explanation: data.explanation || '', flow: data.flow };
+      return { explanation: data.explanation || '', flow: data.flow, prompt: data.prompt };
     } catch (error) {
       console.error('Failed to run Miso workflow:', error);
       return { explanation: 'An unexpected error occurred.' };
