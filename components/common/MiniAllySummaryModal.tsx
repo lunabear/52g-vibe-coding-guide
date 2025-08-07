@@ -127,6 +127,8 @@ ${data.expectedOutcome || ''}`;
       
       // 액션에 따라 다른 페이지로 이동
       if (action === 'generate_miso') {
+        // MISO 설계 도우미로 가는 경우 step을 'miso-design'으로 업데이트
+        saveMiniAllySession(editableData, 'miso-design');
         router.push('/miso-generator?fromMiniAlly=true');
       } else {
         // 기본값: prd-generator 페이지로 이동 (전문가 질문 단계)

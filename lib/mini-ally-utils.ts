@@ -21,7 +21,7 @@ interface MiniAllySession {
   type: 'miniAlly';
   timestamp: string;
   projectData: ProjectData;
-  step: 'expert-questions' | 'prd-result';
+  step: 'expert-questions' | 'prd-result' | 'miso-design';
   expertAnswers?: Array<{
     question: string;
     answer: string;

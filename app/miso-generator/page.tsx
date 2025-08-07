@@ -562,7 +562,7 @@ function MisoGeneratorContent() {
          {/* 헤더 */}
          <div className="h-[60px] lg:h-[72px] px-4 lg:px-6 flex items-center border-b border-gray-100">
            <div>
-             <h2 className="text-[16px] lg:text-[18px] font-normal text-gray-900">분석 결과</h2>
+             <h2 className="text-[16px] lg:text-[18px] font-normal text-gray-900">MISO APP 설계</h2>
              <p className="text-[12px] lg:text-[13px] text-gray-500 font-light">워크플로우 설계</p>
            </div>
          </div>
