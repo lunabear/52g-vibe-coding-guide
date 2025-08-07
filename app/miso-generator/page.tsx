@@ -762,7 +762,7 @@ function MisoGeneratorContent() {
                               <div className="relative">
                                 <div className="absolute -top-5 right-2 lg:left-2 lg:right-auto w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-900"></div>
                                 MISO 에이전트의 프롬프트 영역에 아래와 같이 프롬프트를 작성해 주세요. <br />
-                                필요한 경우 우측의 '수정하기' 버튼으로 프롬프트를 바로 수정할 수 있습니다.
+                                필요한 경우 우측의 &apos;수정하기&apos; 버튼으로 프롬프트를 바로 수정할 수 있습니다.
                               </div>
                             </div>
                           )}
@@ -869,7 +869,7 @@ function MisoGeneratorContent() {
                                 <div className="relative">
                                   <div className="absolute -top-5 right-2 lg:left-2 lg:right-auto w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-900"></div>
                                   MISO 에이전트가 답변을 하기 위해 반드시 참조해야하는 문서(데이터)를 참조할 지식에 설정해 주어야 합니다.<br />
-                                  참조할 지식 설정 방법은 '지식 업로드 가이드'를 확인해 주세요.
+                                  참조할 지식 설정 방법은 &apos;지식 업로드 가이드&apos;를 확인해 주세요.
                                 </div>
                               </div>
                             )}

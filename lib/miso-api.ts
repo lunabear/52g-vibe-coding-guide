@@ -38,7 +38,7 @@ export class MISOAPIClient {
         // explanation이 있으면 그것을 반환 (정상적인 응답일 수 있음)
         if (errorData.explanation) {
           console.log('Found explanation in error response, treating as success');
-          return { explanation: errorData.explanation, flow: errorData.flow, prompt: errorData.prompt };
+          return { explanation: errorData.explanation, flow: errorData.flow, prompt: errorData.prompt, knowledge: errorData.knowledge };
         }
         
         return { explanation: `Error: ${errorData.error || 'Unknown error'}` };
@@ -185,7 +185,7 @@ export class MISOAPIClient {
     }
   }
 
-  async runMisoWorkflow(query: string): Promise<{ explanation: string; flow?: WorkflowNode[]; prompt?: string }> {
+  async runMisoWorkflow(query: string): Promise<{ explanation: string; flow?: WorkflowNode[]; prompt?: string; knowledge?: string }> {
     try {
       const response = await fetch('/api/miso/run-workflow', {
         method: 'POST',
@@ -206,7 +206,7 @@ export class MISOAPIClient {
         // explanation이 있으면 그것을 반환 (정상적인 응답일 수 있음)
         if (errorData.explanation) {
           console.log('Found explanation in error response, treating as success');
-          return { explanation: errorData.explanation, flow: errorData.flow, prompt: errorData.prompt };
+          return { explanation: errorData.explanation, flow: errorData.flow, prompt: errorData.prompt, knowledge: errorData.knowledge };
         }
         
         return { explanation: `Error: ${errorData.error || 'Unknown error'}` };
