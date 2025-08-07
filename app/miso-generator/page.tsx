@@ -39,6 +39,26 @@ function MisoGeneratorContent() {
   useEffect(() => {
     const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
     
+    // 항상 MISO 설계 데이터 확인 (새로고침 시에도 데이터 유지)
+    const savedMisoDesign = getMisoDesignFromSession();
+    if (savedMisoDesign) {
+      console.log('📋 MISO Generator - 이전 설계 데이터 발견:', savedMisoDesign);
+      setExpectedInput(savedMisoDesign.inputData);
+      setExpectedOutput(savedMisoDesign.resultData);
+      setDesiredAction(savedMisoDesign.businessLogic);
+      setUserExperience(savedMisoDesign.referenceData);
+      setErrorHandling(savedMisoDesign.misoAppType === 'agent' ? '챗봇 대화형식' : '단일 결과물 생성');
+      
+      // agentPrompt가 있으면 프롬프트와 지식도 복원
+      if (savedMisoDesign.agentPrompt) {
+        setPrompt(savedMisoDesign.agentPrompt);
+        setEditablePrompt(savedMisoDesign.agentPrompt);
+      }
+      if (savedMisoDesign.knowledge) {
+        setKnowledge(savedMisoDesign.knowledge);
+      }
+    }
+    
     if (fromMiniAlly) {
       const session = loadMiniAllySession();
       
@@ -55,19 +75,6 @@ function MisoGeneratorContent() {
         
       } else {
         console.log('⚠️ MISO Generator - Mini-Ally 세션을 찾을 수 없습니다.');
-      }
-    } else {
-      console.log('📝 MISO Generator - 일반 플로우로 시작됨');
-      
-      // 이전에 저장된 MISO 설계 데이터가 있으면 불러오기
-      const savedMisoDesign = getMisoDesignFromSession();
-      if (savedMisoDesign) {
-        console.log('📋 MISO Generator - 이전 설계 데이터 발견:', savedMisoDesign);
-        setExpectedInput(savedMisoDesign.inputData);
-        setExpectedOutput(savedMisoDesign.resultData);
-        setDesiredAction(savedMisoDesign.businessLogic);
-        setUserExperience(savedMisoDesign.referenceData);
-        setErrorHandling(savedMisoDesign.misoAppType === 'agent' ? '챗봇 대화형식' : '단일 결과물 생성');
       }
     }
   }, [searchParams]);
@@ -180,14 +187,15 @@ function MisoGeneratorContent() {
           setKnowledge(result.knowledge);
         }
         
-        // prompt를 세션에 저장
+        // prompt와 knowledge를 세션에 저장
         const updatedMisoDesignData: MisoDesignData = {
           inputData: expectedInput.trim(),
           resultData: expectedOutput.trim(),
           businessLogic: desiredAction.trim(),
           referenceData: userExperience.trim(),
           misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow',
-          agentPrompt: result.prompt
+          agentPrompt: result.prompt,
+          knowledge: result.knowledge
         };
         saveMisoDesignToSession(updatedMisoDesignData);
       } else {

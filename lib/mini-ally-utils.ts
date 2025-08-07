@@ -15,6 +15,7 @@ interface MisoDesignData {
   referenceData: string;
   misoAppType: 'agent' | 'workflow';
   agentPrompt?: string;
+  knowledge?: string;
 }
 
 interface MiniAllySession {
