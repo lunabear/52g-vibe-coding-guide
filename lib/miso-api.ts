@@ -9,7 +9,7 @@ interface MISOWorkflowResponse {
 }
 
 export class MISOAPIClient {
-  async runMisoWorkflowWithType(query: string, misoAppType?: string, optionalContext?: string | null): Promise<{ explanation: string; flow?: WorkflowNode[]; prompt?: string }> {
+  async runMisoWorkflowWithType(query: string, misoAppType?: string, optionalContext?: string | null): Promise<{ explanation: string; flow?: WorkflowNode[]; prompt?: string; knowledge?: string }> {
     try {
       const body: any = { query };
       if (misoAppType) {
@@ -46,7 +46,7 @@ export class MISOAPIClient {
 
       const data = await response.json();
       console.log('Success response data:', data);
-      return { explanation: data.explanation || '', flow: data.flow, prompt: data.prompt };
+      return { explanation: data.explanation || '', flow: data.flow, prompt: data.prompt, knowledge: data.knowledge };
     } catch (error) {
       console.error('Failed to run Miso workflow:', error);
       return { explanation: 'An unexpected error occurred.' };
@@ -214,7 +214,7 @@ export class MISOAPIClient {
 
       const data = await response.json();
       console.log('Success response data:', data);
-      return { explanation: data.explanation || '', flow: data.flow, prompt: data.prompt };
+      return { explanation: data.explanation || '', flow: data.flow, prompt: data.prompt, knowledge: data.knowledge };
     } catch (error) {
       console.error('Failed to run Miso workflow:', error);
       return { explanation: 'An unexpected error occurred.' };

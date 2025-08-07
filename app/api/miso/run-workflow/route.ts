@@ -66,29 +66,37 @@ export async function POST(req: NextRequest) {
 
     // miso_app_type이 있는 경우 (미소 앱 설계하기)와 없는 경우 (워크플로우 생성하기) 구분
     if (miso_app_type) {
-      // 미소 앱 설계하기의 경우 - prompt 추출에 집중
+      // 미소 앱 설계하기의 경우 - prompt와 knowledge 추출에 집중
       let prompt;
+      let knowledge;
       
-      // details.data.outputs.prompt 구조 확인
-      if (misoData.details && misoData.details.data && misoData.details.data.outputs && misoData.details.data.outputs.prompt) {
-        prompt = misoData.details.data.outputs.prompt;
+      // details.data.outputs 구조 확인
+      if (misoData.details && misoData.details.data && misoData.details.data.outputs) {
+        const outputs = misoData.details.data.outputs;
+        prompt = outputs.prompt;
+        knowledge = outputs.knowledge;
       }
-      // data.outputs.prompt 구조 확인
-      else if (misoData.data && misoData.data.outputs && misoData.data.outputs.prompt) {
-        prompt = misoData.data.outputs.prompt;
+      // data.outputs 구조 확인
+      else if (misoData.data && misoData.data.outputs) {
+        const outputs = misoData.data.outputs;
+        prompt = outputs.prompt;
+        knowledge = outputs.knowledge;
       }
-      // outputs.prompt 직접 확인
-      else if (misoData.outputs && misoData.outputs.prompt) {
+      // outputs 직접 확인
+      else if (misoData.outputs) {
         prompt = misoData.outputs.prompt;
+        knowledge = misoData.outputs.knowledge;
       }
       
       console.log('Extracted prompt for MISO App:', prompt);
+      console.log('Extracted knowledge for MISO App:', knowledge);
       
       // prompt가 있으면 성공 응답
       if (prompt && typeof prompt === 'string') {
         return NextResponse.json({ 
           explanation: '', // 빈 문자열로 설정
-          prompt: prompt 
+          prompt: prompt,
+          knowledge: knowledge || '' // knowledge도 포함
         }, { status: 200 });
       }
       

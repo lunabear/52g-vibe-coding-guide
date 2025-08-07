@@ -31,6 +31,7 @@ function MisoGeneratorContent() {
   const [isLoadingMisoApp, setIsLoadingMisoApp] = useState(false);
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [editablePrompt, setEditablePrompt] = useState('');
+  const [knowledge, setKnowledge] = useState('');
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -171,6 +172,11 @@ function MisoGeneratorContent() {
         // MISO 앱의 경우 prompt가 있음
         setPrompt(result.prompt);
         setEditablePrompt(result.prompt);
+        
+        // knowledge가 있으면 설정
+        if (result.knowledge) {
+          setKnowledge(result.knowledge);
+        }
         
         // prompt를 세션에 저장
         const updatedMisoDesignData: MisoDesignData = {
@@ -790,9 +796,15 @@ function MisoGeneratorContent() {
                           지식 업로드 가이드
                         </button>
                       </div>
-                      <div className="text-gray-500 text-sm">
-                        지식 영역은 현재 구현 중입니다.
-                      </div>
+                      {knowledge ? (
+                        <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                          {knowledge}
+                        </div>
+                      ) : (
+                        <div className="text-gray-500 text-sm">
+                          지식 영역은 현재 구현 중입니다.
+                        </div>
+                      )}
                     </div>
                     
                     {/* 도구 영역 */}
@@ -801,7 +813,6 @@ function MisoGeneratorContent() {
                         도구
                       </h3>
                       <div className="text-gray-500 text-sm">
-                        도구 영역은 현재 구현 중입니다.
                       </div>
                     </div>
                   </div>
