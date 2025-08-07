@@ -776,9 +776,20 @@ function MisoGeneratorContent() {
                   <div className="space-y-4">
                     {/* 지식 영역 */}
                     <div className="bg-white rounded-lg p-6 border border-gray-200 h-80">
-                      <h3 className="text-base font-medium text-gray-900 mb-4">
-                        참조할 지식
-                      </h3>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-base font-medium text-gray-900">
+                          참조할 지식
+                        </h3>
+                        <button
+                          onClick={() => window.open(EXTERNAL_LINKS.KNOWLEDGE_UPLOAD_GUIDE, '_blank')}
+                          className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          지식 업로드 가이드
+                        </button>
+                      </div>
                       <div className="text-gray-500 text-sm">
                         지식 영역은 현재 구현 중입니다.
                       </div>

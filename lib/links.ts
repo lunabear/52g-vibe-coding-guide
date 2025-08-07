@@ -5,6 +5,7 @@ export const EXTERNAL_LINKS = {
   V0_DOCUMENT_UPLOAD_GUIDE: 'https://www.notion.so/gsholdings/v0-22cf800bd1c180cb98e3cd0cdcf00a7f?source=copy_link#22cf800bd1c180368788e44bc7d430a3',
   // MISO 관련 링크
   PROMPT_WRITING_GUIDE: 'https://miso-52g.gitbook.io/miso-manual/study/prompt',
+  KNOWLEDGE_UPLOAD_GUIDE: 'https://miso-52g.gitbook.io/miso-manual/manual/6./build-knowledge',
 } as const;
 
 // 링크 타입 정의
