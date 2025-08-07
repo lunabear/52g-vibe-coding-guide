@@ -594,21 +594,43 @@ function MisoGeneratorContent() {
            <div className="w-full">
              <div className="flex items-center gap-2 mb-2">
                <h2 className="text-[16px] lg:text-[18px] font-medium text-gray-900">MISO 앱 설계</h2>
-               <span className="px-2 py-0.5 text-[10px] lg:text-[11px] font-medium bg-red-100 text-red-700 rounded-full">Agent</span>
+               {(() => {
+                const savedDesign = getMisoDesignFromSession();
+                const misoAppType = savedDesign?.misoAppType;
+                if (misoAppType === 'agent') {
+                  return <span className="px-2 py-0.5 text-[10px] lg:text-[11px] font-medium bg-red-100 text-red-700 rounded-full">Agent</span>;
+                } else if (misoAppType === 'workflow') {
+                  return <span className="px-2 py-0.5 text-[10px] lg:text-[11px] font-medium bg-green-100 text-green-700 rounded-full">Workflow</span>;
+                }
+                return null;
+              })()}
              </div>
-             <div className="flex items-center gap-2">
-               <span className="text-[11px] lg:text-[12px] text-gray-500">MISO에 로그인 하신 뒤</span>
-               <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5">
-                 <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
-                 <span className="text-gray-400">→</span>
-                 <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
-                 <span className="text-gray-400">→</span>
-                 <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
-                 <span className="text-gray-400">→</span>
-                 <span className="font-medium bg-red-50 border border-red-300 text-red-700 px-2 py-0.5 rounded">에이전트</span>
-                 <span className="text-gray-700 ml-1">에서 아래 내용을 참조하여 구현하세요</span>
-               </p>
-             </div>
+             {(() => {
+               const savedDesign = getMisoDesignFromSession();
+               const misoAppType = savedDesign?.misoAppType;
+               if (misoAppType) {
+                 return (
+                   <div className="flex items-center gap-2">
+                     <span className="text-[11px] lg:text-[12px] text-gray-500">MISO에 로그인 하신 뒤</span>
+                     <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5">
+                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
+                       <span className="text-gray-400">→</span>
+                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
+                       <span className="text-gray-400">→</span>
+                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
+                       <span className="text-gray-400">→</span>
+                       {misoAppType === 'agent' ? (
+                         <span className="font-medium bg-red-50 border border-red-300 text-red-700 px-2 py-0.5 rounded">에이전트</span>
+                       ) : (
+                         <span className="font-medium bg-green-50 border border-green-300 text-green-700 px-2 py-0.5 rounded">워크플로우</span>
+                       )}
+                       <span className="text-gray-700 ml-1">에서 아래 내용을 참조하여 구현하세요</span>
+                     </p>
+                   </div>
+                 );
+               }
+               return null;
+             })()}
            </div>
          </div>
          
