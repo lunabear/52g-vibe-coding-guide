@@ -153,6 +153,17 @@ function MisoGeneratorContent() {
       } else if (result.prompt) {
         // MISO 앱의 경우 prompt가 있음
         setPrompt(result.prompt);
+        
+        // prompt를 세션에 저장
+        const updatedMisoDesignData: MisoDesignData = {
+          inputData: expectedInput.trim(),
+          resultData: expectedOutput.trim(),
+          businessLogic: desiredAction.trim(),
+          referenceData: userExperience.trim(),
+          misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow',
+          agentPrompt: result.prompt
+        };
+        saveMisoDesignToSession(updatedMisoDesignData);
       } else {
         // prompt가 없으면 에러
         setError('MISO 앱 프롬프트를 생성하지 못했습니다.');
