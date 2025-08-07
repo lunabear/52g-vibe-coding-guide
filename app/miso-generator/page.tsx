@@ -141,6 +141,20 @@ function MisoGeneratorContent() {
     const query = generateMisoAppQuery();
     const misoAppType = errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow';
     
+    // 세션에서 Mini-Ally 데이터 확인하여 optional_context 생성
+    let optionalContext = null;
+    const session = loadMiniAllySession();
+    console.log('🔍 MISO App Submit - 세션 체크:', session);
+    
+    if (session && session.projectData) {
+      const pd = session.projectData;
+      console.log('📋 MISO App Submit - projectData:', pd);
+      optionalContext = `<personaProfile>${pd.personaProfile || ''}</personaProfile><painPointContext>${pd.painPointContext || ''}</painPointContext><painPointReason>${pd.painPointReason || ''}</painPointReason><coreProblemStatement>${pd.coreProblemStatement || ''}</coreProblemStatement><solutionNameIdea>${pd.solutionNameIdea || ''}</solutionNameIdea><solutionMechanism>${pd.solutionMechanism || ''}</solutionMechanism><expectedOutcome>${pd.expectedOutcome || ''}</expectedOutcome>`;
+      console.log('🎯 MISO App Submit - optionalContext 생성됨:', optionalContext);
+    } else {
+      console.log('⚠️ MISO App Submit - 세션 또는 projectData 없음');
+    }
+    
     setIsLoadingMisoApp(true);
     setError(null);
     setExplanation('');
@@ -148,7 +162,7 @@ function MisoGeneratorContent() {
     setPrompt('');
 
     try {
-      const result = await misoAPI.runMisoWorkflowWithType(query, misoAppType);
+      const result = await misoAPI.runMisoWorkflowWithType(query, misoAppType, optionalContext);
       
       // 에러 체크
       if (result.explanation && result.explanation.startsWith('Error:')) {

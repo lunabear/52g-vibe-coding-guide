@@ -9,11 +9,14 @@ interface MISOWorkflowResponse {
 }
 
 export class MISOAPIClient {
-  async runMisoWorkflowWithType(query: string, misoAppType?: string): Promise<{ explanation: string; flow?: WorkflowNode[]; prompt?: string }> {
+  async runMisoWorkflowWithType(query: string, misoAppType?: string, optionalContext?: string | null): Promise<{ explanation: string; flow?: WorkflowNode[]; prompt?: string }> {
     try {
       const body: any = { query };
       if (misoAppType) {
         body.miso_app_type = misoAppType;
+      }
+      if (optionalContext) {
+        body.optional_context = optionalContext;
       }
 
       const response = await fetch('/api/miso/run-workflow', {
