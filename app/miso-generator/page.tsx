@@ -28,6 +28,8 @@ function MisoGeneratorContent() {
   const [error, setError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
   const [isLoadingMisoApp, setIsLoadingMisoApp] = useState(false);
+  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
+  const [editablePrompt, setEditablePrompt] = useState('');
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -153,6 +155,7 @@ function MisoGeneratorContent() {
       } else if (result.prompt) {
         // MISO 앱의 경우 prompt가 있음
         setPrompt(result.prompt);
+        setEditablePrompt(result.prompt);
         
         // prompt를 세션에 저장
         const updatedMisoDesignData: MisoDesignData = {
@@ -173,6 +176,34 @@ function MisoGeneratorContent() {
     } finally {
       setIsLoadingMisoApp(false);
     }
+  };
+
+  // 프롬프트 편집 시작
+  const handleStartEditPrompt = () => {
+    setIsEditingPrompt(true);
+  };
+
+  // 프롬프트 편집 저장
+  const handleSavePrompt = () => {
+    setPrompt(editablePrompt);
+    setIsEditingPrompt(false);
+    
+    // 세션에 수정된 프롬프트 저장
+    const updatedMisoDesignData: MisoDesignData = {
+      inputData: expectedInput.trim(),
+      resultData: expectedOutput.trim(),
+      businessLogic: desiredAction.trim(),
+      referenceData: userExperience.trim(),
+      misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow',
+      agentPrompt: editablePrompt
+    };
+    saveMisoDesignToSession(updatedMisoDesignData);
+  };
+
+  // 프롬프트 편집 취소
+  const handleCancelEditPrompt = () => {
+    setEditablePrompt(prompt);
+    setIsEditingPrompt(false);
   };
 
   return (
@@ -648,33 +679,71 @@ function MisoGeneratorContent() {
                       <h3 className="text-base font-medium text-gray-900">
                         미소 앱 프롬프트
                       </h3>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(prompt);
-                          // 복사 완료 피드백
-                          const button = document.getElementById('copy-btn');
-                          if (button) {
-                            const originalText = button.textContent;
-                            button.textContent = '✓ 복사됨';
-                            button.classList.add('bg-green-100', 'text-green-700');
-                            setTimeout(() => {
-                              button.textContent = originalText || '';
-                              button.classList.remove('bg-green-100', 'text-green-700');
-                            }, 2000);
-                          }
-                        }}
-                        id="copy-btn"
-                        className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                        </svg>
-                        복사
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {!isEditingPrompt ? (
+                          <>
+                            <button
+                              onClick={handleStartEditPrompt}
+                              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              수정하기
+                            </button>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(prompt);
+                                // 복사 완료 피드백
+                                const button = document.getElementById('copy-btn');
+                                if (button) {
+                                  const originalText = button.textContent;
+                                  button.textContent = '✓ 복사됨';
+                                  button.classList.add('bg-green-100', 'text-green-700');
+                                  setTimeout(() => {
+                                    button.textContent = originalText || '';
+                                    button.classList.remove('bg-green-100', 'text-green-700');
+                                  }, 2000);
+                                }
+                              }}
+                              id="copy-btn"
+                              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                              </svg>
+                              복사
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={handleCancelEditPrompt}
+                              className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            >
+                              취소
+                            </button>
+                            <button
+                              onClick={handleSavePrompt}
+                              className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              저장하기
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">
-                      {prompt}
-                    </div>
+                    {isEditingPrompt ? (
+                      <textarea
+                        value={editablePrompt}
+                        onChange={(e) => setEditablePrompt(e.target.value)}
+                        className="w-full h-full min-h-96 p-4 text-gray-700 text-sm leading-relaxed border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      />
+                    ) : (
+                      <div className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">
+                        {prompt}
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -684,7 +753,7 @@ function MisoGeneratorContent() {
                     {/* 지식 영역 */}
                     <div className="bg-white rounded-lg p-6 border border-gray-200 h-80">
                       <h3 className="text-base font-medium text-gray-900 mb-4">
-                        지식
+                        참조할 지식
                       </h3>
                       <div className="text-gray-500 text-sm">
                         지식 영역은 현재 구현 중입니다.
