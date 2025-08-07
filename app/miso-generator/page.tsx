@@ -32,6 +32,8 @@ function MisoGeneratorContent() {
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [editablePrompt, setEditablePrompt] = useState('');
   const [knowledge, setKnowledge] = useState('');
+  const [showPromptTooltip, setShowPromptTooltip] = useState(false);
+  const [showKnowledgeTooltip, setShowKnowledgeTooltip] = useState(false);
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -580,10 +582,25 @@ function MisoGeneratorContent() {
              {/* 오른쪽 패널 - 결과 영역 */}
        <div className="w-full lg:w-[60%] h-1/2 lg:h-full bg-white border-l lg:border-l border-t lg:border-t-0 border-gray-100 flex flex-col">
          {/* 헤더 */}
-         <div className="h-[60px] lg:h-[72px] px-4 lg:px-6 flex items-center border-b border-gray-100">
-           <div>
-             <h2 className="text-[16px] lg:text-[18px] font-normal text-gray-900">MISO APP 설계</h2>
-             <p className="text-[12px] lg:text-[13px] text-gray-500 font-light">워크플로우 설계</p>
+         <div className="h-auto lg:h-[88px] px-4 lg:px-6 py-4 lg:py-0 flex items-center border-b border-gray-100">
+           <div className="w-full">
+             <div className="flex items-center gap-2 mb-2">
+               <h2 className="text-[16px] lg:text-[18px] font-medium text-gray-900">MISO 앱 설계</h2>
+               <span className="px-2 py-0.5 text-[10px] lg:text-[11px] font-medium bg-red-100 text-red-700 rounded-full">Agent</span>
+             </div>
+             <div className="flex items-center gap-2">
+               <span className="text-[11px] lg:text-[12px] text-gray-500">MISO에 로그인 하신 뒤</span>
+               <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5">
+                 <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
+                 <span className="text-gray-400">→</span>
+                 <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
+                 <span className="text-gray-400">→</span>
+                 <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
+                 <span className="text-gray-400">→</span>
+                 <span className="font-medium bg-red-50 border border-red-300 text-red-700 px-2 py-0.5 rounded">에이전트</span>
+                 <span className="text-gray-700 ml-1">에서 아래 내용을 참조하여 구현하세요</span>
+               </p>
+             </div>
            </div>
          </div>
          
@@ -697,9 +714,30 @@ function MisoGeneratorContent() {
                 <div className="flex-[2] overflow-y-auto">
                   <div className="bg-white rounded-lg p-6 border border-gray-200 h-full">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-base font-medium text-gray-900">
-                        미소 앱 프롬프트
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-medium text-gray-900">
+                          미소 앱 프롬프트
+                        </h3>
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowPromptTooltip(!showPromptTooltip)}
+                            onMouseEnter={() => setShowPromptTooltip(true)}
+                            onMouseLeave={() => setShowPromptTooltip(false)}
+                            className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 hover:border-gray-600 hover:text-gray-600 flex items-center justify-center text-xs"
+                          >
+                            ?
+                          </button>
+                          {showPromptTooltip && (
+                            <div className="absolute right-0 lg:left-0 lg:right-auto top-6 z-10 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg">
+                              <div className="relative">
+                                <div className="absolute -top-5 right-2 lg:left-2 lg:right-auto w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-900"></div>
+                                MISO 에이전트의 프롬프트 영역에 아래와 같이 프롬프트를 작성해 주세요. <br />
+                                필요한 경우 우측의 '수정하기' 버튼으로 프롬프트를 바로 수정할 수 있습니다.
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2">
                         {!isEditingPrompt ? (
                           <>
@@ -783,9 +821,30 @@ function MisoGeneratorContent() {
                     {/* 지식 영역 */}
                     <div className="bg-white rounded-lg p-6 border border-gray-200 h-80">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-base font-medium text-gray-900">
-                          참조할 지식
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-medium text-gray-900">
+                            참조할 지식
+                          </h3>
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowKnowledgeTooltip(!showKnowledgeTooltip)}
+                              onMouseEnter={() => setShowKnowledgeTooltip(true)}
+                              onMouseLeave={() => setShowKnowledgeTooltip(false)}
+                              className="w-4 h-4 rounded-full border border-gray-400 text-gray-400 hover:border-gray-600 hover:text-gray-600 flex items-center justify-center text-xs"
+                            >
+                              ?
+                            </button>
+                            {showKnowledgeTooltip && (
+                              <div className="absolute right-0 lg:left-0 lg:right-auto top-6 z-10 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg">
+                                <div className="relative">
+                                  <div className="absolute -top-5 right-2 lg:left-2 lg:right-auto w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-900"></div>
+                                  MISO 에이전트가 답변을 하기 위해 반드시 참조해야하는 문서(데이터)를 참조할 지식에 설정해 주어야 합니다.<br />
+                                  참조할 지식 설정 방법은 '지식 업로드 가이드'를 확인해 주세요.
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                         <button
                           onClick={() => window.open(EXTERNAL_LINKS.KNOWLEDGE_UPLOAD_GUIDE, '_blank')}
                           className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1"
