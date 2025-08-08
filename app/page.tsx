@@ -89,7 +89,7 @@ export default function Home() {
                     v0 구현 준비 단계
                   </span>
                   <h2 className="text-[22px] custom:text-[28px] leading-tight font-bold text-gray-900">
-                    개발 요구사항 정리가 <br /> 필요?
+                    개발 요구사항 정리가 <br /> 필요한가요?
                   </h2>
                 </div>
                 <p className="text-sm custom:text-base text-gray-600 font-light leading-relaxed">
