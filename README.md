@@ -35,11 +35,25 @@ npm install
 
 ### 환경 변수 설정
 
-`.env.local` 파일을 생성하고 다음 내용을 추가하세요:
+`.env.local` 파일을 생성하고 다음 값을 설정하세요.
 
 ```env
-NEXT_PUBLIC_MISO_API_KEY=your-miso-api-key
-NEXT_PUBLIC_MISO_ENDPOINT=https://api.holdings.miso.gs/ext/v1
+# MISO API Configuration
+MISO_API_KEY='---'
+MISO_ENDPOINT=https://api.holdings.miso.gs/ext/v1
+
+# MISO Generator API
+MISO_GENERATOR_API_KEY='---'
+
+# MISO Agent API Configuration
+MISO_AGENT_API_KEY='---'
+MISO_AGENT_ENDPOINT=https://api.holdings.miso.gs/ext/v1
+```
+
+
+- 참고: 기존 `NEXT_PUBLIC_*` 값은 더 이상 사용하지 않습니다.
+- 보안: `/.env.local`은 커밋하지 마세요.
+
 ```
 
 ### 개발 서버 실행
