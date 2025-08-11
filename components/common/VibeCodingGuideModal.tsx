@@ -17,13 +17,14 @@ interface VibeCodingGuideModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDownload: (includeMiso: boolean, misoType?: 'chatflow' | 'workflow' | 'both') => void;
+  defaultMisoType?: 'chatflow' | 'workflow' | 'both';
 }
 
-export function VibeCodingGuideModal({ isOpen, onClose, onDownload }: VibeCodingGuideModalProps) {
+export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoType }: VibeCodingGuideModalProps) {
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [includeMiso, setIncludeMiso] = useState(false);
-  const [misoType, setMisoType] = useState<'chatflow' | 'workflow' | 'both'>('chatflow');
+  const [includeMiso, setIncludeMiso] = useState(!!defaultMisoType);
+  const [misoType, setMisoType] = useState<'chatflow' | 'workflow' | 'both'>(defaultMisoType || 'chatflow');
 
   const promptText = generateVibeCodingPrompt(includeMiso);
 

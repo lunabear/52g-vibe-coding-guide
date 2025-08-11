@@ -12,7 +12,7 @@ import { misoAPI } from '@/lib/miso-api';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ErrorPage } from '@/components/common/ErrorPage';
 import { VibeCodingGuideModal } from '@/components/common/VibeCodingGuideModal';
-import { loadMiniAllySession, clearMiniAllySession } from '@/lib/mini-ally-utils';
+import { loadMiniAllySession, clearMiniAllySession, getMisoDesignFromSession, convertMisoAppTypeToVibeType } from '@/lib/mini-ally-utils';
 
 export default function PRDResultPage() {
   const router = useRouter();
@@ -1218,6 +1218,10 @@ export default function PRDResultPage() {
         isOpen={showVibeCodingModal}
         onClose={() => setShowVibeCodingModal(false)}
         onDownload={handleDownload}
+        defaultMisoType={(() => {
+          const misoDesign = getMisoDesignFromSession();
+          return misoDesign?.misoAppType ? convertMisoAppTypeToVibeType(misoDesign.misoAppType) : undefined;
+        })()}
       />
     </div>
   );

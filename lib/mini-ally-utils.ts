@@ -185,4 +185,11 @@ export function getMisoDesignFromSession(): MisoDesignData | null {
   }
 }
 
+/**
+ * MISO 앱 타입을 VibeCoding 모달의 타입으로 변환
+ */
+export function convertMisoAppTypeToVibeType(misoAppType: 'agent' | 'workflow'): 'chatflow' | 'workflow' {
+  return misoAppType === 'agent' ? 'chatflow' : 'workflow';
+}
+
 export type { ProjectData, MiniAllySession, MisoDesignData };

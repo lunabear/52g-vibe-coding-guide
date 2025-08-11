@@ -59,6 +59,7 @@ function PRDGeneratorContent() {
   // 쿼리 파라미터 확인
   const step = searchParams.get('step');
   const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
+  const fromMisoGenerator = searchParams.get('fromMisoGenerator') === 'true';
 
   // Mini-Ally 세션 체크 및 복구 모달 표시
   useEffect(() => {
@@ -68,12 +69,25 @@ function PRDGeneratorContent() {
       // Mini-Ally에서 직접 온 경우
       setIsMiniAllyFlow(true);
       setCurrentStep(4); // insight 단계로 바로 이동
-    } else if (session && !fromMiniAlly) {
-      // 이전 세션이 있고, Mini-Ally에서 직접 오지 않은 경우 복구 모달 표시
+    } else if (fromMisoGenerator) {
+      // Miso-Generator에서 온 경우
+      console.log('📋 PRD Generator - MISO Generator에서 유입됨');
+      if (session) {
+        // Mini-Ally → Miso-Generator → PRD-Generator 플로우
+        console.log('📊 PRD Generator - Mini-Ally + Miso 데이터 활용 가능');
+        setIsMiniAllyFlow(true);
+        setCurrentStep(4); // insight 단계로 바로 이동
+      } else {
+        // Miso-Generator → PRD-Generator 직접 플로우
+        console.log('📝 PRD Generator - MISO 설계 데이터만 활용');
+        setCurrentStep(0); // 첫 단계부터 시작
+      }
+    } else if (session && !fromMiniAlly && !fromMisoGenerator) {
+      // 이전 세션이 있고, 외부에서 직접 오지 않은 경우 복구 모달 표시
       setSavedSession(session);
       setShowRestoreModal(true);
     }
-  }, [fromMiniAlly, setCurrentStep]);
+  }, [fromMiniAlly, fromMisoGenerator, setCurrentStep]);
 
   // 힌트 생성 useEffect
   useEffect(() => {
