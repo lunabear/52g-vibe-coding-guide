@@ -189,34 +189,6 @@ export default function PRDResultPage() {
       zip.file(`3_개발자_Bob_개발작업설계_${date}.md`, databaseSchema);
     }
     
-    // README 파일 추가
-    const readmeContent = `# 프로젝트 문서 모음
-    
-## 포함된 문서들
-
-### 1. 기획자 Kyle의 PRD
-- 파일명: 1_기획자_Kyle_PRD_${date}.md
-- 내용: 프로덕트 요구사항 정의서
-- 비즈니스 관점에서 프로젝트의 목표, 기능, 요구사항을 정의
-
-### 2. 디자이너 Heather의 UI/UX 설계
-- 파일명: 2_디자이너_Heather_UI설계_${date}.md
-- 내용: 페이지별 UI/UX 설계 가이드
-- 사용자 경험 관점에서 인터페이스와 상호작용을 설계
-
-### 3. 개발자 Bob의 개발 작업 task 설계
-- 파일명: 3_개발자_Bob_개발작업설계_${date}.md
-- 내용: 개발 작업 task 및 구현 계획
-- 기술적 관점에서 개발 작업을 체계적으로 설계
-
-## 사용 방법
-각 문서는 마크다운 형식으로 작성되어 있습니다.
-마크다운 에디터나 뷰어에서 열어서 확인하실 수 있습니다.
-
-생성일: ${new Date().toLocaleString('ko-KR')}
-`;
-    
-    zip.file('README.md', readmeContent);
     
     // ZIP 파일 생성 및 다운로드
     const blob = await zip.generateAsync({ type: 'blob' });
