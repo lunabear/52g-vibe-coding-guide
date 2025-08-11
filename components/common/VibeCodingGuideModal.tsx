@@ -205,7 +205,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                       <Button
                         onClick={handleCopyPrompt}
                         size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 font-light"
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 font-medium"
                       >
                         {copied ? (
                           <>
@@ -279,7 +279,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                   <div className="flex-shrink-0">
                     <Button
                       onClick={handleDownloadAndClose}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-light"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-medium"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       문서 다운로드
