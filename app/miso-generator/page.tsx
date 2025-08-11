@@ -15,6 +15,7 @@ import { WorkflowNode } from '@/types/prd.types';
 import { cn } from '@/lib/utils';
 import { loadMiniAllySession, saveMisoDesignToSession, getMisoDesignFromSession, type MisoDesignData } from '@/lib/mini-ally-utils';
 import { EXTERNAL_LINKS } from '@/lib/links';
+import { MisoSkipConfirmModal } from '@/components/common/MisoSkipConfirmModal';
 
 function MisoGeneratorContent() {
   const router = useRouter();
@@ -36,6 +37,7 @@ function MisoGeneratorContent() {
   const [knowledge, setKnowledge] = useState('');
   const [showPromptTooltip, setShowPromptTooltip] = useState(false);
   const [showKnowledgeTooltip, setShowKnowledgeTooltip] = useState(false);
+  const [showSkipConfirmModal, setShowSkipConfirmModal] = useState(false);
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -233,12 +235,38 @@ function MisoGeneratorContent() {
     setIsEditingPrompt(false);
   };
 
+  // 바이브코딩 설계하기 버튼 클릭 핸들러
+  const handleVibeCodingClick = () => {
+    // MISO 앱설계 완료 상태 확인
+    const isMisoCompleted = prompt || explanation;
+    
+    if (!isMisoCompleted) {
+      // MISO 앱설계가 완료되지 않았으면 확인 모달 띄우기
+      setShowSkipConfirmModal(true);
+      return;
+    }
+    
+    // MISO 앱설계가 완료되었으면 바로 이동
+    proceedToVibeCoding();
+  };
+
+  // 바이브코딩으로 이동하는 실제 함수
+  const proceedToVibeCoding = () => {
+    const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
+    
+    if (fromMiniAlly) {
+      router.push('/prd-generator?fromMiniAlly=true&fromMisoGenerator=true');
+    } else {
+      router.push('/prd-generator?fromMisoGenerator=true');
+    }
+  };
+
   return (
     <div className="h-screen bg-white flex flex-col lg:flex-row overflow-hidden">
-             {/* 왼쪽 패널 - 입력 영역 */}
-       <div className="w-full lg:w-[40%] h-1/2 lg:h-full bg-[#FAFAFA] flex flex-col">
-        {/* 헤더 */}
-        <div className="h-[60px] lg:h-[72px] px-4 lg:px-6 flex items-center justify-between border-b border-gray-100">
+      {/* 왼쪽 패널 - 입력 영역 */}
+      <div className="w-full lg:w-[40%] h-1/2 lg:h-full bg-[#FAFAFA] flex flex-col">
+        {/* 왼쪽 헤더 */}
+        <div className="h-auto lg:h-[88px] px-4 lg:px-6 py-4 lg:py-0 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -561,55 +589,62 @@ function MisoGeneratorContent() {
         </div>
       </div>
 
-             {/* 오른쪽 패널 - 결과 영역 */}
-       <div className="w-full lg:w-[60%] h-1/2 lg:h-full bg-white border-l lg:border-l border-t lg:border-t-0 border-gray-100 flex flex-col">
-         {/* 헤더 */}
-         <div className="h-auto lg:h-[88px] px-4 lg:px-6 py-4 lg:py-0 flex items-center border-b border-gray-100">
-           <div className="w-full">
-             <div className="flex items-center gap-2 mb-2">
-               <h2 className="text-[16px] lg:text-[18px] font-medium text-gray-900">MISO 앱 설계</h2>
-               {(() => {
-                const savedDesign = getMisoDesignFromSession();
-                const misoAppType = savedDesign?.misoAppType;
-                if (misoAppType === 'agent') {
-                  return <span className="px-2 py-0.5 text-[10px] lg:text-[11px] font-medium bg-red-100 text-red-700 rounded-full">Agent</span>;
-                } else if (misoAppType === 'workflow') {
-                  return <span className="px-2 py-0.5 text-[10px] lg:text-[11px] font-medium bg-green-100 text-green-700 rounded-full">Workflow</span>;
-                }
-                return null;
-              })()}
-             </div>
-             {(() => {
+      {/* 오른쪽 패널 - 결과 영역 */}
+      <div className="w-full lg:w-[60%] h-1/2 lg:h-full bg-white border-l lg:border-l border-t lg:border-t-0 border-gray-100 flex flex-col">
+        {/* 헤더 */}
+        <div className="h-auto lg:h-[88px] px-4 lg:px-6 py-4 lg:py-0 flex items-center justify-between border-b border-gray-100">
+          <div className="w-full">
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-[16px] lg:text-[18px] font-medium text-gray-900">MISO 앱 설계</h2>
+              {(() => {
                const savedDesign = getMisoDesignFromSession();
                const misoAppType = savedDesign?.misoAppType;
-               if (misoAppType) {
-                 return (
-                   <div className="flex items-center gap-2">
-                     <span className="text-[11px] lg:text-[12px] text-gray-500">MISO에 로그인 하신 뒤</span>
-                     <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5">
-                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
-                       <span className="text-gray-400">→</span>
-                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
-                       <span className="text-gray-400">→</span>
-                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
-                       <span className="text-gray-400">→</span>
-                       {misoAppType === 'agent' ? (
-                         <span className="font-medium bg-red-50 border border-red-300 text-red-700 px-2 py-0.5 rounded">에이전트</span>
-                       ) : (
-                         <span className="font-medium bg-green-50 border border-green-300 text-green-700 px-2 py-0.5 rounded">워크플로우</span>
-                       )}
-                       <span className="text-gray-700 ml-1">에서 아래 내용을 참조하여 구현하세요</span>
-                     </p>
-                   </div>
-                 );
+               if (misoAppType === 'agent') {
+                 return <span className="px-2 py-0.5 text-[10px] lg:text-[11px] font-medium bg-red-100 text-red-700 rounded-full">Agent</span>;
+               } else if (misoAppType === 'workflow') {
+                 return <span className="px-2 py-0.5 text-[10px] lg:text-[11px] font-medium bg-green-100 text-green-700 rounded-full">Workflow</span>;
                }
                return null;
              })()}
-           </div>
-         </div>
+            </div>
+            {(() => {
+              const savedDesign = getMisoDesignFromSession();
+              const misoAppType = savedDesign?.misoAppType;
+              if (misoAppType) {
+                return (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] lg:text-[12px] text-gray-500">MISO에 로그인 하신 뒤</span>
+                    <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5">
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
+                      <span className="text-gray-400">→</span>
+                      {misoAppType === 'agent' ? (
+                        <span className="font-medium bg-red-50 border border-red-300 text-red-700 px-2 py-0.5 rounded">에이전트</span>
+                      ) : (
+                        <span className="font-medium bg-green-50 border border-green-300 text-green-700 px-2 py-0.5 rounded">워크플로우</span>
+                      )}
+                      <span className="text-gray-700 ml-1">에서 아래 내용을 참조하여 구현하세요</span>
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+          </div>
+          <Button
+            onClick={handleVibeCodingClick}
+            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            바이브코딩 설계하기
+          </Button>
+        </div>
          
-         {/* 결과 영역 */}
-         <div className="flex-1 overflow-hidden">
+        {/* 결과 영역 */}
+        <div className="flex-1 overflow-hidden">
+
            {(isLoading || isLoadingMisoApp) && (
              <div className="h-full flex flex-col items-center justify-center px-8">
                <div className="w-16 h-16 mb-6 bg-gray-50 rounded-full flex items-center justify-center">
@@ -727,8 +762,8 @@ function MisoGeneratorContent() {
             <div className="h-full overflow-y-auto">
               <div className="h-full flex gap-6 p-6">
                 {/* 좌측: 프롬프트 영역 (2/3) */}
-                <div className="flex-[2] overflow-y-auto">
-                  <div className="bg-white rounded-lg p-6 border border-gray-200 h-full">
+                <div className="flex-[2] min-w-0 overflow-hidden">
+                  <div className="bg-white rounded-lg p-6 border border-gray-200 h-full flex flex-col">
                     <div className="flex justify-between items-center mb-4">
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-medium text-gray-900">
@@ -817,22 +852,26 @@ function MisoGeneratorContent() {
                         )}
                       </div>
                     </div>
-                    {isEditingPrompt ? (
-                      <textarea
-                        value={editablePrompt}
-                        onChange={(e) => setEditablePrompt(e.target.value)}
-                        className="w-full h-full min-h-96 p-4 text-gray-700 text-sm leading-relaxed border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      />
-                    ) : (
-                      <div className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">
-                        {prompt}
-                      </div>
-                    )}
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                      {isEditingPrompt ? (
+                        <textarea
+                          value={editablePrompt}
+                          onChange={(e) => setEditablePrompt(e.target.value)}
+                          className="w-full h-full p-4 text-gray-700 text-sm leading-relaxed border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        />
+                      ) : (
+                        <div className="h-full overflow-y-auto p-4 border border-gray-200 rounded-lg">
+                          <div className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed break-words">
+                            {prompt}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
                 {/* 우측: 지식 및 도구 영역 (1/3) */}
-                <div className="flex-[1] overflow-y-auto">
+                <div className="flex-[1] min-w-0 overflow-hidden">
                   <div className="space-y-4">
                     {/* 지식 영역 */}
                     <div className="bg-white rounded-lg p-6 border border-gray-200 h-80">
@@ -898,7 +937,13 @@ function MisoGeneratorContent() {
         </div>
       </div>
 
-      
+      {/* MISO 스킵 확인 모달 */}
+      <MisoSkipConfirmModal
+        isOpen={showSkipConfirmModal}
+        onClose={() => setShowSkipConfirmModal(false)}
+        onConfirm={proceedToVibeCoding}
+        onCancel={() => {}}
+      />
     </div>
   );
 }
