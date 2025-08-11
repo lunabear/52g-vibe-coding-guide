@@ -25,6 +25,7 @@ function MisoGeneratorContent() {
   const [misoAppType, setMisoAppType] = useState('');
   const [explanation, setExplanation] = useState('');
   const [flow, setFlow] = useState<WorkflowNode[]>([]);
+  const [flowYaml, setFlowYaml] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -85,7 +86,7 @@ function MisoGeneratorContent() {
 
   // XML 태그로 조합된 쿼리 생성 (워크플로우용)
   const generateQuery = () => {
-    return `<input>${expectedInput.trim()}</input><output>${expectedOutput.trim()}</output><action>${desiredAction.trim()}</action><experience>${userExperience.trim()}</experience><error_handling>${misoAppType.trim()}</error_handling>`;
+    return `<input>${expectedInput.trim()}</input><output>${expectedOutput.trim()}</output><action>${desiredAction.trim()}</action><experience>${userExperience.trim()}</experience>`;
   };
 
   // XML 태그로 조합된 쿼리 생성 (미소 앱용)
@@ -117,15 +118,19 @@ function MisoGeneratorContent() {
       setError(null);
       setExplanation('');
       setFlow([]);
+      setFlowYaml('');
 
       try {
-        const result = await misoAPI.runMisoWorkflow(query);
+        const result = await misoAPI.runMisoWorkflowWithType(query, 'workflow', null);
         if (result.explanation.startsWith('Error:')) {
           setError(result.explanation);
         } else {
           setExplanation(result.explanation);
           if (result.flow) {
             setFlow(result.flow);
+          }
+          if (result.flowYaml) {
+            setFlowYaml(result.flowYaml);
           }
         }
       } catch (e) {
@@ -158,6 +163,7 @@ function MisoGeneratorContent() {
     setError(null);
     setExplanation('');
     setFlow([]);
+    setFlowYaml('');
     setPrompt('');
 
     try {
@@ -666,7 +672,7 @@ function MisoGeneratorContent() {
                 {/* 설명 섹션 */}
                 <div className="bg-white rounded-lg p-6 border border-gray-200">
                   <h3 className="text-base font-medium text-gray-900 mb-4">
-                    설명
+                    워크플로우 설명
                   </h3>
                   <div className="prose prose-sm max-w-none text-[14px] lg:text-[16px] font-light leading-relaxed [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                     <ReactMarkdown 
@@ -687,12 +693,57 @@ function MisoGeneratorContent() {
                             {children}
                           </li>
                         ),
+                        strong: ({ children }) => (
+                          <strong className="font-semibold text-gray-900">
+                            {children}
+                          </strong>
+                        ),
                       }}
                     >
                       {explanation}
                     </ReactMarkdown>
                   </div>
                 </div>
+                
+                {/* YAML 코드 섹션 */}
+                {flowYaml && (
+                  <div className="bg-white rounded-lg p-6 border border-gray-200">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-base font-medium text-gray-900">
+                        워크플로우 YAML 코드
+                      </h3>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(flowYaml);
+                          const button = document.getElementById('copy-yaml-btn');
+                          if (button) {
+                            const originalText = button.textContent;
+                            button.textContent = '✓ 복사됨';
+                            button.classList.add('bg-green-100', 'text-green-700', 'border-green-300');
+                            button.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+                            setTimeout(() => {
+                              button.textContent = originalText || '';
+                              button.classList.remove('bg-green-100', 'text-green-700', 'border-green-300');
+                              button.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+                            }, 2000);
+                          }
+                        }}
+                        id="copy-yaml-btn"
+                        className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        YAML 복사
+                      </button>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4 overflow-x-auto">
+                      <pre className="text-xs font-mono text-gray-700 whitespace-pre">
+                        <code>{flowYaml}</code>
+                      </pre>
+                    </div>
+                  </div>
+                )}
                 
                 {/* 워크플로우 시각화 */}
                 {flow.length > 0 && (

@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
     const misoData = JSON.parse(responseText);
     console.log('Parsed Miso data:', JSON.stringify(misoData, null, 2));
 
-    // miso_app_type이 있는 경우 (미소 앱 설계하기)와 없는 경우 (워크플로우 생성하기) 구분
-    if (miso_app_type) {
+    // miso_app_type이 'agent'인 경우 (미소 앱 설계하기)와 'workflow'인 경우 (워크플로우 생성하기) 구분
+    if (miso_app_type === 'agent') {
       // 미소 앱 설계하기의 경우 - prompt와 knowledge 추출에 집중
       let prompt;
       let knowledge;
@@ -108,20 +108,24 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
       
     } else {
-      // 기존 워크플로우 생성하기의 경우 - explanation과 flow 추출
+      // 기존 워크플로우 생성하기의 경우 - explanation과 flow_yaml 추출
       let explanation;
+      let flowYaml;
       let flow;
       
       if (misoData.data && misoData.data.outputs) {
-        // 실제 Miso API 응답 구조에서 explanation, flow 추출
+        // 실제 Miso API 응답 구조에서 explanation, flow_yaml 추출
         explanation = misoData.data.outputs.explanation;
+        flowYaml = misoData.data.outputs.flow_yaml;
         flow = misoData.data.outputs.flow;
       } else if (misoData.outputs) {
         explanation = misoData.outputs.explanation || misoData.outputs.result;
+        flowYaml = misoData.outputs.flow_yaml;
         flow = misoData.outputs.flow;
       } else {
         // 다른 가능한 구조들도 체크
         explanation = misoData.explanation || misoData.result || misoData.message || misoData.response;
+        flowYaml = misoData.flow_yaml;
         flow = misoData.flow;
       }
       
@@ -131,11 +135,15 @@ export async function POST(req: NextRequest) {
       }
       
       console.log('Extracted explanation:', explanation);
+      console.log('Extracted flow_yaml:', flowYaml);
       console.log('Extracted flow:', flow);
       
-      // 성공적으로 explanation을 추출했는지 확인 (flow는 선택적)
+      // 성공적으로 explanation을 추출했는지 확인 (flow_yaml과 flow는 선택적)
       if (explanation && typeof explanation === 'string') {
         const response: any = { explanation };
+        if (flowYaml && typeof flowYaml === 'string') {
+          response.flowYaml = flowYaml;
+        }
         if (flow && Array.isArray(flow)) {
           response.flow = flow;
         }
