@@ -22,7 +22,7 @@ function MisoGeneratorContent() {
   const [expectedOutput, setExpectedOutput] = useState('');
   const [desiredAction, setDesiredAction] = useState('');
   const [userExperience, setUserExperience] = useState('');
-  const [errorHandling, setErrorHandling] = useState('');
+  const [misoAppType, setMisoAppType] = useState('');
   const [explanation, setExplanation] = useState('');
   const [flow, setFlow] = useState<WorkflowNode[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +47,7 @@ function MisoGeneratorContent() {
       setExpectedOutput(savedMisoDesign.resultData);
       setDesiredAction(savedMisoDesign.businessLogic);
       setUserExperience(savedMisoDesign.referenceData);
-      setErrorHandling(savedMisoDesign.misoAppType === 'agent' ? '챗봇 대화형식' : '단일 결과물 생성');
+      setMisoAppType(savedMisoDesign.misoAppType === 'agent' ? '챗봇 대화형식' : '단일 결과물 생성');
       
       // agentPrompt가 있으면 프롬프트와 지식도 복원
       if (savedMisoDesign.agentPrompt) {
@@ -80,12 +80,12 @@ function MisoGeneratorContent() {
   }, [searchParams]);
   // 폼 유효성 검사
   const canSubmit = () => {
-    return expectedInput.trim() && expectedOutput.trim() && desiredAction.trim() && userExperience.trim() && errorHandling.trim();
+    return expectedInput.trim() && expectedOutput.trim() && desiredAction.trim() && userExperience.trim() && misoAppType.trim();
   };
 
   // XML 태그로 조합된 쿼리 생성 (워크플로우용)
   const generateQuery = () => {
-    return `<input>${expectedInput.trim()}</input><output>${expectedOutput.trim()}</output><action>${desiredAction.trim()}</action><experience>${userExperience.trim()}</experience><error_handling>${errorHandling.trim()}</error_handling>`;
+    return `<input>${expectedInput.trim()}</input><output>${expectedOutput.trim()}</output><action>${desiredAction.trim()}</action><experience>${userExperience.trim()}</experience><error_handling>${misoAppType.trim()}</error_handling>`;
   };
 
   // XML 태그로 조합된 쿼리 생성 (미소 앱용)
@@ -106,12 +106,12 @@ function MisoGeneratorContent() {
       resultData: expectedOutput.trim(),
       businessLogic: desiredAction.trim(),
       referenceData: userExperience.trim(),
-      misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow'
+      misoAppType: misoAppType === '챗봇 대화형식' ? 'agent' : 'workflow'
     };
     saveMisoDesignToSession(misoDesignData);
 
     // 5번 질문이 '단일 결과물 생성'인 경우 워크플로우 생성 로직 실행
-    if (errorHandling === '단일 결과물 생성') {
+    if (misoAppType === '단일 결과물 생성') {
       const query = generateQuery();
       setIsLoading(true);
       setError(null);
@@ -138,7 +138,7 @@ function MisoGeneratorContent() {
 
     // 5번 질문이 '챗봇 대화형식'인 경우 기존 미소 앱 생성 로직 실행
     const query = generateMisoAppQuery();
-    const misoAppType = errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow';
+    const appType = misoAppType === '챗봇 대화형식' ? 'agent' : 'workflow';
     
     // 세션에서 Mini-Ally 데이터 확인하여 optional_context 생성
     let optionalContext = null;
@@ -161,7 +161,7 @@ function MisoGeneratorContent() {
     setPrompt('');
 
     try {
-      const result = await misoAPI.runMisoWorkflowWithType(query, misoAppType, optionalContext);
+      const result = await misoAPI.runMisoWorkflowWithType(query, appType, optionalContext);
       
       // 에러 체크
       if (result.explanation && result.explanation.startsWith('Error:')) {
@@ -182,7 +182,7 @@ function MisoGeneratorContent() {
           resultData: expectedOutput.trim(),
           businessLogic: desiredAction.trim(),
           referenceData: userExperience.trim(),
-          misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow',
+          misoAppType: misoAppType === '챗봇 대화형식' ? 'agent' : 'workflow',
           agentPrompt: result.prompt,
           knowledge: result.knowledge
         };
@@ -214,7 +214,7 @@ function MisoGeneratorContent() {
       resultData: expectedOutput.trim(),
       businessLogic: desiredAction.trim(),
       referenceData: userExperience.trim(),
-      misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow',
+      misoAppType: misoAppType === '챗봇 대화형식' ? 'agent' : 'workflow',
       agentPrompt: editablePrompt
     };
     saveMisoDesignToSession(updatedMisoDesignData);
@@ -437,20 +437,20 @@ function MisoGeneratorContent() {
                       <div 
                         className={cn(
                           "border-2 rounded-xl p-4 cursor-pointer transition-all",
-                          errorHandling === '챗봇 대화형식' 
+                          misoAppType === '챗봇 대화형식' 
                             ? "border-blue-300 bg-blue-50" 
                             : "border-gray-200 hover:border-gray-300"
                         )}
-                        onClick={() => setErrorHandling('챗봇 대화형식')}
+                        onClick={() => setMisoAppType('챗봇 대화형식')}
                       >
                         <div className="flex items-start gap-3">
                           <div className={cn(
                             "w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5",
-                            errorHandling === '챗봇 대화형식'
+                            misoAppType === '챗봇 대화형식'
                               ? "border-blue-500 bg-blue-500"
                               : "border-gray-300"
                           )}>
-                            {errorHandling === '챗봇 대화형식' && (
+                            {misoAppType === '챗봇 대화형식' && (
                               <div className="w-2 h-2 rounded-full bg-white"></div>
                             )}
                           </div>
@@ -471,20 +471,20 @@ function MisoGeneratorContent() {
                       <div 
                         className={cn(
                           "border-2 rounded-xl p-4 cursor-pointer transition-all",
-                          errorHandling === '단일 결과물 생성' 
+                          misoAppType === '단일 결과물 생성' 
                             ? "border-blue-300 bg-blue-50" 
                             : "border-gray-200 hover:border-gray-300"
                         )}
-                        onClick={() => setErrorHandling('단일 결과물 생성')}
+                        onClick={() => setMisoAppType('단일 결과물 생성')}
                       >
                         <div className="flex items-start gap-3">
                           <div className={cn(
                             "w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5",
-                            errorHandling === '단일 결과물 생성'
+                            misoAppType === '단일 결과물 생성'
                               ? "border-blue-500 bg-blue-500"
                               : "border-gray-300"
                           )}>
-                            {errorHandling === '단일 결과물 생성' && (
+                            {misoAppType === '단일 결과물 생성' && (
                               <div className="w-2 h-2 rounded-full bg-white"></div>
                             )}
                           </div>
@@ -503,7 +503,7 @@ function MisoGeneratorContent() {
 
                       <button
                         type="button"
-                        onClick={() => setErrorHandling('잘 모르겠습니다')}
+                        onClick={() => setMisoAppType('잘 모르겠습니다')}
                         className="text-sm text-gray-500 hover:text-black transition-colors font-light"
                       >
                         잘 모르겠어요 →
@@ -528,7 +528,7 @@ function MisoGeneratorContent() {
           <div className="bg-white border-t border-gray-100 p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500 font-light">
-                {[expectedInput, expectedOutput, desiredAction, userExperience, errorHandling].filter(v => v.trim().length > 0).length}/5 질문 답변 완료
+                {[expectedInput, expectedOutput, desiredAction, userExperience, misoAppType].filter(v => v.trim().length > 0).length}/5 질문 답변 완료
               </span>
               <Button 
                 onClick={handleMisoAppSubmit}
