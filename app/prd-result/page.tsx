@@ -170,7 +170,7 @@ export default function PRDResultPage() {
     }
   }, [prdContent, designContent, hasFetchedDatabase, isDesignError]);
 
-  const handleDownload = async () => {
+  const handleDownload = async (includeMiso: boolean = false, misoType?: 'chatflow' | 'workflow' | 'both') => {
     const zip = new JSZip();
     const date = new Date().toISOString().split('T')[0];
     
@@ -189,6 +189,19 @@ export default function PRDResultPage() {
       zip.file(`3_개발자_Bob_개발작업설계_${date}.md`, databaseSchema);
     }
     
+    // 4. MISO API 가이드 추가
+    if (includeMiso && misoType) {
+      // MISO API 가이드 파일 내용을 추가
+      const { MISO_CHATFLOW_AGENT_GUIDE, MISO_WORKFLOW_GUIDE } = await import('@/lib/prompts/vibe-coding-guide');
+      
+      if (misoType === 'chatflow' || misoType === 'both') {
+        zip.file(`miso_api_guide_agent,chatflow.md`, MISO_CHATFLOW_AGENT_GUIDE);
+      }
+      
+      if (misoType === 'workflow' || misoType === 'both') {
+        zip.file(`miso_api_guide_workflow.md`, MISO_WORKFLOW_GUIDE);
+      }
+    }
     
     // ZIP 파일 생성 및 다운로드
     const blob = await zip.generateAsync({ type: 'blob' });
