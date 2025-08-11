@@ -745,8 +745,8 @@ function MisoGeneratorContent() {
             <div className="h-full overflow-y-auto">
               <div className="h-full flex gap-6 p-6">
                 {/* 좌측: 프롬프트 영역 (2/3) */}
-                <div className="flex-[2] overflow-y-auto">
-                  <div className="bg-white rounded-lg p-6 border border-gray-200 h-full">
+                <div className="flex-[2] min-w-0 overflow-hidden">
+                  <div className="bg-white rounded-lg p-6 border border-gray-200 h-full flex flex-col">
                     <div className="flex justify-between items-center mb-4">
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-medium text-gray-900">
@@ -835,22 +835,26 @@ function MisoGeneratorContent() {
                         )}
                       </div>
                     </div>
-                    {isEditingPrompt ? (
-                      <textarea
-                        value={editablePrompt}
-                        onChange={(e) => setEditablePrompt(e.target.value)}
-                        className="w-full h-full min-h-96 p-4 text-gray-700 text-sm leading-relaxed border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      />
-                    ) : (
-                      <div className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">
-                        {prompt}
-                      </div>
-                    )}
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                      {isEditingPrompt ? (
+                        <textarea
+                          value={editablePrompt}
+                          onChange={(e) => setEditablePrompt(e.target.value)}
+                          className="w-full h-full p-4 text-gray-700 text-sm leading-relaxed border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        />
+                      ) : (
+                        <div className="h-full overflow-y-auto p-4 border border-gray-200 rounded-lg">
+                          <div className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed break-words">
+                            {prompt}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
                 {/* 우측: 지식 및 도구 영역 (1/3) */}
-                <div className="flex-[1] overflow-y-auto">
+                <div className="flex-[1] min-w-0 overflow-hidden">
                   <div className="space-y-4">
                     {/* 지식 영역 */}
                     <div className="bg-white rounded-lg p-6 border border-gray-200 h-80">
