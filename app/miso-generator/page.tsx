@@ -15,6 +15,7 @@ import { WorkflowNode } from '@/types/prd.types';
 import { cn } from '@/lib/utils';
 import { loadMiniAllySession, saveMisoDesignToSession, getMisoDesignFromSession, type MisoDesignData } from '@/lib/mini-ally-utils';
 import { EXTERNAL_LINKS } from '@/lib/links';
+import { MisoSkipConfirmModal } from '@/components/common/MisoSkipConfirmModal';
 
 function MisoGeneratorContent() {
   const router = useRouter();
@@ -36,6 +37,7 @@ function MisoGeneratorContent() {
   const [knowledge, setKnowledge] = useState('');
   const [showPromptTooltip, setShowPromptTooltip] = useState(false);
   const [showKnowledgeTooltip, setShowKnowledgeTooltip] = useState(false);
+  const [showSkipConfirmModal, setShowSkipConfirmModal] = useState(false);
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -235,6 +237,21 @@ function MisoGeneratorContent() {
 
   // 바이브코딩 설계하기 버튼 클릭 핸들러
   const handleVibeCodingClick = () => {
+    // MISO 앱설계 완료 상태 확인
+    const isMisoCompleted = prompt || explanation;
+    
+    if (!isMisoCompleted) {
+      // MISO 앱설계가 완료되지 않았으면 확인 모달 띄우기
+      setShowSkipConfirmModal(true);
+      return;
+    }
+    
+    // MISO 앱설계가 완료되었으면 바로 이동
+    proceedToVibeCoding();
+  };
+
+  // 바이브코딩으로 이동하는 실제 함수
+  const proceedToVibeCoding = () => {
     const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
     
     if (fromMiniAlly) {
@@ -919,6 +936,14 @@ function MisoGeneratorContent() {
           )}
         </div>
       </div>
+
+      {/* MISO 스킵 확인 모달 */}
+      <MisoSkipConfirmModal
+        isOpen={showSkipConfirmModal}
+        onClose={() => setShowSkipConfirmModal(false)}
+        onConfirm={proceedToVibeCoding}
+        onCancel={() => {}}
+      />
     </div>
   );
 }
