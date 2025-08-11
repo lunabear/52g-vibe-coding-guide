@@ -61,7 +61,7 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
         if (currentSection === 'nodes') {
           if (trimmed.startsWith('- id:')) {
             if (currentNode) {
-              if (currentConfig) currentNode.config = currentConfig;
+              if (currentConfig) (currentNode as any).config = currentConfig;
               result.workflow.nodes.push(currentNode);
             }
             const idValue = trimmed.replace('- id:', '').trim().replace(/['"]/g, '');
@@ -83,7 +83,7 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
               }
             } else {
               value = value.replace(/^["']|["']$/g, '');
-              currentNode[key] = value;
+              (currentNode as any)[key] = value;
             }
           } else if (inConfig && currentNode && trimmed.includes(':')) {
             const colonIndex = trimmed.indexOf(':');
@@ -104,13 +104,13 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
             const colonIndex = trimmed.indexOf(':');
             const key = trimmed.substring(0, colonIndex).trim();
             let value = trimmed.substring(colonIndex + 1).trim().replace(/^["']|["']$/g, '');
-            currentConnection[key] = value;
+            (currentConnection as any)[key] = value;
           }
         }
       });
 
       if (currentNode) {
-        if (currentConfig) currentNode.config = currentConfig;
+        if (currentConfig) (currentNode as any).config = currentConfig;
         result.workflow.nodes.push(currentNode);
       }
       if (currentConnection) {
