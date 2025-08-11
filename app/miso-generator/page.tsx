@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { misoAPI } from '@/lib/miso-api';
 import MISOLoading from '@/components/common/MISOLoading';
 import WorkflowVisualization from '@/components/common/WorkflowVisualization';
+import YamlWorkflowVisualizer from '@/components/common/YamlWorkflowVisualizer';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { WorkflowNode } from '@/types/prd.types';
@@ -705,43 +706,10 @@ function MisoGeneratorContent() {
                   </div>
                 </div>
                 
-                {/* YAML 코드 섹션 */}
+                {/* YAML 워크플로우 시각화 섹션 */}
                 {flowYaml && (
                   <div className="bg-white rounded-lg p-6 border border-gray-200">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-base font-medium text-gray-900">
-                        워크플로우 YAML 코드
-                      </h3>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(flowYaml);
-                          const button = document.getElementById('copy-yaml-btn');
-                          if (button) {
-                            const originalText = button.textContent;
-                            button.textContent = '✓ 복사됨';
-                            button.classList.add('bg-green-100', 'text-green-700', 'border-green-300');
-                            button.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
-                            setTimeout(() => {
-                              button.textContent = originalText || '';
-                              button.classList.remove('bg-green-100', 'text-green-700', 'border-green-300');
-                              button.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
-                            }, 2000);
-                          }
-                        }}
-                        id="copy-yaml-btn"
-                        className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                        </svg>
-                        YAML 복사
-                      </button>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4 overflow-x-auto">
-                      <pre className="text-xs font-mono text-gray-700 whitespace-pre">
-                        <code>{flowYaml}</code>
-                      </pre>
-                    </div>
+                    <YamlWorkflowVisualizer yamlContent={flowYaml} />
                   </div>
                 )}
                 
