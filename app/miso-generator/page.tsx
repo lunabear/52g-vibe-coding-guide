@@ -93,44 +93,6 @@ function MisoGeneratorContent() {
     return `<inputData>${expectedInput.trim()}</inputData><resultData>${expectedOutput.trim()}</resultData><businessLogic>${desiredAction.trim()}</businessLogic><referenceData>${userExperience.trim()}</referenceData>`;
   };
 
-  const handleSubmit = async () => {
-    if (!canSubmit()) {
-      setError('모든 항목을 입력해주세요.');
-      return;
-    }
-
-    // MISO 설계 데이터를 세션에 저장
-    const misoDesignData: MisoDesignData = {
-      inputData: expectedInput.trim(),
-      resultData: expectedOutput.trim(),
-      businessLogic: desiredAction.trim(),
-      referenceData: userExperience.trim(),
-      misoAppType: errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow'
-    };
-    saveMisoDesignToSession(misoDesignData);
-
-    const query = generateQuery();
-    setIsLoading(true);
-    setError(null);
-    setExplanation('');
-    setFlow([]);
-
-    try {
-      const result = await misoAPI.runMisoWorkflow(query);
-      if (result.explanation.startsWith('Error:')) {
-        setError(result.explanation);
-      } else {
-        setExplanation(result.explanation);
-        if (result.flow) {
-          setFlow(result.flow);
-        }
-      }
-    } catch (e) {
-      setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleMisoAppSubmit = async () => {
     if (!canSubmit()) {
@@ -148,6 +110,33 @@ function MisoGeneratorContent() {
     };
     saveMisoDesignToSession(misoDesignData);
 
+    // 5번 질문이 '단일 결과물 생성'인 경우 워크플로우 생성 로직 실행
+    if (errorHandling === '단일 결과물 생성') {
+      const query = generateQuery();
+      setIsLoading(true);
+      setError(null);
+      setExplanation('');
+      setFlow([]);
+
+      try {
+        const result = await misoAPI.runMisoWorkflow(query);
+        if (result.explanation.startsWith('Error:')) {
+          setError(result.explanation);
+        } else {
+          setExplanation(result.explanation);
+          if (result.flow) {
+            setFlow(result.flow);
+          }
+        }
+      } catch (e) {
+        setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // 5번 질문이 '챗봇 대화형식'인 경우 기존 미소 앱 생성 로직 실행
     const query = generateMisoAppQuery();
     const misoAppType = errorHandling === '챗봇 대화형식' ? 'agent' : 'workflow';
     
@@ -541,47 +530,25 @@ function MisoGeneratorContent() {
               <span className="text-sm text-gray-500 font-light">
                 {[expectedInput, expectedOutput, desiredAction, userExperience, errorHandling].filter(v => v.trim().length > 0).length}/5 질문 답변 완료
               </span>
-              <div className="flex items-center gap-3">
-                <Button 
-                  onClick={handleMisoAppSubmit}
-                  disabled={isLoading || isLoadingMisoApp || !canSubmit()}
-                  variant="outline"
-                  className={cn(
-                    "text-[14px] lg:text-[16px] px-6 py-3 rounded-md transition-all font-medium",
-                    canSubmit() && !isLoading && !isLoadingMisoApp
-                      ? "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      : "bg-gray-50 text-gray-400 border-gray-200"
-                  )}
-                >
-                  {isLoadingMisoApp ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                      <span>설계 중...</span>
-                    </div>
-                  ) : (
-                    <span>미소 앱 설계하기</span>
-                  )}
-                </Button>
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={isLoading || isLoadingMisoApp || !canSubmit()}
-                  className={cn(
-                    "text-[14px] lg:text-[16px] px-6 py-3 rounded-md transition-all font-medium",
-                    canSubmit() && !isLoading && !isLoadingMisoApp
-                      ? "bg-gray-900 hover:bg-gray-800 text-white"
-                      : "bg-gray-100 text-gray-400"
-                  )}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>설계 중...</span>
-                    </div>
-                  ) : (
-                    <span>워크플로우 생성하기</span>
-                  )}
-                </Button>
-              </div>
+              <Button 
+                onClick={handleMisoAppSubmit}
+                disabled={isLoading || isLoadingMisoApp || !canSubmit()}
+                className={cn(
+                  "text-[14px] lg:text-[16px] px-6 py-3 rounded-md transition-all font-medium",
+                  canSubmit() && !isLoading && !isLoadingMisoApp
+                    ? "bg-gray-900 hover:bg-gray-800 text-white"
+                    : "bg-gray-100 text-gray-400"
+                )}
+              >
+                {(isLoading || isLoadingMisoApp) ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>설계 중...</span>
+                  </div>
+                ) : (
+                  <span>미소 앱 생성하기</span>
+                )}
+              </Button>
             </div>
           </div>
         </div>
