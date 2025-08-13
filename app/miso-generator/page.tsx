@@ -38,6 +38,8 @@ function MisoGeneratorContent() {
   const [showPromptTooltip, setShowPromptTooltip] = useState(false);
   const [showKnowledgeTooltip, setShowKnowledgeTooltip] = useState(false);
   const [showSkipConfirmModal, setShowSkipConfirmModal] = useState(false);
+  const [showV0GuideModal, setShowV0GuideModal] = useState(false);
+  const [showWorkflowGuideModal, setShowWorkflowGuideModal] = useState(false);
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -634,12 +636,41 @@ function MisoGeneratorContent() {
               return null;
             })()}
           </div>
-          <Button
-            onClick={handleVibeCodingClick}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            바이브코딩 설계하기
-          </Button>
+          {(() => {
+            const savedDesign = getMisoDesignFromSession();
+            const isWorkflowType = savedDesign?.misoAppType === 'workflow';
+            
+            if (isWorkflowType && explanation) {
+              // 워크플로우 타입이고 결과가 있을 때 버튼들 표시
+              return (
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => setShowWorkflowGuideModal(true)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    워크플로우 구현이 어려우신가요?
+                  </Button>
+                  <Button
+                    onClick={() => setShowV0GuideModal(true)}
+                    className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    구현한 워크플로우를 v0에 연결해 보고 싶으신가요?
+                  </Button>
+                </div>
+              );
+            } else if (!isWorkflowType) {
+              // 에이전트 타입일 때만 바이브코딩 버튼 표시
+              return (
+                <Button
+                  onClick={handleVibeCodingClick}
+                  className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  바이브코딩 설계하기
+                </Button>
+              );
+            }
+            return null;
+          })()}
         </div>
          
         {/* 결과 영역 */}
@@ -714,6 +745,21 @@ function MisoGeneratorContent() {
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       components={{
+                        h1: ({ children }) => (
+                          <h1 className="text-2xl font-bold text-gray-900 mb-4 mt-6 first:mt-0">
+                            {children}
+                          </h1>
+                        ),
+                        h2: ({ children }) => (
+                          <h2 className="text-xl font-semibold text-gray-900 mb-3 mt-5 first:mt-0">
+                            {children}
+                          </h2>
+                        ),
+                        h3: ({ children }) => (
+                          <h3 className="text-lg font-medium text-gray-900 mb-2 mt-4 first:mt-0">
+                            {children}
+                          </h3>
+                        ),
                         p: ({ children }) => (
                           <p className="text-gray-700 leading-relaxed mb-3 last:mb-0">
                             {children}
@@ -944,6 +990,103 @@ function MisoGeneratorContent() {
         onConfirm={proceedToVibeCoding}
         onCancel={() => {}}
       />
+      
+      {/* v0 연결 가이드 모달 */}
+      {showV0GuideModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">v0와 워크플로우 연결하기</h2>
+              <button
+                onClick={() => setShowV0GuideModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="prose prose-sm max-w-none">
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  공유 받으신 노션에서 <strong>"[해커톤] MISO와 v0 연결"</strong> 문서를 참조하셔서<br/>
+                  구현한 워크플로우와 v0를 연동하는 가이드를 확인하실 수 있습니다.
+                </p>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-900 mb-2">
+                  <strong>📍 문서 위치:</strong>
+                </p>
+                <div className="bg-white rounded p-3 border border-blue-200">
+                  <p className="text-sm text-gray-700 font-mono">
+                    [해커톤] 해커 리모트 플레이그라운드 → 해커톤 툴 사용 꿀팁 → <strong>[해커톤] MISO와 v0 연결</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <Button
+                onClick={() => setShowV0GuideModal(false)}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                확인
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 워크플로우 구현 가이드 모달 */}
+      {showWorkflowGuideModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">💡 워크플로우 구현이 어려우신가요?</h2>
+              <button
+                onClick={() => setShowWorkflowGuideModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <p className="text-gray-700 text-base leading-relaxed">
+                  <a 
+                    href="https://gs52g.goorm.io" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-700 hover:underline font-semibold"
+                  >
+                    gs52g.goorm.io
+                  </a>
+                  <span className="text-gray-600">의</span>
+                  {' '}
+                  <strong className="bg-white border border-gray-300 px-2 py-1 rounded">나도 이제 MISO 전문가!</strong>
+                  <span className="text-gray-600">에서</span>
+                  {' '}
+                  <span className="text-gray-700">워크플로우 구현 가이드 영상을 보실 수 있습니다.</span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <Button
+                onClick={() => setShowWorkflowGuideModal(false)}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                확인
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
