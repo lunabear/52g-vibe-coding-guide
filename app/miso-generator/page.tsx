@@ -263,6 +263,23 @@ function MisoGeneratorContent() {
     }
   };
 
+  // 텍스트에리어 자동 높이 조절 함수
+  const handleTextareaResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target;
+    const lineHeight = 24; // 대략적인 줄 높이
+    const minRows = 3;
+    const maxRows = 10;
+    
+    // 높이를 초기화하여 정확한 scrollHeight를 계산
+    textarea.style.height = 'auto';
+    
+    // 줄 수 계산
+    const rows = Math.min(Math.max(Math.ceil(textarea.scrollHeight / lineHeight), minRows), maxRows);
+    
+    // 높이 설정
+    textarea.style.height = `${rows * lineHeight}px`;
+  };
+
   return (
     <div className="h-screen bg-white flex flex-col lg:flex-row overflow-hidden">
       {/* 왼쪽 패널 - 입력 영역 */}
@@ -327,11 +344,15 @@ function MisoGeneratorContent() {
                     <div className="space-y-3">
                       <textarea
                         value={expectedInput}
-                        onChange={(e) => setExpectedInput(e.target.value)}
+                        onChange={(e) => {
+                          setExpectedInput(e.target.value);
+                          handleTextareaResize(e);
+                        }}
                         placeholder="예: 이름 입력, 상품 검색, 위치 선택, 사진 업로드"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
+                        style={{ minHeight: '72px', maxHeight: '240px' }}
                       />
                       <button
                         type="button"
@@ -364,11 +385,15 @@ function MisoGeneratorContent() {
                     <div className="space-y-3">
                       <textarea
                         value={expectedOutput}
-                        onChange={(e) => setExpectedOutput(e.target.value)}
+                        onChange={(e) => {
+                          setExpectedOutput(e.target.value);
+                          handleTextareaResize(e);
+                        }}
                         placeholder="예: 추천 상품 목록, 날씨 정보, 분석 결과, 번역문"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
+                        style={{ minHeight: '72px', maxHeight: '240px' }}
                       />
                       <button
                         type="button"
@@ -401,11 +426,15 @@ function MisoGeneratorContent() {
                     <div className="space-y-3">
                       <textarea
                         value={desiredAction}
-                        onChange={(e) => setDesiredAction(e.target.value)}
+                        onChange={(e) => {
+                          setDesiredAction(e.target.value);
+                          handleTextareaResize(e);
+                        }}
                         placeholder="예: 입력 분석, 조건에 맞는 결과 검색, 이미지 변환"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
+                        style={{ minHeight: '72px', maxHeight: '240px' }}
                       />
                       <button
                         type="button"
@@ -438,11 +467,15 @@ function MisoGeneratorContent() {
                     <div className="space-y-3">
                       <textarea
                         value={userExperience}
-                        onChange={(e) => setUserExperience(e.target.value)}
+                        onChange={(e) => {
+                          setUserExperience(e.target.value);
+                          handleTextareaResize(e);
+                        }}
                         placeholder="예: 사내 규정 문서, 제품 매뉴얼, 고객 응대 가이드"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
+                        style={{ minHeight: '72px', maxHeight: '240px' }}
                       />
                       <button
                         type="button"
