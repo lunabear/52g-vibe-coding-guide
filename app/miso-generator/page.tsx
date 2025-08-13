@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronRight, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -42,10 +42,17 @@ function MisoGeneratorContent() {
   const [showWorkflowGuideModal, setShowWorkflowGuideModal] = useState(false);
   const [showPromptGuideModal, setShowPromptGuideModal] = useState(false);
   const [showKnowledgeGuideModal, setShowKnowledgeGuideModal] = useState(false);
+  const [showMiniAllyInlineSummary, setShowMiniAllyInlineSummary] = useState(false);
+  const [miniAllyProjectData, setMiniAllyProjectData] = useState<any>(null);
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
     const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
+    // Mini-Ally 세션 데이터 로드 (있을 때만 배너/요약 표시)
+    const miniAllySession = loadMiniAllySession();
+    if (miniAllySession?.projectData) {
+      setMiniAllyProjectData(miniAllySession.projectData);
+    }
     
     // 항상 MISO 설계 데이터 확인 (새로고침 시에도 데이터 유지)
     const savedMisoDesign = getMisoDesignFromSession();
@@ -301,6 +308,8 @@ function MisoGeneratorContent() {
           </div>
         </div>
 
+        {/* 미니엘리 배너는 콘텐츠 헤더 아래로 이동 */}
+
         {/* 메인 콘텐츠 */}
         <div className="flex-1 overflow-y-auto">
           <div className="w-full px-4 lg:px-8 py-8">
@@ -323,6 +332,30 @@ function MisoGeneratorContent() {
                   </div>
                 </div>
               </div>
+              {/* 미니엘리 배너 - 콘텐츠 헤더 아래 */}
+              {miniAllyProjectData && (
+                <div className="px-0 lg:px-0 py-0 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowMiniAllyInlineSummary(true)}
+                    className="w-full group bg-blue-50/60 hover:bg-blue-50 rounded-2xl p-4 flex items-center justify-between border border-blue-100 hover:border-blue-200 transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-white overflow-hidden border border-blue-200 flex-shrink-0">
+                        <img
+                          src="/assets/mini_ally_default.png"
+                          alt="Mini Ally"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-blue-800">
+                        미니 앨리와 정리한 내용 확인하기
+                      </span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-blue-600 transition-transform group-hover:translate-x-0.5" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* 설문 폼 */}
@@ -716,24 +749,92 @@ function MisoGeneratorContent() {
              </div>
            )}
 
-           {!isLoading && !isLoadingMisoApp && !explanation && !prompt && !error && (
-             <div className="h-full flex flex-col items-center justify-center text-center px-8">
-               <div className="w-48 h-48 lg:w-56 lg:h-56 mx-auto mb-6 p-2">
-                 <img
-                   src="/assets/minian-drawing.png"
-                   alt="MISO Minian"
-                   className="w-full h-full object-contain object-center"
-                 />
-               </div>
-               <h3 className="text-[20px] lg:text-[24px] font-light text-gray-900 mb-3">
-                 분석 결과가 여기에 표시됩니다
-               </h3>
-               <p className="text-[14px] lg:text-[16px] text-gray-500 leading-relaxed font-light">
-                 왼쪽 질문에 답변해주시면<br />
-                 맞춤형 워크플로우를 설계해드립니다
-               </p>
-             </div>
-           )}
+          {!isLoading && !isLoadingMisoApp && !explanation && !prompt && !error && (
+            <div className="h-full px-6 py-8 min-h-0">
+              <div className={`grid grid-cols-1 xl:grid-cols-2 gap-6 h-full min-h-0`}>
+                {/* 왼쪽: 미니 앨리 요약 (열렸을 때만 렌더링) */}
+                {showMiniAllyInlineSummary && miniAllyProjectData ? (
+                  <div className="order-2 xl:order-1 border border-blue-100 bg-blue-50/40 rounded-xl p-4 h-full min-h-0 flex flex-col">
+                    <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="text-sm text-blue-900 font-medium">미니 앨리 요약</div>
+                        <button
+                          type="button"
+                          onClick={() => setShowMiniAllyInlineSummary(false)}
+                          className="p-1 rounded hover:bg-blue-100 transition-colors"
+                          aria-label="닫기"
+                        >
+                          <X className="w-4 h-4 text-blue-700" />
+                        </button>
+                      </div>
+                      <div className="space-y-3 text-[14px] text-gray-800">
+                        {miniAllyProjectData.personaProfile && (
+                          <div>
+                            <div className="text-gray-600 text-xs mb-1">타겟 사용자</div>
+                            <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.personaProfile}</div>
+                          </div>
+                        )}
+                        {miniAllyProjectData.painPointContext && (
+                          <div>
+                            <div className="text-gray-600 text-xs mb-1">문제 상황</div>
+                            <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.painPointContext}</div>
+                          </div>
+                        )}
+                        {miniAllyProjectData.painPointReason && (
+                          <div>
+                            <div className="text-gray-600 text-xs mb-1">문제의 원인</div>
+                            <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.painPointReason}</div>
+                          </div>
+                        )}
+                        {miniAllyProjectData.coreProblemStatement && (
+                          <div>
+                            <div className="text-gray-600 text-xs mb-1">핵심 문제</div>
+                            <div className="bg-white rounded-md border border-blue-100 p-3 font-medium">{miniAllyProjectData.coreProblemStatement}</div>
+                          </div>
+                        )}
+                        {miniAllyProjectData.solutionNameIdea && (
+                          <div>
+                            <div className="text-gray-600 text-xs mb-1">아이디어 이름</div>
+                            <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.solutionNameIdea}</div>
+                          </div>
+                        )}
+                        {miniAllyProjectData.solutionMechanism && (
+                          <div>
+                            <div className="text-gray-600 text-xs mb-1">작동 방식</div>
+                            <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.solutionMechanism}</div>
+                          </div>
+                        )}
+                        {miniAllyProjectData.expectedOutcome && (
+                          <div>
+                            <div className="text-gray-600 text-xs mb-1">기대 효과</div>
+                            <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.expectedOutcome}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* 오른쪽: 분석 결과 안내 영역 (항상 렌더링, 닫히면 전체 확장) */}
+                <div className={`order-1 xl:order-2 ${showMiniAllyInlineSummary && miniAllyProjectData ? 'xl:col-span-1' : 'xl:col-span-2'} flex flex-col items-center justify-center text-center px-6 border border-dashed border-gray-200 rounded-xl`}>
+                  <div className="w-40 h-40 lg:w-48 lg:h-48 mx-auto mb-6 p-2">
+                    <img
+                      src="/assets/minian-drawing.png"
+                      alt="MISO Minian"
+                      className="w-full h-full object-contain object-center"
+                    />
+                  </div>
+                  <h3 className="text-[20px] lg:text-[24px] font-light text-gray-900 mb-3 text-center">
+                    분석 결과가 여기에 표시됩니다
+                  </h3>
+                  <p className="text-[14px] lg:text-[16px] text-gray-500 leading-relaxed font-light text-center">
+                    왼쪽 질문에 답변해주시면<br />
+                    맞춤형 워크플로우를 설계해드립니다
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
            {!isLoading && !isLoadingMisoApp && error && (
              <div className="h-full flex flex-col items-center justify-center text-center px-8">
