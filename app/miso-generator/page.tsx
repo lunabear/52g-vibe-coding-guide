@@ -583,7 +583,7 @@ function MisoGeneratorContent() {
                     <span>설계 중...</span>
                   </div>
                 ) : (
-                  <span>미소 앱 생성하기</span>
+                  <span>미소 앱 설계하기</span>
                 )}
               </Button>
             </div>
