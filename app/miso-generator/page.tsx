@@ -612,32 +612,6 @@ function MisoGeneratorContent() {
                return null;
              })()}
             </div>
-            {(() => {
-              const savedDesign = getMisoDesignFromSession();
-              const misoAppType = savedDesign?.misoAppType;
-              if (misoAppType) {
-                return (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] lg:text-[12px] text-gray-500">MISO에 로그인 하신 뒤</span>
-                    <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5">
-                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
-                      <span className="text-gray-400">→</span>
-                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
-                      <span className="text-gray-400">→</span>
-                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
-                      <span className="text-gray-400">→</span>
-                      {misoAppType === 'agent' ? (
-                        <span className="font-medium bg-red-50 border border-red-300 text-red-700 px-2 py-0.5 rounded">에이전트</span>
-                      ) : (
-                        <span className="font-medium bg-green-50 border border-green-300 text-green-700 px-2 py-0.5 rounded">워크플로우</span>
-                      )}
-                      <span className="text-gray-700 ml-1">에서 아래 내용을 참조하여 구현하세요</span>
-                    </p>
-                  </div>
-                );
-              }
-              return null;
-            })()}
           </div>
           {(() => {
             const savedDesign = getMisoDesignFromSession();
@@ -733,9 +707,19 @@ function MisoGeneratorContent() {
               <div className="mx-auto px-4 lg:px-8 py-8 space-y-6">
                 {/* 설명 섹션 */}
                 <div className="bg-white rounded-lg p-6 border border-gray-200">
-                  <h3 className="text-base font-medium text-gray-900 mb-4">
-                    워크플로우 설명
-                  </h3>
+                  <div className="mb-4">
+                    <span className="text-[11px] lg:text-[12px] text-gray-500">MISO에 로그인 하신 뒤</span>
+                    <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5 mt-1">
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-medium bg-green-50 border border-green-300 text-green-700 px-2 py-0.5 rounded">워크플로우</span>
+                      <span className="text-gray-700 ml-1">에서 아래 내용을 참조하여 구현하세요</span>
+                    </p>
+                  </div>
                   <div className="prose prose-sm max-w-none text-[14px] lg:text-[16px] font-light leading-relaxed [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
