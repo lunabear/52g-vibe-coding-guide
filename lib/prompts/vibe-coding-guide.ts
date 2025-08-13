@@ -39,9 +39,11 @@ export const MISO_API_PROMPT = `
 ### API 연동 가이드
 - 사용자가 miso_api 연동을 원할 경우 Source 섹션의 MISO API 가이드 파일을 참고하세요
 - streaming 모드일 경우 스트리밍 응답 처리에서 발생할 수 있는 오류에 주의하세요
+- API 호출은 백엔드에서 처리하도록 구현합니다.
 - API 연동에 필요한 환경변수를 설정합니다:
-  - NEXT_PUBLIC_MISO_ENDPOINT={ENDPOINT_ADDRESS}
-  - NEXT_PUBLIC_MISO_API_KEY={MISO_API_KEY}
+  - (NEXT_PUBLIC_ 은 사용하지 않습니다)
+  - MISO_ENDPOINT={ENDPOINT_ADDRESS}
+  - MISO_API_KEY={MISO_API_KEY}
 - 환경변수가 없다면 사용자에게 환경변수 입력을 가이드합니다
 - API의 응답을 확인할 수 있는 디버깅용 주요 console.log를 코드에 포함하세요
 
