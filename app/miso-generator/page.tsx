@@ -44,6 +44,7 @@ function MisoGeneratorContent() {
   const [showKnowledgeGuideModal, setShowKnowledgeGuideModal] = useState(false);
   const [showMiniAllyInlineSummary, setShowMiniAllyInlineSummary] = useState(false);
   const [miniAllyProjectData, setMiniAllyProjectData] = useState<any>(null);
+  const [isCanceled, setIsCanceled] = useState(false);
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -270,6 +271,14 @@ function MisoGeneratorContent() {
     } else {
       router.push('/prd-generator?fromMisoGenerator=true');
     }
+  };
+
+  // 로딩 취소 핸들러
+  const handleCancelProcessing = () => {
+    setIsLoading(false);
+    setIsLoadingMisoApp(false);
+    setIsCanceled(true);
+    // 필요 시 진행 중인 요청 AbortController 연결 가능
   };
 
   // 텍스트에리어 자동 높이 조절 함수
@@ -713,11 +722,15 @@ function MisoGeneratorContent() {
         {/* 결과 영역 */}
         <div className="flex-1 overflow-hidden">
 
-           {(isLoading || isLoadingMisoApp) && (
-             <div className="h-full flex flex-col items-center justify-center px-8">
-               <div className="w-20 h-20 mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full flex items-center justify-center shadow-sm">
-                 <div className="w-8 h-8 border-3 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-               </div>
+            {(isLoading || isLoadingMisoApp) && (
+              <div className="h-full flex flex-col items-center justify-center px-8">
+                <div className="w-28 h-28 mb-6 rounded-full overflow-hidden border border-blue-100 shadow-sm flex items-center justify-center">
+                  <img
+                    src="/assets/miso_processing_realtime.gif"
+                    alt={isLoadingMisoApp ? '미소 앱 설계 로딩' : '워크플로우 설계 로딩'}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                <div className="text-center max-w-md">
                  <h3 className="text-[18px] lg:text-[20px] font-medium text-gray-900 mb-3">
                    {isLoadingMisoApp ? '🎨 미소 앱을 설계하고 있습니다' : '⚙️ 워크플로우를 설계하고 있습니다'}
@@ -735,7 +748,7 @@ function MisoGeneratorContent() {
                      </>
                    )}
                  </p>
-                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-lg">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-lg">
                    <div className="flex gap-1">
                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></span>
                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></span>
@@ -745,6 +758,16 @@ function MisoGeneratorContent() {
                      최대 3분 정도 소요될 수 있습니다
                    </span>
                  </div>
+                  <div className="mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancelProcessing}
+                      className="px-4 py-2 text-sm border-gray-300 hover:bg-gray-100"
+                    >
+                      취소
+                    </Button>
+                  </div>
                </div>
              </div>
            )}
