@@ -1010,7 +1010,7 @@ function MisoGeneratorContent() {
             <div className="space-y-4">
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  공유 받으신 노션에서 <strong>"[해커톤] MISO와 v0 연결"</strong> 문서를 참조하셔서<br/>
+                  공유 받으신 노션에서 <strong>&quot;[해커톤] MISO와 v0 연결&quot;</strong> 문서를 참조하셔서<br/>
                   구현한 워크플로우와 v0를 연동하는 가이드를 확인하실 수 있습니다.
                 </p>
               </div>
