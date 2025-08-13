@@ -40,6 +40,8 @@ function MisoGeneratorContent() {
   const [showSkipConfirmModal, setShowSkipConfirmModal] = useState(false);
   const [showV0GuideModal, setShowV0GuideModal] = useState(false);
   const [showWorkflowGuideModal, setShowWorkflowGuideModal] = useState(false);
+  const [showPromptGuideModal, setShowPromptGuideModal] = useState(false);
+  const [showKnowledgeGuideModal, setShowKnowledgeGuideModal] = useState(false);
 
   // Mini-Ally 세션 체크 및 MISO 설계 데이터 로드
   useEffect(() => {
@@ -869,7 +871,7 @@ function MisoGeneratorContent() {
                         {!isEditingPrompt ? (
                           <>
                             <button
-                              onClick={() => window.open(EXTERNAL_LINKS.PROMPT_WRITING_GUIDE, '_blank')}
+                              onClick={() => setShowPromptGuideModal(true)}
                               className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1"
                             >
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -977,7 +979,7 @@ function MisoGeneratorContent() {
                           </div>
                         </div>
                         <button
-                          onClick={() => window.open(EXTERNAL_LINKS.KNOWLEDGE_UPLOAD_GUIDE, '_blank')}
+                          onClick={() => setShowKnowledgeGuideModal(true)}
                           className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1"
                         >
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1126,6 +1128,100 @@ function MisoGeneratorContent() {
             <div className="mt-6 flex justify-end">
               <Button
                 onClick={() => setShowWorkflowGuideModal(false)}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                확인
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 프롬프트 작성 가이드 모달 */}
+      {showPromptGuideModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">프롬프트 작성 가이드</h2>
+              <button
+                onClick={() => setShowPromptGuideModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-900 mb-2">
+                  <strong>📍 가이드 위치:</strong>
+                </p>
+                <div className="bg-white rounded p-3 border border-blue-200">
+                  <p className="text-sm text-gray-700 font-mono">
+                    <strong>MISO</strong> → <strong>학습하기</strong> → <strong>미소 학습하기</strong> → <strong>프롬프트 작성 가이드</strong>
+                  </p>
+                </div>
+              </div>
+              
+              <div className="prose prose-sm max-w-none">
+                <p className="text-gray-700 leading-relaxed">
+                  위의 문서에서 자세한 프롬프팅 방법을 확인해 보실 수 있습니다.
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <Button
+                onClick={() => setShowPromptGuideModal(false)}
+                className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                확인
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 지식 업로드 가이드 모달 */}
+      {showKnowledgeGuideModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">지식 업로드 가이드</h2>
+              <button
+                onClick={() => setShowKnowledgeGuideModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-900 mb-2">
+                  <strong>📍 가이드 위치:</strong>
+                </p>
+                <div className="bg-white rounded p-3 border border-blue-200">
+                  <p className="text-sm text-gray-700 font-mono">
+                    <strong>MISO</strong> → <strong>학습하기</strong> → <strong>6. 지식</strong> → <strong>지식 구성하기</strong>
+                  </p>
+                </div>
+              </div>
+              
+              <div className="prose prose-sm max-w-none">
+                <p className="text-gray-700 leading-relaxed">
+                위의 문서에서 자세한 프롬프팅 방법을 확인해 보실 수 있습니다.
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <Button
+                onClick={() => setShowKnowledgeGuideModal(false)}
                 className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
               >
                 확인
