@@ -680,17 +680,35 @@ function MisoGeneratorContent() {
 
            {(isLoading || isLoadingMisoApp) && (
              <div className="h-full flex flex-col items-center justify-center px-8">
-               <div className="w-16 h-16 mb-6 bg-gray-50 rounded-full flex items-center justify-center">
-                 <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin"></div>
+               <div className="w-20 h-20 mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full flex items-center justify-center shadow-sm">
+                 <div className="w-8 h-8 border-3 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
                </div>
-               <div className="text-center">
-                 <p className="text-sm text-gray-600 font-light mb-2">
-                   {isLoadingMisoApp ? '미소 앱 설계 중' : '워크플로우 설계 중'}
+               <div className="text-center max-w-md">
+                 <h3 className="text-[18px] lg:text-[20px] font-medium text-gray-900 mb-3">
+                   {isLoadingMisoApp ? '🎨 미소 앱을 설계하고 있습니다' : '⚙️ 워크플로우를 설계하고 있습니다'}
+                 </h3>
+                 <p className="text-[14px] lg:text-[15px] text-gray-600 font-light leading-relaxed mb-4">
+                   {isLoadingMisoApp ? (
+                     <>
+                       AI가 입력하신 정보를 분석하여<br />
+                       최적의 미소 앱 프롬프트를 생성하고 있습니다.
+                     </>
+                   ) : (
+                     <>
+                       AI가 입력하신 정보를 분석하여<br />
+                       맞춤형 워크플로우를 설계하고 있습니다.
+                     </>
+                   )}
                  </p>
-                 <div className="flex justify-center gap-1">
-                   <span className="w-1 h-1 bg-gray-300 rounded-full animate-pulse"></span>
-                   <span className="w-1 h-1 bg-gray-300 rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></span>
-                   <span className="w-1 h-1 bg-gray-300 rounded-full animate-pulse" style={{ animationDelay: '400ms' }}></span>
+                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-lg">
+                   <div className="flex gap-1">
+                     <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></span>
+                     <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></span>
+                     <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '400ms' }}></span>
+                   </div>
+                   <span className="text-[12px] text-blue-700 font-medium">
+                     최대 3분 정도 소요될 수 있습니다
+                   </span>
                  </div>
                </div>
              </div>
@@ -741,8 +759,8 @@ function MisoGeneratorContent() {
                 {/* 설명 섹션 */}
                 <div className="bg-white rounded-lg p-6 border border-gray-200">
                   <div className="mb-4">
-                    <span className="text-[11px] lg:text-[12px] text-gray-500">MISO에 로그인 하신 뒤</span>
-                    <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5 mt-1">
+                    <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5 flex-wrap">
+                      <span className="text-gray-500">MISO에 로그인 하신 뒤</span>
                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
                       <span className="text-gray-400">→</span>
                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
@@ -750,7 +768,7 @@ function MisoGeneratorContent() {
                       <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
                       <span className="text-gray-400">→</span>
                       <span className="font-medium bg-green-50 border border-green-300 text-green-700 px-2 py-0.5 rounded">워크플로우</span>
-                      <span className="text-gray-700 ml-1">에서 아래 내용을 참조하여 구현하세요</span>
+                      <span className="text-gray-700">에서 아래 내용을 참조하여 구현하세요</span>
                     </p>
                   </div>
                   <div className="prose prose-sm max-w-none text-[14px] lg:text-[16px] font-light leading-relaxed [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
