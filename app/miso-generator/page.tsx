@@ -1010,8 +1010,7 @@ function MisoGeneratorContent() {
             <div className="space-y-4">
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  공유 받으신 노션에서 <strong>&quot;[해커톤] MISO와 v0 연결&quot;</strong> 문서를 참조하셔서<br/>
-                  구현한 워크플로우와 v0를 연동하는 가이드를 확인하실 수 있습니다.
+                  공유 받으신 노션에서 <strong>&quot;[해커톤] MISO와 v0 연결&quot;</strong> 문서를 참조하셔서 구현한 워크플로우와 v0를 연동하는 가이드를 확인하실 수 있습니다.
                 </p>
               </div>
               
@@ -1044,7 +1043,7 @@ function MisoGeneratorContent() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">💡 워크플로우 구현이 어려우신가요?</h2>
+              <h2 className="text-xl font-semibold text-gray-900">워크플로우 구현 가이드</h2>
               <button
                 onClick={() => setShowWorkflowGuideModal(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -1056,23 +1055,29 @@ function MisoGeneratorContent() {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <p className="text-gray-700 text-base leading-relaxed">
+              <div className="prose prose-sm max-w-none">
+                <p className="text-gray-700 leading-relaxed mb-4">
                   <a 
                     href="https://gs52g.goorm.io" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-700 hover:underline font-semibold"
+                    className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
                   >
                     gs52g.goorm.io
                   </a>
-                  <span className="text-gray-600">의</span>
-                  {' '}
-                  <strong className="bg-white border border-gray-300 px-2 py-1 rounded">나도 이제 MISO 전문가!</strong>
-                  <span className="text-gray-600">에서</span>
-                  {' '}
-                  <span className="text-gray-700">워크플로우 구현 가이드 영상을 보실 수 있습니다.</span>
+                  에서 크플로우 구현 가이드 영상을 보실 수 있습니다.
                 </p>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-900 mb-2">
+                  <strong>📍 가이드 영상 위치:</strong>
+                </p>
+                <div className="bg-white rounded p-3 border border-blue-200">
+                  <p className="text-sm text-gray-700 font-mono">
+                    gs52g.goorm.io → <strong>나도 이제 MISO 전문가!</strong>
+                  </p>
+                </div>
               </div>
             </div>
             
