@@ -512,7 +512,10 @@ function MisoGeneratorContent() {
                             ? "border-blue-300 bg-blue-50" 
                             : "border-gray-200 hover:border-gray-300"
                         )}
-                        onClick={() => setMisoAppType('단일 결과물 생성')}
+                        onClick={() => {
+                          setMisoAppType('단일 결과물 생성');
+                          setShowWorkflowGuideModal(true);
+                        }}
                       >
                         <div className="flex items-start gap-3">
                           <div className={cn(
@@ -641,22 +644,14 @@ function MisoGeneratorContent() {
             const isWorkflowType = savedDesign?.misoAppType === 'workflow';
             
             if (isWorkflowType && explanation) {
-              // 워크플로우 타입이고 결과가 있을 때 버튼들 표시
+              // 워크플로우 타입이고 결과가 있을 때 v0 연결 버튼 표시
               return (
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => setShowWorkflowGuideModal(true)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-                  >
-                    워크플로우 구현이 어려우신가요?
-                  </Button>
-                  <Button
-                    onClick={() => setShowV0GuideModal(true)}
-                    className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    구현한 워크플로우를 v0에 연결해 보고 싶으신가요?
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => setShowV0GuideModal(true)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  워크플로우를 v0에 연결해 보고 싶으신가요?
+                </Button>
               );
             } else if (!isWorkflowType) {
               // 에이전트 타입일 때만 바이브코딩 버튼 표시
@@ -1056,6 +1051,9 @@ function MisoGeneratorContent() {
             
             <div className="space-y-4">
               <div className="prose prose-sm max-w-none">
+                <p className="text-gray-700 leading-relaxed mb-3">
+                  미소 워크플로우 구현이 처음이시라면 먼저 영상을 통해 학습하신 뒤 시작해 보시는 것을 강력히 추천드립니다.
+                </p>
                 <p className="text-gray-700 leading-relaxed mb-4">
                   <a 
                     href="https://gs52g.goorm.io" 
@@ -1065,7 +1063,7 @@ function MisoGeneratorContent() {
                   >
                     gs52g.goorm.io
                   </a>
-                  에서 크플로우 구현 가이드 영상을 보실 수 있습니다.
+                  에서 워크플로우 구현 가이드 영상을 보실 수 있습니다.
                 </p>
               </div>
               
@@ -1075,7 +1073,16 @@ function MisoGeneratorContent() {
                 </p>
                 <div className="bg-white rounded p-3 border border-blue-200">
                   <p className="text-sm text-gray-700 font-mono">
-                    gs52g.goorm.io → <strong>나도 이제 MISO 전문가!</strong>
+                    <a 
+                      href="https://gs52g.goorm.io" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-700 hover:underline"
+                    >
+                      gs52g.goorm.io
+                    </a>
+                    {' → '}
+                    <strong>나도 이제 MISO 전문가!</strong>
                   </p>
                 </div>
               </div>
