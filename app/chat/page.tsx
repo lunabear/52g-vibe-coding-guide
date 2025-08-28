@@ -319,6 +319,59 @@ export default function ChatPage() {
     setIsUploading(false);
   };
 
+  // 붙여넣기(클립보드) 이미지 처리
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) return;
+
+    const candidateFiles: File[] = [];
+
+    // 우선 items에서 이미지 탐색
+    for (const item of Array.from(clipboardData.items || [])) {
+      if (item.kind === 'file') {
+        const blob = item.getAsFile();
+        if (blob && blob.type.startsWith('image/')) {
+          const extension = blob.type.split('/')[1] || 'png';
+          const fileName = `pasted-image-${Date.now()}.${extension}`;
+          const file = new File([blob], fileName, { type: blob.type });
+          candidateFiles.push(file);
+        }
+      }
+    }
+
+    // 일부 브라우저의 files fallback 처리
+    if (candidateFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
+      for (const file of Array.from(clipboardData.files)) {
+        if (file.type.startsWith('image/')) {
+          candidateFiles.push(file);
+        }
+      }
+    }
+
+    // 이미지가 없으면 기본 붙여넣기(텍스트) 허용
+    if (candidateFiles.length === 0) return;
+
+    // 이미지가 있으면 텍스트 붙여넣기 방지하고 업로드 처리
+    e.preventDefault();
+
+    setIsUploading(true);
+    const newFiles: AttachedFile[] = [];
+
+    for (const file of candidateFiles) {
+      const uploadedFile = await uploadFile(file);
+      if (uploadedFile) {
+        newFiles.push(uploadedFile);
+      }
+    }
+
+    if (newFiles.length > 0) {
+      setAttachedFiles(prev => [...prev, ...newFiles]);
+      toast.success(`${newFiles.length}개 이미지가 첨부되었습니다`);
+    }
+
+    setIsUploading(false);
+  };
+
   // 파일 제거
   const removeFile = (fileId: string) => {
     const file = attachedFiles.find(f => f.id === fileId);
@@ -1232,6 +1285,7 @@ export default function ChatPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 placeholder="메시지를 입력하세요..."
                 className="w-full min-h-[48px] custom:min-h-[56px] max-h-[120px] custom:max-h-[150px] px-4 custom:px-5 py-3 custom:py-4 pr-24 custom:pr-28 resize-none border border-gray-200 rounded-2xl text-[14px] custom:text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
                 disabled={isLoading}

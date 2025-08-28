@@ -8,6 +8,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { query, conversationId, userId = 'prd-generator-user', files = [] } = body;
 
+    // 텍스트 없이 이미지(파일)만 전송된 경우를 허용
+    const hasFiles = Array.isArray(files) && files.length > 0;
+    const effectiveQuery = typeof query === 'string' && query.trim().length > 0
+      ? query
+      : (hasFiles ? '이미지 내용을 분석해줘.' : '');
+
+    // 텍스트와 파일이 모두 없으면 요청 거절
+    if (!effectiveQuery && !hasFiles) {
+      return new Response(JSON.stringify({ error: 'query 또는 files가 필요합니다.' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // MISO Agent API로 요청 전송
     const response = await fetch(`${MISO_AGENT_ENDPOINT}/chat`, {
       method: 'POST',
@@ -17,7 +31,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         inputs: {},
-        query,
+        query: effectiveQuery,
         mode: 'streaming',
         conversation_id: conversationId || '',
         user: userId,
