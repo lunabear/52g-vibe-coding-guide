@@ -3,11 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Download, FileText, Edit2, Save, X, Send, Loader2, Sparkles } from 'lucide-react';
+import { DashboardPreview } from '../../components/prd/DashboardPreview';
+import { ChatbotPreview } from '../../components/prd/ChatbotPreview';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import JSZip from 'jszip';
 import { usePRDContext } from '@/contexts/PRDContext';
+import { THEME_PRESETS } from '@/lib/theme-presets';
 import { misoAPI } from '@/lib/miso-api';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ErrorPage } from '@/components/common/ErrorPage';
@@ -20,35 +23,87 @@ export default function PRDResultPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMiniAllyFlow, setIsMiniAllyFlow] = useState(false);
-  const [databaseSchema, setDatabaseSchema] = useState<string | null>(null);
-  const [isDatabaseLoading, setIsDatabaseLoading] = useState(false);
-  const [hasFetchedDatabase, setHasFetchedDatabase] = useState(false);
-  const [designContent, setDesignContent] = useState<string | null>(null);
-  const [isDesignLoading, setIsDesignLoading] = useState(false);
-  const [hasFetchedDesign, setHasFetchedDesign] = useState(false);
-  const [isDesignError, setIsDesignError] = useState(false);
-  const [isDatabaseError, setIsDatabaseError] = useState(false);
+  // Heather: 스타일 선택 프리셋과 선택 상태
+  const [selectedThemeId, setSelectedThemeId] = useState<string>('amber');
+  const computeScopedCss = (css: string) =>
+    css
+      .replace(/:root/g, '.theme-preview')
+      .replace(/\n\.dark/g, '\n.theme-preview.dark');
+  const [previewType, setPreviewType] = useState<'dashboard' | 'chatbot'>('dashboard');
+  const extractHsl = (css: string, key: string) => {
+    const match = css.match(new RegExp(`--${key}:\\s*([^;]+);`));
+    return match ? match[1].trim() : undefined;
+  };
+
+  const renderPreview = () => {
+    switch (previewType) {
+      case 'dashboard':
+        return <DashboardPreview />;
+      case 'chatbot':
+        return <ChatbotPreview />;
+      default:
+        return null;
+    }
+  };
+
+  const renderPreviewType = (type: 'bar' | 'line') => {
+    const prev = previewType;
+    try {
+      // temporarily set type to reuse logic
+      // We won't mutate state; call blocks below directly to keep purity
+      const data = [20, 60, 40, 80, 55];
+      const width = 300; const height = 120; const baseY = 110;
+      const chartHeight = 100; const paddingLeft = 20; const paddingRight = 20;
+      const step = (width - paddingLeft - paddingRight) / (data.length - 1);
+      const points = data.map((v, i) => ({ x: paddingLeft + step * i, y: baseY - (v / 100) * chartHeight }));
+      if (type === 'bar') {
+        const barWidth = step * 0.5;
+        return (
+          <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
+            <line x1="0" y1={baseY} x2={width} y2={baseY} stroke="hsl(var(--border))" strokeWidth="1" />
+            <line x1={paddingLeft} y1="0" x2={paddingLeft} y2={baseY} stroke="hsl(var(--border))" strokeWidth="1" />
+            {data.map((v, i) => {
+              const x = points[i].x - barWidth / 2; const y = points[i].y; const h = baseY - y;
+              return <rect key={i} x={x} y={y} width={barWidth} height={h} fill="hsl(var(--accent))" />;
+            })}
+          </svg>
+        );
+      }
+      // line
+      const midpoints = points.slice(0, -1).map((p, i) => ({ x: (p.x + points[i + 1].x) / 2, y: (p.y + points[i + 1].y) / 2 }));
+      const pathD = [
+        `M ${points[0].x},${points[0].y}`,
+        ...points.slice(1).map((p, i) => (i < midpoints.length ? ` Q ${p.x},${p.y} ${midpoints[i].x},${midpoints[i].y}` : ` T ${p.x},${p.y}`)),
+      ].join('');
+      return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
+          <line x1="0" y1={baseY} x2={width} y2={baseY} stroke="hsl(var(--border))" strokeWidth="1" />
+          <line x1={paddingLeft} y1="0" x2={paddingLeft} y2={baseY} stroke="hsl(var(--border))" strokeWidth="1" />
+          <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" />
+          {points.map((p, i) => (<circle key={i} cx={p.x} cy={p.y} r="3" fill="hsl(var(--primary))" />))}
+        </svg>
+      );
+    } finally {
+      void prev;
+    }
+  };
   const [showExitModal, setShowExitModal] = useState(false);
   const [showVibeCodingModal, setShowVibeCodingModal] = useState(false);
   const [hasClickedVibeCoding, setHasClickedVibeCoding] = useState(false);
   
   // 편집 모드 상태
   const [isEditingPRD, setIsEditingPRD] = useState(false);
-  const [isEditingDesign, setIsEditingDesign] = useState(false);
-  const [isEditingDatabase, setIsEditingDatabase] = useState(false);
+  // Heather 편집 모드 관련 상태 제거
   
   // 임시 편집 내용
   const [tempPRDContent, setTempPRDContent] = useState('');
-  const [tempDesignContent, setTempDesignContent] = useState('');
-  const [tempDatabaseContent, setTempDatabaseContent] = useState('');
+  // Heather 임시 편집 내용 제거
   
   // 수정 요청 상태
   const [prdFixRequest, setPRDFixRequest] = useState('');
-  const [designFixRequest, setDesignFixRequest] = useState('');
-  const [databaseFixRequest, setDatabaseFixRequest] = useState('');
+  // Heather 수정 요청 상태 제거
   const [isPRDFixing, setIsPRDFixing] = useState(false);
-  const [isDesignFixing, setIsDesignFixing] = useState(false);
-  const [isDatabaseFixing, setIsDatabaseFixing] = useState(false);
+  // Heather 수정 중 상태 제거
 
   useEffect(() => {
     // Mini-Ally 세션 체크
@@ -116,59 +171,9 @@ export default function PRDResultPage() {
     generatePRD();
   }, [prdContent, getAllQuestionsAndAnswers, setPRDContent, router, isMiniAllyFlow]);
 
-  // 아이디어 구체화가 완성되면 바로 디자인 생성 시작
-  useEffect(() => {
-    if (prdContent && !hasFetchedDesign) {
-      setHasFetchedDesign(true);
-      generateDesign(prdContent);
-    }
-  }, [prdContent, hasFetchedDesign]);
+  // Heather: MISO 디자인 생성 로직 제거됨 (스타일 선택 UI 사용)
 
-  // 디자인 생성 함수
-  const generateDesign = async (prd: string) => {
-    setIsDesignLoading(true);
-    setIsDesignError(false);
-    try {
-      const design = await misoAPI.generateDesign(prd);
-      if (design) {
-        setDesignContent(design);
-      } else {
-        setIsDesignError(true);
-      }
-    } catch (err) {
-      console.error('Failed to generate design:', err);
-      setIsDesignError(true);
-    } finally {
-      setIsDesignLoading(false);
-    }
-  };
-
-  // 개발 작업 task 생성 함수
-  const generateDatabaseSchema = async (prd: string, design: string) => {
-    setIsDatabaseLoading(true);
-    setIsDatabaseError(false);
-    try {
-      const schema = await misoAPI.generateDatabaseSchema(prd, design);
-      if (schema) {
-        setDatabaseSchema(schema);
-      } else {
-        setIsDatabaseError(true);
-      }
-    } catch (err) {
-      console.error('Failed to generate database schema:', err);
-      setIsDatabaseError(true);
-    } finally {
-      setIsDatabaseLoading(false);
-    }
-  };
-
-  // 디자인이 완성되면 개발 작업 task 생성 시작
-  useEffect(() => {
-    if (prdContent && designContent && !hasFetchedDatabase && !isDesignError) {
-      setHasFetchedDatabase(true);
-      generateDatabaseSchema(prdContent, designContent);
-    }
-  }, [prdContent, designContent, hasFetchedDatabase, isDesignError]);
+  // 개발자(Bob) 단계는 제거되었습니다
 
   const handleDownload = async (includeMiso: boolean = false, misoType?: 'chatflow' | 'workflow' | 'both') => {
     const zip = new JSZip();
@@ -179,15 +184,13 @@ export default function PRDResultPage() {
       zip.file(`1_기획자_Kyle_PRD_${date}.md`, prdContent);
     }
     
-    // 2. 디자이너 Heather의 UI/UX 설계
-    if (designContent) {
-      zip.file(`2_디자이너_Heather_UI설계_${date}.md`, designContent);
+    // 2. 디자이너 Heather의 디자인 스타일 (CSS)
+    const selectedTheme = THEME_PRESETS.find(t => t.id === selectedThemeId);
+    if (selectedTheme) {
+      zip.file(`2_디자이너_Heather_디자인_스타일_${date}.css`, selectedTheme.css);
     }
     
-    // 3. 개발자 Bob의 개발 작업 task 설계
-    if (databaseSchema) {
-      zip.file(`3_개발자_Bob_개발작업설계_${date}.md`, databaseSchema);
-    }
+    // 3. 개발자 Bob 단계 제거 (파일 제외)
     
     // 4. MISO API 가이드 추가
     if (includeMiso && misoType) {
@@ -251,35 +254,9 @@ export default function PRDResultPage() {
     setTempPRDContent('');
   };
 
-  const handleEditDesign = () => {
-    setTempDesignContent(designContent || '');
-    setIsEditingDesign(true);
-  };
+  // Heather 편집 관련 핸들러 제거
 
-  const handleSaveDesign = () => {
-    setDesignContent(tempDesignContent);
-    setIsEditingDesign(false);
-  };
-
-  const handleCancelDesign = () => {
-    setIsEditingDesign(false);
-    setTempDesignContent('');
-  };
-
-  const handleEditDatabase = () => {
-    setTempDatabaseContent(databaseSchema || '');
-    setIsEditingDatabase(true);
-  };
-
-  const handleSaveDatabase = () => {
-    setDatabaseSchema(tempDatabaseContent);
-    setIsEditingDatabase(false);
-  };
-
-  const handleCancelDatabase = () => {
-    setIsEditingDatabase(false);
-    setTempDatabaseContent('');
-  };
+  // 개발자(Bob) 편집 관련 로직 제거됨
 
   // 수정 요청 처리 함수들
   const handlePRDFix = async () => {
@@ -299,39 +276,9 @@ export default function PRDResultPage() {
     }
   };
 
-  const handleDesignFix = async () => {
-    if (!designFixRequest.trim() || !designContent) return;
-    
-    setIsDesignFixing(true);
-    try {
-      const fixedContent = await misoAPI.fixDocument('design', designContent, designFixRequest);
-      if (fixedContent) {
-        setDesignContent(fixedContent);
-        setDesignFixRequest('');
-      }
-    } catch (error) {
-      console.error('Failed to fix design:', error);
-    } finally {
-      setIsDesignFixing(false);
-    }
-  };
+  // Heather 수정 요청 로직 제거
 
-  const handleDatabaseFix = async () => {
-    if (!databaseFixRequest.trim() || !databaseSchema) return;
-    
-    setIsDatabaseFixing(true);
-    try {
-      const fixedContent = await misoAPI.fixDocument('database', databaseSchema, databaseFixRequest);
-      if (fixedContent) {
-        setDatabaseSchema(fixedContent);
-        setDatabaseFixRequest('');
-      }
-    } catch (error) {
-      console.error('Failed to fix database:', error);
-    } finally {
-      setIsDatabaseFixing(false);
-    }
-  };
+  // 개발자(Bob) 문서 수정 로직 제거됨
 
   if (isLoading) {
     return (
@@ -409,15 +356,15 @@ export default function PRDResultPage() {
                 setHasClickedVibeCoding(true);
                 setShowVibeCodingModal(true);
               }}
-              disabled={!prdContent && !databaseSchema && !designContent}
+              disabled={!prdContent}
               className={`inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium ${
-                prdContent && designContent && databaseSchema && !hasClickedVibeCoding 
+                prdContent && !hasClickedVibeCoding 
                   ? 'bg-blue-600 hover:bg-blue-700 animate-subtle-lift' 
                   : 'bg-black hover:bg-gray-800'
               }`}
             >
               <Sparkles className={`w-4 h-4 ${
-                prdContent && designContent && databaseSchema && !hasClickedVibeCoding 
+                prdContent && !hasClickedVibeCoding 
                   ? 'animate-soft-glow' 
                   : ''
               }`} />
@@ -636,10 +583,23 @@ export default function PRDResultPage() {
               )}
             </div>
 
-            {/* 디자이너 - 페이지 설계 */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow relative">
+            {/* 디자이너 - 페이지 설계 (Heather가 2열 차지) */}
+            <div className="custom:col-span-2 relative">
+              <style>
+                {computeScopedCss(THEME_PRESETS.find(t => t.id === selectedThemeId)?.css || '')}
+                {`
+                @keyframes theme-glow {
+                  0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.05), 0 0 40px hsl(var(--accent) / 0.03); }
+                  50% { box-shadow: 0 0 30px hsl(var(--primary) / 0.08), 0 0 60px hsl(var(--accent) / 0.05); }
+                }
+                .animate-theme-glow {
+                  animation: theme-glow 3s ease-in-out infinite;
+                }
+                `}
+              </style>
+              <div className="theme-preview bg-[hsl(var(--card))] rounded-2xl shadow-sm border border-[hsl(var(--border))] overflow-hidden hover:shadow-lg transition-all duration-500 hover:shadow-[hsl(var(--primary))]/10 hover:border-[hsl(var(--primary))]/20 animate-theme-glow">
               {/* Header */}
-              <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
+              <div className="p-6 bg-gradient-to-br from-[hsl(var(--muted))]/30 via-[hsl(var(--card))] to-[hsl(var(--accent))]/10 border-b border-[hsl(var(--border))] backdrop-blur-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 flex items-center justify-center">
@@ -650,553 +610,123 @@ export default function PRDResultPage() {
                       />
                     </div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">디자이너 Heather</h3>
-                      <p className="text-sm text-gray-600">페이지별 디자인 설계</p>
+                      <h3 className="text-lg font-semibold text-[hsl(var(--foreground))]">디자이너 Heather</h3>
+                      <p className="text-sm text-[hsl(var(--muted-foreground))]">원하시는 스타일을 선택해주세요</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    {designContent && !isDesignLoading && !isDesignError && (
-                      <>
-                        <button
-                          onClick={isEditingDesign ? handleSaveDesign : handleEditDesign}
-                          className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                          title={isEditingDesign ? "저장" : "편집"}
-                        >
-                          {isEditingDesign ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
-                        </button>
-                        {isEditingDesign && (
-                          <button
-                            onClick={handleCancelDesign}
-                            className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                            title="취소"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
-                      </>
-                    )}
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className={`w-2 h-2 ${isDesignLoading ? 'bg-yellow-500 animate-pulse' : isDesignError ? 'bg-red-500' : designContent ? 'bg-green-500' : 'bg-yellow-500'} rounded-full`}></div>
-                      <span className={`font-medium ${isDesignLoading ? 'text-yellow-600' : isDesignError ? 'text-red-600' : designContent ? 'text-green-600' : 'text-yellow-600'}`}>
-                        {isDesignLoading ? '생성 중' : isDesignError ? '오류' : designContent ? '완료' : '대기 중'}
-                      </span>
+                    <div className="text-right max-w-sm">
+                      <div className="flex items-center justify-end gap-2 text-sm mb-1">
+                        <div className={`w-2 h-2 bg-[hsl(var(--primary))] rounded-full animate-pulse`}></div>
+                        <span className={`font-semibold text-[hsl(var(--foreground))]`}>
+                          {THEME_PRESETS.find(t => t.id === selectedThemeId)?.name} 선택됨
+                        </span>
+                      </div>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+                        "{THEME_PRESETS.find(t => t.id === selectedThemeId)?.recommendation}"
+                      </p>
                     </div>
-                  </div>
                 </div>
               </div>
               
-              {/* Content */}
-              <div className="max-h-[calc(100vh-280px)] overflow-y-auto relative">
-                {isDesignLoading ? (
-                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="mb-6">
-                        <img
-                          src="/assets/mini_heather_thinking.png"
-                          alt="Heather thinking"
-                          className="w-24 h-24 object-contain"
-                        />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">UI/UX 설계 중</h3>
-                      <p className="text-sm text-gray-600 text-center max-w-xs">
-                        아이디어를 분석하여 최적의 사용자 경험을 설계하고 있습니다
-                      </p>
-                      <div className="flex gap-1 mt-6">
-                        {[0, 1, 2].map((index) => (
-                          <div
-                            key={index}
-                            className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"
-                            style={{
-                              animationDelay: `${index * 0.2}s`,
-                              animationDuration: '1.2s'
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : isDesignError ? (
-                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
-                    <div className="text-center max-w-xs">
-                      <div className="mb-6">
-                        <img
-                          src="/assets/mini_heather_error.png"
-                          alt="Heather error"
-                          className="w-24 h-24 object-contain mx-auto"
-                        />
-                      </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">
-                        UI/UX 설계 실패
-                      </h3>
-                      <p className="text-sm text-gray-500 leading-relaxed mb-4">
-                        설계 과정에서 문제가 발생했어요. 잠시 후 다시 시도해주세요.
-                      </p>
-                      <button
-                        onClick={() => generateDesign(prdContent || '')}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                      >
-                        다시 시도
-                      </button>
-                    </div>
-                  </div>
-                ) : designContent ? (
-                  <>
+              {/* Content: 좌측 프리셋 리스트, 우측 스타일 미리보기 */}
+              <div className="relative">
                     <div className="p-6">
-                      {isEditingDesign ? (
-                        <textarea
-                          value={tempDesignContent}
-                          onChange={(e) => setTempDesignContent(e.target.value)}
-                          className="w-full h-[calc(100vh-330px)] p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                          placeholder="UI/UX 설계 내용을 입력하세요..."
-                        />
-                      ) : (
-                        <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]} 
-                        rehypePlugins={[rehypeRaw]}
-                        components={{
-                        h1: ({ children }) => (
-                          <h1 className="text-xl font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
-                            {children}
-                          </h1>
-                        ),
-                        h2: ({ children }) => (
-                          <h2 className="text-lg font-medium text-gray-800 mt-8 mb-4">
-                            {children}
-                          </h2>
-                        ),
-                        h3: ({ children }) => (
-                          <h3 className="text-base font-medium text-gray-700 mt-6 mb-3">
-                            {children}
-                          </h3>
-                        ),
-                        h4: ({ children }) => (
-                          <h4 className="text-sm font-semibold text-gray-900 mt-6 mb-3 pb-2 border-b border-gray-100">
-                            {children}
-                          </h4>
-                        ),
-                        p: ({ children }) => (
-                          <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                            {children}
-                          </p>
-                        ),
-                        ul: ({ children }) => (
-                          <ul className="space-y-1.5 mb-4">
-                            {children}
-                          </ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className="space-y-1.5 mb-4">
-                            {children}
-                          </ol>
-                        ),
-                        li: ({ children }) => {
-                          // Check if this is a numbered list item
-                          const text = children?.toString() || '';
-                          const match = text.match(/^(\d+)\.\s+(.+?)(?:\s+-\s+(.+))?$/);
-                          
-                          if (match) {
-                            return (
-                              <li className="flex items-start gap-3 text-sm">
-                                <span className="flex-shrink-0 w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs font-medium text-gray-700">
-                                  {match[1]}
-                                </span>
-                                <div className="flex-1">
-                                  <span className="font-medium text-gray-800">{match[2]}</span>
-                                  {match[3] && (
-                                    <span className="text-gray-500 ml-2 text-xs">{match[3]}</span>
-                                  )}
-                                </div>
-                              </li>
-                            );
-                          }
-                          
-                          return (
-                            <li className="text-sm text-gray-600 pl-6">
-                              {children}
-                            </li>
-                          );
-                        },
-                        pre: ({ children }) => (
-                          <div className="my-4 bg-gray-50 rounded-lg overflow-hidden">
-                            <pre className="p-4 overflow-x-auto">
-                              <code className="text-xs font-mono text-gray-700">{children}</code>
-                            </pre>
-                          </div>
-                        ),
-                        code: ({ children, ...props }) => {
-                          const isInline = !props.node?.position;
-                          return isInline ? (
-                            <code className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded text-xs font-mono">
-                              {children}
-                            </code>
-                          ) : (
-                            <>{children}</>
-                          );
-                        },
-                        strong: ({ children }) => (
-                          <strong className="font-semibold text-gray-800">{children}</strong>
-                        ),
-                        em: ({ children }) => (
-                          <em className="text-gray-600 not-italic">{children}</em>
-                        ),
-                      }}
-                      >
-                        {designContent}
-                      </ReactMarkdown>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
-                    <div className="text-center max-w-xs">
-                      <div className="mb-6">
-                        <FileText className="w-12 h-12 text-gray-300 mx-auto" />
-                      </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">
-                        UI/UX 설계 대기 중
-                      </h3>
-                      <p className="text-sm text-gray-500 leading-relaxed">
-                        아이디어 구체화가 완료되면 자동으로 시작됩니다
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {/* 수정 요청 채팅바 */}
-              {designContent && !isEditingDesign && !isDesignLoading && !isDesignError && (
-                <div className="border-t border-gray-100 p-4 bg-gray-50/50">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 relative">
-                      <input
-                        type="text"
-                        value={designFixRequest}
-                        onChange={(e) => setDesignFixRequest(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleDesignFix()}
-                        placeholder="Heather에게 수정을 요청하세요"
-                        className="w-full px-4 py-2.5 pr-12 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 placeholder-gray-400 transition-all"
-                        disabled={isDesignFixing}
-                      />
+                  <div className="grid grid-cols-5 gap-6 items-start h-[calc(100vh-280px)]">
+                    {/* Preset List */}
+                    <div className="col-span-1 min-h-0 h-[calc(100vh-280px)] flex flex-col">
+                      <h4 className="text-sm font-bold text-[hsl(var(--foreground))] mb-4 flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))]"></div>
+                        스타일 프리셋
+                      </h4>
+                      <div className="space-y-3 overflow-y-auto pr-2 flex-1 px-1">
+                        {THEME_PRESETS.map(preset => (
                       <button
-                        onClick={handleDesignFix}
-                        disabled={isDesignFixing || !designFixRequest.trim()}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {isDesignFixing ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Send className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* 수정 중 오버레이 */}
-              {isDesignFixing && (
-                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="mb-4">
-                      <img
-                        src="/assets/mini_heather_thinking.png"
-                        alt="Heather thinking"
-                        className="w-20 h-20 object-contain"
-                      />
-                    </div>
-                    <h3 className="text-base font-medium text-gray-900 mb-2">디자인을 수정하고 있습니다</h3>
-                    <div className="flex gap-1 mt-4">
-                      {[0, 1, 2].map((index) => (
-                        <div
-                          key={index}
-                          className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"
+                            key={preset.id}
+                            onClick={() => setSelectedThemeId(preset.id)}
+                            className={`group w-full text-left border rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
+                              selectedThemeId === preset.id 
+                                ? 'border-[hsl(var(--primary))] bg-gradient-to-br from-[hsl(var(--primary))]/5 to-[hsl(var(--accent))]/10 shadow-md shadow-[hsl(var(--primary))]/20' 
+                                : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--accent))]/5 hover:border-[hsl(var(--accent))]/50 hover:shadow-[hsl(var(--accent))]/10'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <div className={`text-sm font-semibold truncate transition-colors ${
+                                  selectedThemeId === preset.id ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))]'
+                                }`}>{preset.name}</div>
+                                <div className="text-xs text-[hsl(var(--muted-foreground))] mt-1 truncate group-hover:text-[hsl(var(--foreground))]/70 transition-colors">{preset.description}</div>
+                                <div className="mt-3 grid grid-cols-5 gap-1.5">
+                                  {['background','foreground','primary','secondary','accent'].map(key => (
+                                    <div
+                                      key={key}
+                                      className="h-4 rounded-md border border-white/50 shadow-sm"
                           style={{
-                            animationDelay: `${index * 0.2}s`,
-                            animationDuration: '1.2s'
+                                        backgroundColor: extractHsl(preset.css, key)
+                                          ? `hsl(${extractHsl(preset.css, key)})`
+                                          : undefined,
                           }}
                         />
                       ))}
                     </div>
                   </div>
+                              <div className={`w-3 h-3 flex-shrink-0 rounded-full transition-all ${
+                                selectedThemeId === preset.id 
+                                  ? 'bg-[hsl(var(--primary))] shadow-md shadow-[hsl(var(--primary))]/50' 
+                                  : 'bg-[hsl(var(--muted-foreground))]/30 group-hover:bg-[hsl(var(--accent))]/60'
+                              }`}></div>
                 </div>
-              )}
-            </div>
-
-            {/* 개발자 - 테이블 설계 */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow relative">
-              {/* Header */}
-              <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 flex items-center justify-center">
-                      <img 
-                        src="/assets/mini_bob_default.png" 
-                        alt="개발자 Bob" 
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">개발자 Bob</h3>
-                      <p className="text-sm text-gray-600">개발 작업 task 설계</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {databaseSchema && !isDatabaseLoading && !isDatabaseError && (
-                      <>
-                        <button
-                          onClick={isEditingDatabase ? handleSaveDatabase : handleEditDatabase}
-                          className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                          title={isEditingDatabase ? "저장" : "편집"}
-                        >
-                          {isEditingDatabase ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
                         </button>
-                        {isEditingDatabase && (
-                          <button
-                            onClick={handleCancelDatabase}
-                            className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                            title="취소"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
-                      </>
-                    )}
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className={`w-2 h-2 ${isDatabaseLoading ? 'bg-yellow-500 animate-pulse' : isDatabaseError ? 'bg-red-500' : databaseSchema ? 'bg-green-500' : 'bg-gray-300'} rounded-full`}></div>
-                      <span className={`font-medium ${isDatabaseLoading ? 'text-yellow-600' : isDatabaseError ? 'text-red-600' : databaseSchema ? 'text-green-600' : 'text-gray-400'}`}>
-                        {isDatabaseLoading ? '생성 중' : isDatabaseError ? '오류' : databaseSchema ? '완료' : '대기 중'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Content */}
-              <div className="max-h-[calc(100vh-280px)] overflow-y-auto relative">
-                {isDatabaseLoading ? (
-                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="mb-6">
-                        <img
-                          src="/assets/mini_bob_thinking.png"
-                          alt="Bob thinking"
-                          className="w-24 h-24 object-contain"
-                        />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">개발 작업 설계 중</h3>
-                      <p className="text-sm text-gray-600 text-center max-w-xs">
-                        PRD와 UI/UX 설계를 분석하여 개발 작업을 체계적으로 설계하고 있습니다
-                      </p>
-                      <div className="flex gap-1 mt-6">
-                        {[0, 1, 2].map((index) => (
-                          <div
-                            key={index}
-                            className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"
-                            style={{
-                              animationDelay: `${index * 0.2}s`,
-                              animationDuration: '1.2s'
-                            }}
-                          />
                         ))}
                       </div>
                     </div>
-                  </div>
-                ) : isDatabaseError ? (
-                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
-                    <div className="text-center max-w-xs">
-                      <div className="mb-6">
-                        <img
-                          src="/assets/mini_bob_error.png"
-                          alt="Bob error"
-                          className="w-24 h-24 object-contain mx-auto"
-                        />
-                      </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">
-                        개발 작업 설계 실패
-                      </h3>
-                      <p className="text-sm text-gray-500 leading-relaxed mb-4">
-                        설계 과정에서 문제가 발생했어요. 잠시 후 다시 시도해주세요.
-                      </p>
+
+                    {/* Preview Panel with scoped theme */}
+                    <div className="col-span-4">
+                      <div className="mb-4">
+                        <h4 className="text-sm font-bold text-[hsl(var(--foreground))] mb-3 flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[hsl(var(--accent))] to-[hsl(var(--primary))]"></div>
+                          실시간 미리보기
+                        </h4>
+                        <div className="flex gap-2">
                       <button
-                        onClick={() => generateDatabaseSchema(prdContent || '', designContent || '')}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                            onClick={() => setPreviewType('dashboard')}
+                            className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-300 ${
+                              previewType === 'dashboard' 
+                                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--primary))] shadow-lg shadow-[hsl(var(--primary))]/25' 
+                                : 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]/10 hover:border-[hsl(var(--accent))]'
+                            }`}
                       >
-                        다시 시도
+                            대시보드
+                      </button>
+                      <button
+                            onClick={() => setPreviewType('chatbot')}
+                            className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-300 ${
+                              previewType === 'chatbot' 
+                                ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--primary))] shadow-lg shadow-[hsl(var(--primary))]/25' 
+                                : 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]/10 hover:border-[hsl(var(--accent))]'
+                            }`}
+                      >
+                            AI 챗봇
                       </button>
                     </div>
                   </div>
-                ) : databaseSchema ? (
-                  <>
-                    <div className="p-6">
-                      {isEditingDatabase ? (
-                        <textarea
-                          value={tempDatabaseContent}
-                          onChange={(e) => setTempDatabaseContent(e.target.value)}
-                          className="w-full h-[calc(100vh-330px)] p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                          placeholder="개발 작업 task를 입력하세요..."
-                        />
-                      ) : (
-                        <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]} 
-                        rehypePlugins={[rehypeRaw]}
-                        components={{
-                        h1: ({ children }) => (
-                          <h1 className="text-xl font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
-                            {children}
-                          </h1>
-                        ),
-                        h2: ({ children }) => (
-                          <h2 className="text-lg font-medium text-gray-800 mt-8 mb-4">
-                            {children}
-                          </h2>
-                        ),
-                        h3: ({ children }) => (
-                          <h3 className="text-base font-medium text-gray-700 mt-6 mb-3">
-                            {children}
-                          </h3>
-                        ),
-                        h4: ({ children }) => (
-                          <h4 className="text-sm font-semibold text-gray-900 mt-6 mb-3 pb-2 border-b border-gray-100">
-                            {children}
-                          </h4>
-                        ),
-                        p: ({ children }) => (
-                          <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                            {children}
-                          </p>
-                        ),
-                        ul: ({ children }) => (
-                          <ul className="space-y-2 mb-4 list-disc pl-5">
-                            {children}
-                          </ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className="space-y-2 mb-4 list-decimal pl-5">
-                            {children}
-                          </ol>
-                        ),
-                        li: ({ children }) => (
-                          <li className="text-sm text-gray-600">
-                            {children}
-                          </li>
-                        ),
-                        strong: ({ children }) => (
-                          <strong className="font-semibold text-gray-800">{children}</strong>
-                        ),
-                        blockquote: ({ children }) => (
-                          <blockquote className="pl-4 py-2 my-4 border-l-3 border-gray-300 bg-gray-50 rounded-r">
-                            <div className="italic text-sm text-gray-600">{children}</div>
-                          </blockquote>
-                        ),
-                        pre: ({ children }) => (
-                          <div className="my-4 bg-gray-900 rounded-lg overflow-hidden max-w-full">
-                            <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
-                              <span className="text-xs font-mono text-gray-400">SQL</span>
-                              <div className="flex gap-1">
-                                <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                                <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-                                <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                      <div className="border-2 border-[hsl(var(--border))] rounded-2xl overflow-hidden shadow-lg shadow-[hsl(var(--primary))]/5 bg-[hsl(var(--card))]">
+                        <div className="p-4" style={{ fontFamily: 'var(--font-sans)' }}>
+                          {renderPreview()}
                               </div>
                             </div>
-                            <div className="overflow-x-auto">
-                              <pre className="p-4 min-w-0">
-                                <code className="text-xs font-mono text-gray-100 leading-relaxed whitespace-pre">{children}</code>
-                              </pre>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))] mt-3 px-1 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--accent))]"></div>
+                        선택한 스타일은 ZIP 다운로드에 theme.css로 포함됩니다.
+                      </p>
                             </div>
                           </div>
-                        ),
-                        code: ({ children, ...props }) => {
-                          const isInline = !props.node?.position;
-                          return isInline ? (
-                            <code className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-mono">
-                              {children}
-                            </code>
-                          ) : (
-                            <>{children}</>
-                          );
-                        },
-                      }}
-                      >
-                        {databaseSchema}
-                      </ReactMarkdown>
-                      )}
                     </div>
-                  </>
-                ) : (
-                  <div className="h-[calc(100vh-320px)] flex items-center justify-center p-6">
-                    <div className="text-center max-w-xs">
-                      <div className="mb-6">
-                        <FileText className="w-12 h-12 text-gray-300 mx-auto" />
                       </div>
-                      <h3 className="text-base font-medium text-gray-900 mb-2">
-                        개발 작업 설계 대기 중
-                      </h3>
-                      <p className="text-sm text-gray-500 leading-relaxed">
-                        UI/UX 설계가 완료되면 자동으로 시작됩니다
-                      </p>
                     </div>
-                  </div>
-                )}
               </div>
               
-              {/* 수정 요청 채팅바 */}
-              {databaseSchema && !isEditingDatabase && !isDatabaseLoading && !isDatabaseError && (
-                <div className="border-t border-gray-100 p-4 bg-gray-50/50">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 relative">
-                      <input
-                        type="text"
-                        value={databaseFixRequest}
-                        onChange={(e) => setDatabaseFixRequest(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleDatabaseFix()}
-                        placeholder="Bob에게 수정을 요청하세요"
-                        className="w-full px-4 py-2.5 pr-12 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder-gray-400 transition-all"
-                        disabled={isDatabaseFixing}
-                      />
-                      <button
-                        onClick={handleDatabaseFix}
-                        disabled={isDatabaseFixing || !databaseFixRequest.trim()}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {isDatabaseFixing ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Send className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* 수정 중 오버레이 */}
-              {isDatabaseFixing && (
-                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="mb-4">
-                      <img
-                        src="/assets/mini_bob_thinking.png"
-                        alt="Bob thinking"
-                        className="w-20 h-20 object-contain"
-                      />
-                    </div>
-                    <h3 className="text-base font-medium text-gray-900 mb-2">데이터베이스를 수정하고 있습니다</h3>
-                    <div className="flex gap-1 mt-4">
-                      {[0, 1, 2].map((index) => (
-                        <div
-                          key={index}
-                          className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"
-                          style={{
-                            animationDelay: `${index * 0.2}s`,
-                            animationDuration: '1.2s'
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* 개발자(Bob) 섹션 제거됨 */}
 
           </div>
         </div>
