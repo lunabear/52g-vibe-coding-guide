@@ -816,6 +816,9 @@ export default function ChatPage() {
               <h3 className="text-[18px] custom:text-[20px] font-light text-gray-900 tracking-tight leading-tight">
                 아이디어가 완성되었나요?
               </h3>
+              <p className="text-[16px] text-gray-500 font-light mt-1">
+                다음 단계로 이동해보세요!
+              </p>
             </div>
             
             {/* MISO Generator 카드 */}
