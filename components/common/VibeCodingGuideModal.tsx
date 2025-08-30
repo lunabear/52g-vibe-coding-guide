@@ -349,10 +349,10 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                       <div className="pt-3 border-t border-gray-100">
                         <div className="space-y-2">
                           <p className="text-sm text-gray-600 font-light">
-                            <span className="font-medium">1.</span> 다운로드한 ZIP 파일의 <span className="font-medium">압축을 해제</span>해주세요
+                            <span className="font-medium">1.</span> 문서 다운로드 버튼을 클릭해서 다운받고
                           </p>
                           <p className="text-sm text-gray-600 font-light">
-                            <span className="font-medium">2.</span> 압축 해제된 파일들을 v0의 <span className="font-medium">Source</span> 섹션에 업로드해주세요
+                            <span className="font-medium">2.</span> v0의 <span className="font-medium">채팅창(혹은 Source 섹션)</span>에 파일을 업로드하고 작업을 시작하세요!
                           </p>
                         </div>
                         <a
@@ -382,7 +382,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
             </div>
             <div className="ml-11">
               <p className="text-sm text-gray-600 leading-relaxed font-light mb-4">
-                이제 모든 준비가 완료되었습니다. v0에서 파일을 업로드하고 원하는 기능을 설명해보세요!
+                이제 모든 준비가 완료되었습니다. v0에서 파일을 업로드하고 바이브 코딩을 시작해보세요!
               </p>
               
               {/* V0 스타일 시뮬레이션 */}

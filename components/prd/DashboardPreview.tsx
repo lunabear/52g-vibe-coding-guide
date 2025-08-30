@@ -2,7 +2,61 @@
 import React from 'react';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
-export function DashboardPreview() {
+interface DashboardPreviewProps {
+  themeId?: string;
+}
+
+export function DashboardPreview({ themeId }: DashboardPreviewProps) {
+  // 테마별 스타일 클래스 결정
+  const getThemeClasses = () => {
+    switch (themeId) {
+      case 'apple-liquid-glass':
+        return {
+          container: 'space-y-6 font-[var(--font-sans)] bg-gradient-to-br from-blue-50 via-purple-50 to-cyan-50 p-4 rounded-xl',
+          card: 'liquid-glass-card p-4',
+          button: 'liquid-glass-button mt-3 px-3 py-2 text-gray-800 text-xs transition-all',
+          gridCard: 'liquid-glass-card p-4'
+        };
+      case 'bold-colors':
+        return {
+          container: 'space-y-6 font-[var(--font-sans)] bg-white p-4',
+          card: 'brutalist-card p-4 bg-white',
+          button: 'brutalist-button mt-3 px-3 py-2 text-xs',
+          gridCard: 'brutalist-card p-4 bg-white'
+        };
+      case 'chic-black':
+        return {
+          container: 'space-y-6 font-[var(--font-sans)]',
+          card: 'chic-minimal rounded-[var(--radius)] bg-[hsl(var(--card))] p-4',
+          button: 'chic-minimal mt-3 px-3 py-2 rounded-[calc(var(--radius)-2px)] text-[hsl(var(--primary-foreground))] bg-[hsl(var(--primary))] text-xs',
+          gridCard: 'chic-minimal rounded-[var(--radius)] bg-[hsl(var(--card))] p-4'
+        };
+      case 'nature-green':
+        return {
+          container: 'space-y-6 font-[var(--font-sans)] bg-[hsl(var(--background))] p-4',
+          card: 'nature-organic border border-[hsl(var(--border))] bg-white p-4',
+          button: 'nature-organic mt-3 px-3 py-2 text-[hsl(var(--primary-foreground))] bg-[hsl(var(--primary))] text-xs border border-[hsl(var(--border))]',
+          gridCard: 'nature-organic border border-[hsl(var(--border))] bg-white p-4'
+        };
+      case 'modern-purple':
+        return {
+          container: 'space-y-6 font-[var(--font-sans)]',
+          card: 'purple-glow rounded-[var(--radius)] p-4',
+          button: 'purple-button mt-3 px-3 py-2 rounded-[calc(var(--radius)-2px)] text-[hsl(var(--primary-foreground))] bg-[hsl(var(--primary))] text-xs hover:bg-[hsl(var(--primary))]/90 transition-colors',
+          gridCard: 'purple-glow rounded-[var(--radius)] p-4'
+        };
+      default:
+        return {
+          container: 'space-y-6 font-[var(--font-sans)]',
+          card: 'rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)]',
+          button: 'mt-3 px-3 py-2 rounded-[calc(var(--radius)-2px)] text-[hsl(var(--primary-foreground))] bg-[hsl(var(--primary))] text-xs shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all',
+          gridCard: 'rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)]'
+        };
+    }
+  };
+
+  const themeClasses = getThemeClasses();
+
   const chartData = [
     { name: 'Mon', value: 20 },
     { name: 'Tue', value: 60 },
@@ -40,44 +94,66 @@ export function DashboardPreview() {
   );
 
   return (
-    <div className="space-y-6 font-[var(--font-sans)]">
+    <div className={themeClasses.container}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[{label:'총 매출',value:'$15,231.89',delta:'+20.1%'},{label:'신규 고객',value:'1,234',delta:'-2.0%'},{label:'활성 계정',value:'45,678',delta:'+12.5%'}].map((m,i)=> (
-          <div key={i} className="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)]">
-            <div className="text-xs text-[hsl(var(--muted-foreground))] mb-1">{m.label}</div>
-            <div className="text-xl font-semibold text-[hsl(var(--foreground))]">{m.value}</div>
-            <div className="text-xs text-[hsl(var(--muted-foreground))] mt-1">{m.delta} 최근</div>
+          <div key={i} className={themeClasses.gridCard}>
+            <div className={`text-xs text-[hsl(var(--muted-foreground))] mb-1 ${themeId === 'bold-colors' ? 'font-bold uppercase tracking-wider' : ''}`}>{m.label}</div>
+            <div className={`text-xl font-semibold text-[hsl(var(--foreground))] ${themeId === 'bold-colors' ? 'text-2xl font-black' : ''}`}>{m.value}</div>
+            <div className={`text-xs text-[hsl(var(--muted-foreground))] mt-1 ${themeId === 'bold-colors' ? 'font-bold' : ''}`}>{m.delta} 최근</div>
           </div>
         ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)]">
-          <div className="text-sm font-medium text-[hsl(var(--foreground))] mb-3">June 2025</div>
+        <div className={themeClasses.card}>
+          <div className={`text-sm font-medium text-[hsl(var(--foreground))] mb-3 ${themeId === 'bold-colors' ? 'font-black uppercase tracking-widest' : ''}`}>June 2025</div>
           <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-[hsl(var(--muted-foreground))]">
-            {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=> <div key={d}>{d}</div>)}
+            {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=> <div key={d} className={themeId === 'bold-colors' ? 'font-bold' : ''}>{d}</div>)}
           </div>
           <div className="mt-2 grid grid-cols-7 gap-1">
             {Array.from({length:35}).map((_,i)=> (
-              <div key={i} className={`h-7 rounded-[calc(var(--radius)-6px)] flex items-center justify-center text-[11px] ${i===10?'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]':''}`}>{i%30+1}</div>
+              <div key={i} className={`h-7 flex items-center justify-center text-[11px] ${
+                i===10
+                  ? `bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] ${
+                      themeId === 'bold-colors' 
+                        ? 'rounded-none border-2 border-black shadow-[2px_2px_0px_0px_black] font-bold' 
+                        : themeId === 'apple-liquid-glass'
+                        ? 'rounded-lg backdrop-blur-sm'
+                        : 'rounded-[calc(var(--radius)-6px)]'
+                    }`
+                  : themeId === 'bold-colors' 
+                  ? 'rounded-none border border-black hover:bg-yellow-300 hover:border-2 transition-all font-bold' 
+                  : ''
+              }`}>{i%30+1}</div>
             ))}
           </div>
         </div>
-        <div className="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 flex flex-col shadow-[var(--shadow)]">
-          <div className="text-sm font-medium text-[hsl(var(--foreground))]">활동 목표</div>
-          <div className="text-3xl font-semibold my-2 text-[hsl(var(--foreground))]">350</div>
-          <div className="text-xs text-[hsl(var(--muted-foreground))]">CALORIES/DAY</div>
+        <div className={`${themeClasses.card} flex flex-col`}>
+          <div className={`text-sm font-medium text-[hsl(var(--foreground))] ${themeId === 'bold-colors' ? 'font-black uppercase tracking-widest' : ''}`}>활동 목표</div>
+          <div className={`text-3xl font-semibold my-2 text-[hsl(var(--foreground))] ${themeId === 'bold-colors' ? 'text-4xl font-black' : ''}`}>350</div>
+          <div className={`text-xs text-[hsl(var(--muted-foreground))] ${themeId === 'bold-colors' ? 'font-bold uppercase tracking-wider' : ''}`}>CALORIES/DAY</div>
           <div className="mt-3 flex-1 flex items-end gap-1">
             {Array.from({length:16}).map((_,i)=> {
-              const heightPercent = 20 + ((i * 37) % 60); // SSR/CSR 동일한 결정적 값
+              const heightPercent = 20 + ((i * 37) % 60);
               return (
-                <div key={i} className="w-3 rounded-t-[calc(var(--radius)-6px)]" style={{height:`${heightPercent}%`, backgroundColor:'hsl(var(--primary))'}} />
+                <div 
+                  key={i} 
+                  className={`w-3 ${
+                    themeId === 'bold-colors' 
+                      ? 'rounded-none border border-black shadow-[2px_2px_0px_0px_black]' 
+                      : themeId === 'apple-liquid-glass'
+                      ? 'rounded-t-lg backdrop-blur-sm'
+                      : 'rounded-t-[calc(var(--radius)-6px)]'
+                  }`} 
+                  style={{height:`${heightPercent}%`, backgroundColor:'hsl(var(--primary))'}} 
+                />
               );
             })}
           </div>
-          <button className="mt-3 px-3 py-2 rounded-[calc(var(--radius)-2px)] text-[hsl(var(--primary-foreground))] bg-[hsl(var(--primary))] text-xs shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all">설정하기</button>
+          <button className={themeClasses.button}>설정하기</button>
         </div>
-        <div className="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow)]">
-          <div className="text-sm font-medium text-[hsl(var(--foreground))] mb-2">운동 시간</div>
+        <div className={themeClasses.card}>
+          <div className={`text-sm font-medium text-[hsl(var(--foreground))] mb-2 ${themeId === 'bold-colors' ? 'font-black uppercase tracking-widest' : ''}`}>운동 시간</div>
           {renderBar()}
           <div className="mt-3" />
           {renderLine()}

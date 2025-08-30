@@ -92,10 +92,10 @@ export const FlowChart: React.FC<FlowChartProps> = ({ data }) => {
   const positionedNodes = calculateLayout(data.nodes, data.edges);
   
   // SVG 크기 계산
-  const maxX = Math.max(...positionedNodes.map(n => n.x || 0)) + 100;
-  const maxY = Math.max(...positionedNodes.map(n => n.y || 0)) + 50;
-  const minX = Math.min(...positionedNodes.map(n => n.x || 0)) - 100;
-  const minY = Math.min(...positionedNodes.map(n => n.y || 0)) - 30;
+  const maxX = Math.max(...positionedNodes.map(n => n.x || 0)) + 40;
+  const maxY = Math.max(...positionedNodes.map(n => n.y || 0)) + 30;
+  const minX = Math.min(...positionedNodes.map(n => n.x || 0)) - 40;
+  const minY = Math.min(...positionedNodes.map(n => n.y || 0)) - 40;
   
   const width = maxX - minX;
   const height = maxY - minY;
@@ -222,13 +222,13 @@ export const FlowChart: React.FC<FlowChartProps> = ({ data }) => {
   };
   
   return (
-    <div className="my-6 bg-gray-50 p-6 rounded-lg overflow-auto">
+    <div className="my-2 bg-gray-50 p-3 rounded-lg overflow-auto">
       <svg 
-        width={width + 40} 
-        height={height + 40} 
-        viewBox={`${minX - 20} ${minY - 20} ${width + 40} ${height + 40}`}
+        width={width}
+        height={height}
+        viewBox={`${minX} ${minY} ${width} ${height}`}
         className="w-full"
-        style={{ minHeight: '300px' }}
+        style={{ minHeight: '220px' }}
       >
         {/* 화살표 마커 정의 */}
         <defs>

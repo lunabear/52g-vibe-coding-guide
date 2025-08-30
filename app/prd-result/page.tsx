@@ -89,9 +89,9 @@ export default function PRDResultPage() {
   const renderPreview = () => {
     switch (previewType) {
       case 'dashboard':
-        return <DashboardPreview />;
+        return <DashboardPreview themeId={selectedThemeId} />;
       case 'chatbot':
-        return <ChatbotPreview />;
+        return <ChatbotPreview themeId={selectedThemeId} />;
       default:
         return null;
     }
@@ -526,7 +526,7 @@ export default function PRDResultPage() {
                     <textarea
                       value={tempPRDContent}
                       onChange={(e) => setTempPRDContent(e.target.value)}
-                      className="w-full h-full p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      className="w-full h-[60vh] min-h-[420px] p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                       placeholder="PRD 내용을 입력하세요..."
                     />
                   ) : (
