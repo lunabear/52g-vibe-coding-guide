@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, Download, Check, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, ExternalLink, Upload, FileText, Image, Paperclip, MousePointer, Send } from 'lucide-react';
 import { EXTERNAL_LINKS } from '@/lib/links';
-import { generateVibeCodingPrompt } from '@/lib/prompts/vibe-coding-guide';
 
 interface VibeCodingGuideModalProps {
   isOpen: boolean;
@@ -21,39 +20,114 @@ interface VibeCodingGuideModalProps {
 }
 
 export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoType }: VibeCodingGuideModalProps) {
-  const [copied, setCopied] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [includeMiso, setIncludeMiso] = useState(!!defaultMisoType);
   const [misoType, setMisoType] = useState<'chatflow' | 'workflow' | 'both'>(defaultMisoType || 'chatflow');
-
-  const promptText = generateVibeCodingPrompt(includeMiso);
-
-  const handleCopyPrompt = async () => {
-    try {
-      // 최신 브라우저의 Clipboard API 사용
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(promptText);
-      } else {
-        // 폴백: 구형 브라우저나 비보안 컨텍스트에서 사용
-        const textArea = document.createElement('textarea');
-        textArea.value = promptText;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        textArea.remove();
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-      // 사용자에게 수동 복사 안내
-      alert('복사에 실패했습니다. 텍스트를 직접 선택하여 복사해주세요.');
+  
+  // 애니메이션 상태
+  const [showMouse, setShowMouse] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const [isClicking, setIsClicking] = useState(false);
+  const [showFiles, setShowFiles] = useState<number[]>([]);
+  const [typedText, setTypedText] = useState('');
+  const [isSendButtonPressed, setIsSendButtonPressed] = useState(false);
+  const [uploadAreaActive, setUploadAreaActive] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const fullText = '마케팅 대시보드를 만들어줘!';
+  const textRef = useRef<HTMLSpanElement>(null);
+  const inputRef = useRef<HTMLDivElement>(null);
+  
+  // 파일 목록
+  const fileList = [
+    { name: 'PRD 문서.md', color: 'blue', icon: FileText },
+    { name: '디자인 가이드.md', color: 'green', icon: Image },
+    ...(includeMiso ? [{ name: 'MISO API.md', color: 'purple', icon: Paperclip }] : [])
+  ];
+  
+  // 애니메이션 시퀀스
+  useEffect(() => {
+    if (isOpen) {
+      const timeouts: NodeJS.Timeout[] = [];
+      
+      // 1. 1초 후 마우스 등장
+      timeouts.push(setTimeout(() => setShowMouse(true), 1000));
+      
+      // 2. 2초 후 업로드 영역으로 이동 (자연스러운 곡선 이동)
+      timeouts.push(setTimeout(() => {
+        setMousePosition({ x: 50, y: 35 });
+        setUploadAreaActive(true);
+      }, 2000));
+      
+      // 3. 파일들 순차 첨부 (각 클릭마다 업로드 영역 하이라이트)
+      fileList.forEach((_, index) => {
+        timeouts.push(setTimeout(() => {
+          setIsClicking(true);
+          setTimeout(() => {
+            setIsClicking(false);
+            setShowFiles(prev => [...prev, index]);
+            // 파일 추가 시 약간의 바운스 효과
+            setUploadAreaActive(false);
+            setTimeout(() => setUploadAreaActive(true), 50);
+          }, 200);
+        }, 2800 + index * 700));
+      });
+      
+      // 4. 입력창으로 이동 (부드러운 이동)
+      const moveToInputDelay = 2800 + fileList.length * 700 + 800;
+      timeouts.push(setTimeout(() => {
+        setUploadAreaActive(false);
+        setMousePosition({ x: 25, y: 80 });
+      }, moveToInputDelay));
+      
+      // 5. 타이핑 시작
+      timeouts.push(setTimeout(() => {
+        setIsClicking(true);
+        setTimeout(() => setIsClicking(false), 150);
+        setIsTyping(true);
+        
+        let i = 0;
+        const typeInterval = setInterval(() => {
+          if (i < fullText.length) {
+            setTypedText(fullText.slice(0, i + 1));
+            i++;
+          } else {
+            clearInterval(typeInterval);
+            setIsTyping(false);
+            
+            // 0.5초 대기 후 전송 버튼으로 이동
+            setTimeout(() => {
+              setMousePosition({ x: 89, y: 80 });
+            }, 500);
+            
+            // 전송 버튼 클릭 (더 리얼한 효과)
+            setTimeout(() => {
+              setIsClicking(true);
+              setIsSendButtonPressed(true);
+              setTimeout(() => {
+                setIsClicking(false);
+                // 버튼 눌림 효과 유지
+                setTimeout(() => setIsSendButtonPressed(false), 400);
+              }, 250);
+            }, 1200);
+          }
+        }, 90); // 더 자연스러운 타이핑 속도
+        
+        timeouts.push(typeInterval as any);
+      }, moveToInputDelay + 1000));
+      
+      return () => timeouts.forEach(clearTimeout);
+    } else {
+      // 리셋
+      setShowMouse(false);
+      setMousePosition({ x: 50, y: 50 });
+      setIsClicking(false);
+      setShowFiles([]);
+      setTypedText('');
+      setIsSendButtonPressed(false);
+      setUploadAreaActive(false);
+      setIsTyping(false);
     }
-  };
+  }, [isOpen, includeMiso]);
+
 
   const handleDownloadAndClose = () => {
     onDownload(includeMiso, includeMiso ? misoType : undefined);
@@ -61,8 +135,56 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+    <>
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-2px); }
+        }
+        @keyframes glow {
+          0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+          50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        }
+        .animate-fade-in {
+          animation: fadeInUp 0.6s ease-out;
+        }
+        .animate-bounce-subtle {
+          animation: bounce 0.4s ease-in-out;
+        }
+        .animate-glow {
+          animation: glow 1s ease-in-out infinite;
+        }
+        .mouse-cursor {
+          position: absolute;
+          transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          z-index: 10;
+          pointer-events: none;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+        .mouse-cursor.clicking {
+          transform: scale(0.8);
+          transition: transform 0.15s ease-out;
+        }
+        .typing-cursor {
+          animation: blink 1s infinite;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+      `}</style>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-6 border-b border-gray-100">
           <DialogTitle className="text-2xl font-light text-gray-900">
             바이브코딩에 적용하기
@@ -181,91 +303,11 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
             </div>
           </div>
 
-          {/* Step 2: 기본 지침 복사 */}
+          {/* Step 2: 파일 다운로드 */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium">
                 2
-              </div>
-              <h3 className="text-lg font-light text-gray-900">바이브코딩 지침 설정하기</h3>
-            </div>
-            <div className="ml-11">
-              <p className="text-sm text-gray-600 leading-relaxed font-light mb-4">
-                v0의 Introduction에 추가할 지침을 복사해주세요
-              </p>
-              
-              <div className="border border-gray-200 rounded-xl overflow-hidden">
-                <div className="p-4 bg-gray-50 border-b border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-gray-900">바이브코딩 지침</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        onClick={handleCopyPrompt}
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 font-medium"
-                      >
-                        {copied ? (
-                          <>
-                            <Check className="w-3 h-3 mr-1" />
-                            복사됨
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3 mr-1" />
-                            복사하기
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-500 hover:text-gray-700 px-2"
-                      >
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                
-                {isExpanded && (
-                  <div className="p-4 bg-white max-h-64 overflow-y-auto">
-                    <pre className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed font-mono">
-{promptText}
-                    </pre>
-                  </div>
-                )}
-              </div>
-              
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <p className="text-sm text-gray-600 leading-relaxed font-light mb-2">
-                  복사한 지침을 v0의 <span className="font-medium">Introduction</span> 섹션에 붙여넣어주세요
-                </p>
-                <a
-                  href={EXTERNAL_LINKS.V0_INTRODUCTION_GUIDE}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors font-light"
-                >
-                  자세한 방법 보기
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Step 3: 파일 다운로드 */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium">
-                3
               </div>
               <h3 className="text-lg font-light text-gray-900">프로젝트 문서 업로드하기</h3>
             </div>
@@ -297,10 +339,6 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                           <div className="flex items-center gap-2">
                             <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
                             <span>화면 디자인 가이드</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                            <span>개발 가이드</span>
                           </div>
                           {includeMiso && (
                             <div className="flex items-center gap-2">
@@ -340,18 +378,115 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
             </div>
           </div>
 
-          {/* Step 4: 시작하기 */}
+          {/* Step 3: 시작하기 */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium">
-                4
+                3
               </div>
               <h3 className="text-lg font-light text-gray-900">바이브코딩 시작!</h3>
             </div>
             <div className="ml-11">
-              <p className="text-sm text-gray-600 leading-relaxed font-light">
-                이제 모든 준비가 완료되었습니다. 바이브코딩으로 상상을 현실로 만들어보세요!
+              <p className="text-sm text-gray-600 leading-relaxed font-light mb-4">
+                이제 모든 준비가 완료되었습니다. v0에서 파일을 업로드하고 원하는 기능을 설명해보세요!
               </p>
+              
+              {/* V0 스타일 시뮬레이션 */}
+              <div className="border border-gray-200 rounded-xl bg-white p-6 relative overflow-hidden">
+                {/* 마우스 커서 */}
+                {showMouse && (
+                  <div 
+                    className={`mouse-cursor ${isClicking ? 'clicking' : ''}`}
+                    style={{
+                      left: `${mousePosition.x}%`,
+                      top: `${mousePosition.y}%`,
+                    }}
+                  >
+                    <MousePointer className="w-4 h-4 text-gray-800 drop-shadow-sm" />
+                  </div>
+                )}
+
+                {/* 파일 업로드 영역 */}
+                <div className={`mb-4 p-4 border-2 border-dashed rounded-lg text-center transition-all duration-300 ${
+                  uploadAreaActive 
+                    ? 'border-blue-400 bg-blue-50/50 animate-glow' 
+                    : 'border-gray-200 bg-gray-50/30'
+                }`}>
+                  <Upload className={`w-5 h-5 mx-auto mb-2 transition-colors ${
+                    uploadAreaActive ? 'text-blue-500' : 'text-gray-400'
+                  }`} />
+                  <p className={`text-xs transition-colors ${
+                    uploadAreaActive ? 'text-blue-600 font-medium' : 'text-gray-500'
+                  }`}>문서 업로드</p>
+                  
+                  {/* 동적으로 나타나는 파일들 */}
+                  {showFiles.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {showFiles.map((fileIndex) => {
+                        const file = fileList[fileIndex];
+                        const colorClasses = {
+                          blue: 'bg-blue-50 border-blue-200 text-blue-700',
+                          green: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+                          purple: 'bg-violet-50 border-violet-200 text-violet-700'
+                        };
+                        const IconComponent = file.icon;
+                        
+                        return (
+                          <div
+                            key={fileIndex}
+                            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs animate-fade-in animate-bounce-subtle ${colorClasses[file.color]}`}
+                          >
+                            <IconComponent className="w-3.5 h-3.5" />
+                            <span className="font-medium">{file.name}</span>
+                            <div className="ml-auto text-xs opacity-60">업로드 완료</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* 채팅 입력창 */}
+                <div className={`border-2 rounded-xl bg-white transition-all duration-300 ${
+                  isTyping ? 'border-blue-300 shadow-lg shadow-blue-500/10' : 'border-gray-200'
+                }`}>
+                  <div className="flex items-center p-4" ref={inputRef}>
+                    <div className="flex-1 relative min-h-[20px]">
+                      {typedText ? (
+                        <>
+                          <span ref={textRef} className="text-gray-900 text-sm font-normal">
+                            {typedText}
+                          </span>
+                          <div 
+                            className="absolute top-0 w-0.5 h-5 bg-gray-900 typing-cursor"
+                            style={{
+                              left: `${textRef.current?.offsetWidth || 0}px`
+                            }}
+                          ></div>
+                        </>
+                      ) : (
+                        <span className="text-gray-400 text-sm">마케팅 대시보드를 만들어줘!</span>
+                      )}
+                    </div>
+                    <button 
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center ml-4 transition-all duration-200 ${
+                        isSendButtonPressed 
+                          ? 'bg-blue-700 scale-90 shadow-inner transform-gpu' 
+                          : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-500/30 hover:scale-105'
+                      }`}
+                      style={{
+                        boxShadow: isSendButtonPressed 
+                          ? 'inset 0 2px 4px rgba(0,0,0,0.2)' 
+                          : '0 4px 12px rgba(59, 130, 246, 0.25)'
+                      }}
+                    >
+                      <Send className={`w-4 h-4 text-white transition-transform ${
+                        isSendButtonPressed ? 'scale-90' : ''
+                      }`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -367,5 +502,6 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

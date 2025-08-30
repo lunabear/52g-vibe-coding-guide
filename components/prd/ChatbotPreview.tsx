@@ -97,13 +97,13 @@ export function ChatbotPreview() {
   }, [messages, currentMessageIndex]);
 
   return (
-    <div className="h-[500px] flex flex-col bg-[hsl(var(--background))]">
+    <div className="h-full min-h-0 flex flex-col bg-[hsl(var(--background))] font-[var(--font-sans)] rounded-[var(--radius)] overflow-hidden shadow-[var(--shadow)]">
       {/* Chat Header */}
       <div className="px-4 py-3 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-[calc(var(--radius)-2px)] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex items-center justify-center shadow-[var(--shadow-sm)]">
                 <Bot className="w-5 h-5 text-[hsl(var(--primary-foreground))]" />
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[hsl(var(--background))]" />
@@ -130,7 +130,7 @@ export function ChatbotPreview() {
               animation: `fadeIn 0.3s ease-out ${index * 0.1}s both`
             }}
           >
-            <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
+            <div className={`w-8 h-8 rounded-[calc(var(--radius)-4px)] flex-shrink-0 flex items-center justify-center shadow-[var(--shadow-xs)] ${
               message.type === 'bot' 
                 ? 'bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))]' 
                 : 'bg-[hsl(var(--secondary))]'
@@ -142,7 +142,7 @@ export function ChatbotPreview() {
               )}
             </div>
             <div className={`max-w-[70%] ${message.type === 'user' ? 'items-end' : ''}`}>
-              <div className={`rounded-2xl px-4 py-2.5 ${
+              <div className={`rounded-[calc(var(--radius)+4px)] px-4 py-2.5 shadow-[var(--shadow-sm)] ${
                 message.type === 'bot' 
                   ? 'bg-[hsl(var(--card))] border border-[hsl(var(--border))]' 
                   : 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
@@ -153,7 +153,7 @@ export function ChatbotPreview() {
                 {message.features && (
                   <div className="flex gap-2 mt-2">
                     {message.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-1 px-2 py-1 rounded-full bg-[hsl(var(--accent))]/10 text-[hsl(var(--accent-foreground))]">
+                      <div key={idx} className="flex items-center gap-1 px-2 py-1 rounded-[calc(var(--radius)-2px)] bg-[hsl(var(--accent))]/10 text-[hsl(var(--accent-foreground))]">
                         {feature.icon}
                         <span className="text-xs">{feature.text}</span>
                       </div>
@@ -168,7 +168,7 @@ export function ChatbotPreview() {
                   {message.quickReplies.map((reply, idx) => (
                     <button
                       key={idx}
-                      className="px-3 py-1.5 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-xs font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--accent))]/10 hover:border-[hsl(var(--accent))] transition-all flex items-center gap-1 group"
+                      className="px-3 py-1.5 rounded-[calc(var(--radius)+2px)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-xs font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--accent))]/10 hover:border-[hsl(var(--accent))] transition-all flex items-center gap-1 group shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)]"
                     >
                       {reply}
                       <ChevronRight className="w-3 h-3 text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--accent))] transition-colors" />
@@ -185,10 +185,10 @@ export function ChatbotPreview() {
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex gap-3 animate-fadeIn">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex-shrink-0 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-[calc(var(--radius)-4px)] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] flex-shrink-0 flex items-center justify-center shadow-[var(--shadow-xs)]">
               <Bot className="w-4 h-4 text-[hsl(var(--primary-foreground))]" />
             </div>
-            <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl px-4 py-3">
+            <div className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-[calc(var(--radius)+4px)] px-4 py-3 shadow-[var(--shadow-sm)]">
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-[hsl(var(--muted-foreground))]/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-2 h-2 bg-[hsl(var(--muted-foreground))]/40 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
@@ -207,9 +207,9 @@ export function ChatbotPreview() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="메시지를 입력하세요..."
-            className="flex-1 px-4 py-2.5 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]/20 focus:border-[hsl(var(--primary))] transition-all"
+            className="flex-1 px-4 py-2.5 bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-[calc(var(--radius)+4px)] text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]/20 focus:border-[hsl(var(--primary))] transition-all shadow-[var(--shadow-xs)] focus:shadow-[var(--shadow-sm)]"
           />
-          <button className="p-2.5 rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary))]/90 transition-colors">
+          <button className="p-2.5 rounded-[calc(var(--radius)-2px)] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary))]/90 transition-colors shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)]">
             <Send className="w-4 h-4" />
           </button>
         </div>

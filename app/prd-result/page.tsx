@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Download, FileText, Edit2, Save, X, Send, Loader2, Sparkles } from 'lucide-react';
 import { DashboardPreview } from '../../components/prd/DashboardPreview';
@@ -8,14 +8,15 @@ import { ChatbotPreview } from '../../components/prd/ChatbotPreview';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import JSZip from 'jszip';
 import { usePRDContext } from '@/contexts/PRDContext';
-import { THEME_PRESETS } from '@/lib/theme-presets';
+import { THEME_PRESETS, buildTailwindThemeMarkdown } from '@/lib/theme-presets';
 import { misoAPI } from '@/lib/miso-api';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import { ErrorPage } from '@/components/common/ErrorPage';
 import { VibeCodingGuideModal } from '@/components/common/VibeCodingGuideModal';
 import { loadMiniAllySession, clearMiniAllySession, getMisoDesignFromSession, convertMisoAppTypeToVibeType } from '@/lib/mini-ally-utils';
+import { MermaidDiagram } from '@/components/common/MermaidDiagram';
+import { FlowChart } from '@/components/common/FlowChart';
 
 export default function PRDResultPage() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function PRDResultPage() {
   const [error, setError] = useState<string | null>(null);
   const [isMiniAllyFlow, setIsMiniAllyFlow] = useState(false);
   // Heather: 스타일 선택 프리셋과 선택 상태
-  const [selectedThemeId, setSelectedThemeId] = useState<string>('amber');
+  const [selectedThemeId, setSelectedThemeId] = useState<string>('designSystem');
   const computeScopedCss = (css: string) =>
     css
       .replace(/:root/g, '.theme-preview')
@@ -33,6 +34,56 @@ export default function PRDResultPage() {
   const extractHsl = (css: string, key: string) => {
     const match = css.match(new RegExp(`--${key}:\\s*([^;]+);`));
     return match ? match[1].trim() : undefined;
+  };
+
+  // HEX 팔레트만 주입되는 환경에서, 미리보기의 기존 HSL 기반 클래스와 시각을 유지하기 위한 alias 생성기
+  const hexToHslTriplet = (hex: string): string | undefined => {
+    const m = hex?.trim().match(/^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i);
+    if (!m) return undefined;
+    const r = parseInt(m[1], 16) / 255;
+    const g = parseInt(m[2], 16) / 255;
+    const b = parseInt(m[3], 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    const H = Math.round(h * 360);
+    const S = Math.round(s * 100);
+    const L = Math.round(l * 100);
+    return `${H} ${S}% ${L}%`;
+  };
+
+  const buildHslAliasesFromHexPalette = (hexPaletteCss: string): string => {
+    // 간단 파서: --token:#RRGGBB;
+    const pick = (name: string): string | undefined => {
+      const m = hexPaletteCss.match(new RegExp(`--${name}:\\s*([^;]+);`));
+      return m ? m[1].trim() : undefined;
+    };
+    const map: Record<string, string | undefined> = {
+      background: hexToHslTriplet(pick('bg-100') || '#ffffff'),
+      card: hexToHslTriplet(pick('bg-100') || '#ffffff'),
+      border: hexToHslTriplet(pick('bg-300') || '#dddddd'),
+      foreground: hexToHslTriplet(pick('text-100') || '#111111'),
+      'muted-foreground': hexToHslTriplet(pick('text-200') || '#666666'),
+      primary: hexToHslTriplet(pick('primary-100') || '#000000'),
+      'primary-foreground': hexToHslTriplet('#ffffff'),
+      accent: hexToHslTriplet(pick('accent-100') || '#dddddd'),
+      ring: hexToHslTriplet(pick('primary-100') || '#000000'),
+    };
+    // scope: .theme-preview
+    const lines = Object.entries(map)
+      .filter(([, v]) => !!v)
+      .map(([k, v]) => `  --${k}: ${v};`)
+      .join('\n');
+    return `.theme-preview {\n${lines}\n}`;
   };
 
   const renderPreview = () => {
@@ -60,11 +111,11 @@ export default function PRDResultPage() {
         const barWidth = step * 0.5;
         return (
           <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
-            <line x1="0" y1={baseY} x2={width} y2={baseY} stroke="hsl(var(--border))" strokeWidth="1" />
-            <line x1={paddingLeft} y1="0" x2={paddingLeft} y2={baseY} stroke="hsl(var(--border))" strokeWidth="1" />
+            <line x1="0" y1={baseY} x2={width} y2={baseY} stroke="var(--bg-300)" strokeWidth="1" />
+            <line x1={paddingLeft} y1="0" x2={paddingLeft} y2={baseY} stroke="var(--bg-300)" strokeWidth="1" />
             {data.map((v, i) => {
               const x = points[i].x - barWidth / 2; const y = points[i].y; const h = baseY - y;
-              return <rect key={i} x={x} y={y} width={barWidth} height={h} fill="hsl(var(--accent))" />;
+              return <rect key={i} x={x} y={y} width={barWidth} height={h} fill="var(--accent-100)" />;
             })}
           </svg>
         );
@@ -77,10 +128,10 @@ export default function PRDResultPage() {
       ].join('');
       return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
-          <line x1="0" y1={baseY} x2={width} y2={baseY} stroke="hsl(var(--border))" strokeWidth="1" />
-          <line x1={paddingLeft} y1="0" x2={paddingLeft} y2={baseY} stroke="hsl(var(--border))" strokeWidth="1" />
-          <path d={pathD} fill="none" stroke="hsl(var(--primary))" strokeWidth="2" />
-          {points.map((p, i) => (<circle key={i} cx={p.x} cy={p.y} r="3" fill="hsl(var(--primary))" />))}
+          <line x1="0" y1={baseY} x2={width} y2={baseY} stroke="var(--bg-300)" strokeWidth="1" />
+          <line x1={paddingLeft} y1="0" x2={paddingLeft} y2={baseY} stroke="var(--bg-300)" strokeWidth="1" />
+          <path d={pathD} fill="none" stroke="var(--primary-100)" strokeWidth="2" />
+          {points.map((p, i) => (<circle key={i} cx={p.x} cy={p.y} r="3" fill="var(--primary-100)" />))}
         </svg>
       );
     } finally {
@@ -90,6 +141,45 @@ export default function PRDResultPage() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [showVibeCodingModal, setShowVibeCodingModal] = useState(false);
   const [hasClickedVibeCoding, setHasClickedVibeCoding] = useState(false);
+  // Heather: 진입 안내 오버레이 (잠시 안내 후 자연스럽게 사라짐)
+  const [showHeatherIntro, setShowHeatherIntro] = useState(true);
+  const [fadeOutHeatherIntro, setFadeOutHeatherIntro] = useState(false);
+  // 카드 높이 동기화 (전체 카드 기준)
+  const kyleCardRef = useRef<HTMLDivElement | null>(null);
+  const heatherCardRef = useRef<HTMLDivElement | null>(null);
+  const [syncedCardHeight, setSyncedCardHeight] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const measure = () => {
+      const h1 = kyleCardRef.current?.getBoundingClientRect().height || 0;
+      const h2 = heatherCardRef.current?.getBoundingClientRect().height || 0;
+      const max = Math.max(600, h1, h2); // 최소 높이를 600px로 설정
+      setSyncedCardHeight(max);
+    };
+    // 초기 측정
+    measure();
+    // ResizeObserver로 동기화
+    const ro1 = new ResizeObserver(measure);
+    const ro2 = new ResizeObserver(measure);
+    if (kyleCardRef.current) ro1.observe(kyleCardRef.current);
+    if (heatherCardRef.current) ro2.observe(heatherCardRef.current);
+    window.addEventListener('resize', measure);
+    return () => {
+      try { ro1.disconnect(); } catch {}
+      try { ro2.disconnect(); } catch {}
+      window.removeEventListener('resize', measure);
+    };
+  }, [prdContent]);
+  useEffect(() => {
+    const HEATHER_OVERLAY_VISIBLE_MS = 2500;
+    const HEATHER_OVERLAY_FADE_MS = 500;
+    const t1 = setTimeout(() => setFadeOutHeatherIntro(true), HEATHER_OVERLAY_VISIBLE_MS);
+    const t2 = setTimeout(() => setShowHeatherIntro(false), HEATHER_OVERLAY_VISIBLE_MS + HEATHER_OVERLAY_FADE_MS);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
   
   // 편집 모드 상태
   const [isEditingPRD, setIsEditingPRD] = useState(false);
@@ -105,30 +195,32 @@ export default function PRDResultPage() {
   const [isPRDFixing, setIsPRDFixing] = useState(false);
   // Heather 수정 중 상태 제거
 
+  // 단일 실행 가드 (StrictMode의 이펙트 중복 실행 및 상태 변화 재실행 방지)
+  const hasRequestedRef = useRef(false);
+
   useEffect(() => {
-    // Mini-Ally 세션 체크
-    const session = loadMiniAllySession();
-    if (session && session.step === 'prd-result') {
-      setIsMiniAllyFlow(true);
-    }
-
-    // 아이디어 구체화 결과가 이미 있으면 사용
-    if (prdContent) {
-      setIsLoading(false);
-      return;
-    }
-
-    // 아이디어 구체화
-    const generatePRD = async () => {
+    const run = async () => {
       try {
+        const session = loadMiniAllySession();
+        if (session) {
+          setIsMiniAllyFlow(true);
+        }
+
+        // 이미 결과가 있으면 추가 호출 방지
+        if (prdContent) {
+          setIsLoading(false);
+          return;
+        }
+
+        // 단 한 번만 호출
+        if (hasRequestedRef.current) return;
+        hasRequestedRef.current = true;
+
         let questionsAndAnswers: Array<{ question: string; answer: string }> = [];
-        
-        if (isMiniAllyFlow && session) {
-          // Mini-Ally 플로우: 세션에서 데이터 구성
+
+        if (session?.projectData) {
           const projectData = session.projectData;
           const expertAnswers = session.expertAnswers || [];
-          
-          // ProjectData를 question-answer 형태로 변환
           questionsAndAnswers = [
             { question: '이 서비스의 핵심 타겟 사용자는 누구인가요?', answer: projectData.personaProfile || '' },
             { question: '사용자는 언제 불편함을 경험하나요?', answer: projectData.painPointContext || '' },
@@ -137,20 +229,19 @@ export default function PRDResultPage() {
             { question: '솔루션의 이름은 무엇인가요?', answer: projectData.solutionNameIdea || '' },
             { question: '솔루션이 어떻게 작동하나요?', answer: projectData.solutionMechanism || '' },
             { question: '기대되는 효과는 무엇인가요?', answer: projectData.expectedOutcome || '' },
-            ...expertAnswers
+            ...expertAnswers,
           ];
         } else {
           // 기존 플로우: PRDContext에서 데이터 가져오기
           questionsAndAnswers = getAllQuestionsAndAnswers();
         }
-        
+
         if (questionsAndAnswers.length === 0) {
           router.push('/');
           return;
         }
-        
+
         const result = await misoAPI.generatePRD(questionsAndAnswers);
-        
         if (result) {
           setPRDContent(result);
         } else {
@@ -168,50 +259,43 @@ export default function PRDResultPage() {
       }
     };
 
-    generatePRD();
-  }, [prdContent, getAllQuestionsAndAnswers, setPRDContent, router, isMiniAllyFlow]);
+    run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prdContent]);
 
   // Heather: MISO 디자인 생성 로직 제거됨 (스타일 선택 UI 사용)
 
   // 개발자(Bob) 단계는 제거되었습니다
 
   const handleDownload = async (includeMiso: boolean = false, misoType?: 'chatflow' | 'workflow' | 'both') => {
-    const zip = new JSZip();
     const date = new Date().toISOString().split('T')[0];
-    
-    // 1. 기획자 Kyle의 PRD 문서
+    let combinedMd = `# 프로젝트 문서 (${date})\n\n`;
+
     if (prdContent) {
-      zip.file(`1_기획자_Kyle_PRD_${date}.md`, prdContent);
+      combinedMd += `## 1) 기획자 Kyle PRD\n\n${prdContent}\n\n`;
     }
-    
-    // 2. 디자이너 Heather의 디자인 스타일 (CSS)
+
     const selectedTheme = THEME_PRESETS.find(t => t.id === selectedThemeId);
     if (selectedTheme) {
-      zip.file(`2_디자이너_Heather_디자인_스타일_${date}.css`, selectedTheme.css);
+      const heatherMd = buildTailwindThemeMarkdown(selectedTheme);
+      combinedMd += `## 2) 디자이너 Heather 디자인 스타일\n\n${heatherMd}\n\n`;
     }
-    
-    // 3. 개발자 Bob 단계 제거 (파일 제외)
-    
-    // 4. MISO API 가이드 추가
+
     if (includeMiso && misoType) {
-      // MISO API 가이드 파일 내용을 추가
       const { MISO_CHATFLOW_AGENT_GUIDE, MISO_WORKFLOW_GUIDE } = await import('@/lib/prompts/vibe-coding-guide');
-      
       if (misoType === 'chatflow' || misoType === 'both') {
-        zip.file(`miso_api_guide_agent,chatflow.md`, MISO_CHATFLOW_AGENT_GUIDE);
+        combinedMd += `## 3) MISO Chatflow 가이드\n\n${MISO_CHATFLOW_AGENT_GUIDE}\n\n`;
       }
-      
       if (misoType === 'workflow' || misoType === 'both') {
-        zip.file(`miso_api_guide_workflow.md`, MISO_WORKFLOW_GUIDE);
+        combinedMd += `## 4) MISO Workflow 가이드\n\n${MISO_WORKFLOW_GUIDE}\n\n`;
       }
     }
-    
-    // ZIP 파일 생성 및 다운로드
-    const blob = await zip.generateAsync({ type: 'blob' });
+
+    const blob = new Blob([combinedMd], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `프로젝트문서_${date}.zip`;
+    a.download = `프로젝트문서_${date}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -280,35 +364,7 @@ export default function PRDResultPage() {
 
   // 개발자(Bob) 문서 수정 로직 제거됨
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="mb-8">
-            <img
-              src="/assets/mini_kyle_thinking.png"
-              alt="Kyle thinking"
-              className="w-32 h-32 object-contain mx-auto"
-            />
-          </div>
-          <h3 className="text-2xl font-medium text-gray-900 mb-3">아이디어를 구체화하고 있습니다</h3>
-          <p className="text-base text-gray-600 max-w-sm">기획자 Kyle이 당신의 아이디어를 정리하고 있어요...</p>
-          <div className="flex gap-1 mt-8 justify-center">
-            {[0, 1, 2].map((index) => (
-              <div
-                key={index}
-                className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"
-                style={{
-                  animationDelay: `${index * 0.2}s`,
-                  animationDuration: '1.2s'
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // 전역 로딩 화면 제거: Kyle 카드 내부에 로딩 오버레이를 표시합니다
 
   if (error) {
     if (error === 'network') {
@@ -336,7 +392,7 @@ export default function PRDResultPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 overflow-hidden">
       <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-b border-gray-100 z-50">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
@@ -374,15 +430,18 @@ export default function PRDResultPage() {
         </div>
       </header>
 
-      <main className="pt-20 pb-8">
-        <div className="px-6">
+      <main className="pt-20 h-screen overflow-hidden">
+        <div className="px-6 h-full pb-6">
           {/* 3 Column Layout - Full Width */}
-          <div className="grid grid-cols-1 custom:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 custom:grid-cols-3 gap-6 h-full grid-rows-[minmax(0,1fr)] overflow-hidden">
             
             {/* 기획자 - PRD */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow relative">
+            <div 
+              ref={kyleCardRef}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow relative flex flex-col h-full min-h-0"
+            >
               {/* Header */}
-              <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100 min-h-[112px] flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 flex items-center justify-center">
@@ -424,13 +483,13 @@ export default function PRDResultPage() {
               </div>
               
               {/* Content */}
-              <div className="max-h-[calc(100vh-280px)] overflow-y-auto relative">
+              <div className="flex-1 overflow-y-auto relative min-h-0">
                 <div className="p-6">
                   {isEditingPRD ? (
                     <textarea
                       value={tempPRDContent}
                       onChange={(e) => setTempPRDContent(e.target.value)}
-                      className="w-full h-[calc(100vh-330px)] p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      className="w-full h-full p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                       placeholder="PRD 내용을 입력하세요..."
                     />
                   ) : (
@@ -438,73 +497,163 @@ export default function PRDResultPage() {
                       remarkPlugins={[remarkGfm]} 
                       rehypePlugins={[rehypeRaw]}
                       components={{
-                      h1: ({ children }) => (
+                      assumption: ({ children }: { children?: React.ReactNode }) => (
+                        <div className="pl-4 py-2 my-4 border-l-3 border-blue-400 bg-blue-50 rounded-r">
+                          <div className="text-sm text-blue-700">
+                            <span className="font-semibold">가정: </span>
+                            {children}
+                          </div>
+                        </div>
+                      ),
+                      h1: ({ children }: { children?: React.ReactNode }) => (
                         <h1 className="text-xl font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
                           {children}
                         </h1>
                       ),
-                      h2: ({ children }) => (
+                      h2: ({ children }: { children?: React.ReactNode }) => (
                         <h2 className="text-lg font-medium text-gray-800 mt-8 mb-4">
                           {children}
                         </h2>
                       ),
-                      h3: ({ children }) => (
+                      h3: ({ children }: { children?: React.ReactNode }) => (
                         <h3 className="text-base font-medium text-gray-700 mt-6 mb-3">
                           {children}
                         </h3>
                       ),
-                      p: ({ children }) => (
+                      p: ({ children }: { children?: React.ReactNode }) => (
                         <p className="text-sm text-gray-600 leading-relaxed mb-4">
                           {children}
                         </p>
                       ),
-                      ul: ({ children }) => (
+                      ul: ({ children }: { children?: React.ReactNode }) => (
                         <ul className="space-y-2 mb-4 list-disc pl-5">
                           {children}
                         </ul>
                       ),
-                      ol: ({ children }) => (
-                        <ol className="space-y-2 mb-4 list-decimal pl-5">
+                      ol: ({ children }: { children?: React.ReactNode }) => (
+                        <ol className="mb-4 list-decimal pl-5" style={{ listStyleType: 'decimal' }}>
                           {children}
                         </ol>
                       ),
-                      li: ({ children }) => (
-                        <li className="text-sm text-gray-600 list-item">
+                      li: ({ children }: { children?: React.ReactNode }) => (
+                        <li className="text-sm text-gray-600 mb-2" style={{ display: 'list-item', listStyleType: 'inherit' }}>
                           {children}
                         </li>
                       ),
-                      strong: ({ children }) => (
+                      strong: ({ children }: { children?: React.ReactNode }) => (
                         <strong className="font-semibold text-gray-800">{children}</strong>
                       ),
-                      blockquote: ({ children }) => (
+                      blockquote: ({ children }: { children?: React.ReactNode }) => (
                         <blockquote className="pl-4 py-2 my-4 border-l-3 border-gray-300 bg-gray-50 rounded-r">
                           <div className="italic text-sm text-gray-600">{children}</div>
                         </blockquote>
                       ),
-                      table: ({ children }) => (
+                      table: ({ children }: { children?: React.ReactNode }) => (
                         <div className="overflow-x-auto my-6">
                           <table className="min-w-full border-collapse">
                             {children}
                           </table>
                         </div>
                       ),
-                      thead: ({ children }) => (
+                      thead: ({ children }: { children?: React.ReactNode }) => (
                         <thead className="bg-gray-50 border-b-2 border-gray-200">
                           {children}
                         </thead>
                       ),
-                      th: ({ children }) => (
+                      th: ({ children }: { children?: React.ReactNode }) => (
                         <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
                           {children}
                         </th>
                       ),
-                      td: ({ children }) => (
+                      td: ({ children }: { children?: React.ReactNode }) => (
                         <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-100">
                           {children}
                         </td>
                       ),
                       hr: () => <hr className="my-6 border-gray-200" />,
-                      code: ({ children, ...props }) => {
+                      pre: ({ children, className, ...props }: { children?: React.ReactNode; className?: string; [key: string]: any }) => {
+                        console.log('Pre element:', { className, children, childrenType: typeof children });
+                        
+                        // Check if this is a code block wrapper  
+                        if (React.isValidElement(children) && (children as React.ReactElement).type === 'code') {
+                          const codeEl = children as React.ReactElement<{ className?: string; children?: React.ReactNode }>;
+                          const codeProps = codeEl.props;
+                          const codeClassName = codeProps.className ?? '';
+                          const match = /language-(\w+)/.exec(codeClassName);
+                          const language = match ? match[1] : null;
+                          
+                          console.log('Pre->Code detected:', { language, codeClassName, codeChildren: codeProps.children });
+                          
+                          // Handle JSON flowchart
+                          if (language === 'json-flowchart' || language === 'flowchart' || language === 'json') {
+                            const content = Array.isArray(codeProps.children) ? (codeProps.children as string[]).join('') : (codeProps.children as string | undefined);
+                            if (typeof content === 'string') {
+                              try {
+                                const flowData = JSON.parse(content.trim());
+                                // Check if it's actually flowchart data
+                                if (flowData.nodes && flowData.edges && Array.isArray(flowData.nodes) && Array.isArray(flowData.edges)) {
+                                  console.log('FlowChart rendering:', flowData);
+                                  return <FlowChart data={flowData} />;
+                                }
+                                // If not flowchart data, fall through to regular code block
+                              } catch (e) {
+                                console.error('JSON parsing error:', e);
+                                return (
+                                  <div className="bg-red-50 border border-red-200 rounded p-4 my-4">
+                                    <p className="text-red-600 text-sm font-semibold mb-2">플로우차트 JSON 파싱 오류</p>
+                                    <p className="text-xs text-gray-600 mb-2">언어: {language}</p>
+                                    <pre className="text-xs text-red-500 overflow-x-auto">{content}</pre>
+                                  </div>
+                                );
+                              }
+                            }
+                          }
+                          
+                          // Handle Mermaid  
+                          if (language === 'mermaid') {
+                            const content = Array.isArray(codeProps.children) ? (codeProps.children as string[]).join('') : (codeProps.children as string | undefined);
+                            if (typeof content === 'string') {
+                              return <MermaidDiagram chart={content} />;
+                            }
+                          }
+                        }
+                        
+                        // Fallback to default pre rendering
+                        return (
+                          <pre className="bg-gray-50 p-4 rounded-lg overflow-x-auto my-4">
+                            {children}
+                          </pre>
+                        );
+                      },
+                      code: ({ children, className, ...props }: { children?: React.ReactNode; className?: string; [key: string]: any }) => {
+                        const match = /language-(\w+)/.exec(className || '');
+                        const language = match ? match[1] : null;
+                        
+                        // Debug log - 제거
+                        
+                        // Check if it's a JSON flowchart
+                        if (language === 'json-flowchart' || language === 'flowchart' || language === 'json') {
+                          const content = Array.isArray(children) ? children.join('') : children;
+                          if (typeof content === 'string') {
+                            try {
+                              const flowData = JSON.parse(content.trim());
+                              // Check if it's actually flowchart data
+                              if (flowData.nodes && flowData.edges && Array.isArray(flowData.nodes) && Array.isArray(flowData.edges)) {
+                                console.log('FlowChart data parsed in code block:', flowData);
+                                return <FlowChart data={flowData} />;
+                              }
+                              // If not flowchart data, fall through to regular code block
+                            } catch (e) {
+                              // Not valid JSON or not flowchart, fall through to regular code block
+                            }
+                          }
+                        }
+                        
+                        // Check if it's a mermaid code block
+                        if (language === 'mermaid' && typeof children === 'string') {
+                          return <MermaidDiagram chart={children} />;
+                        }
+                        
                         const isInline = !props.node?.position;
                         return isInline ? (
                           <code className="px-1.5 py-0.5 bg-gray-100 text-gray-800 rounded text-xs font-mono">
@@ -516,17 +665,48 @@ export default function PRDResultPage() {
                           </pre>
                         );
                       },
-                    }}
+                    } as any}
                   >
-                      {prdContent || '# PRD 문서\n\n내용을 불러올 수 없습니다.'}
+                      {prdContent ? (() => {
+                        // Pre-process content to convert json-flowchart to json
+                        let processedContent = prdContent.replace(/```json-flowchart/g, '```json');
+                        return processedContent;
+                      })() : (!error && !isLoading ? '# PRD 문서\n\n내용을 불러올 수 없습니다.' : '')}
                     </ReactMarkdown>
                   )}
                 </div>
               </div>
               
+              {!prdContent && !error && (
+                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="mb-4">
+                      <img
+                        src="/assets/mini_kyle_thinking.png"
+                        alt="Kyle thinking"
+                        className="w-20 h-20 object-contain"
+                      />
+                    </div>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">아이디어를 정리하고 있어요</h3>
+                    <div className="flex gap-1 mt-2">
+                      {[0, 1, 2].map((index) => (
+                        <div
+                          key={index}
+                          className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse"
+                          style={{
+                            animationDelay: `${index * 0.2}s`,
+                            animationDuration: '1.2s'
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* 수정 요청 채팅바 */}
               {prdContent && !isEditingPRD && (
-                <div className="border-t border-gray-100 p-4 bg-gray-50/50">
+                <div className="border-t border-gray-100 p-4 bg-gray-50/50 flex-shrink-0">
                   <div className="flex items-center gap-3">
                     <div className="flex-1 relative">
                       <input
@@ -584,22 +764,34 @@ export default function PRDResultPage() {
             </div>
 
             {/* 디자이너 - 페이지 설계 (Heather가 2열 차지) */}
-            <div className="custom:col-span-2 relative">
-              <style>
-                {computeScopedCss(THEME_PRESETS.find(t => t.id === selectedThemeId)?.css || '')}
-                {`
-                @keyframes theme-glow {
-                  0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.05), 0 0 40px hsl(var(--accent) / 0.03); }
-                  50% { box-shadow: 0 0 30px hsl(var(--primary) / 0.08), 0 0 60px hsl(var(--accent) / 0.05); }
-                }
-                .animate-theme-glow {
-                  animation: theme-glow 3s ease-in-out infinite;
-                }
-                `}
-              </style>
-              <div className="theme-preview bg-[hsl(var(--card))] rounded-2xl shadow-sm border border-[hsl(var(--border))] overflow-hidden hover:shadow-lg transition-all duration-500 hover:shadow-[hsl(var(--primary))]/10 hover:border-[hsl(var(--primary))]/20 animate-theme-glow">
+            <div className="custom:col-span-2 relative h-full min-h-0">
+              <style
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const selectedTheme = THEME_PRESETS.find(t => t.id === selectedThemeId);
+                    if (!selectedTheme) return '';
+                    
+                    // 전체 CSS를 theme-preview 스코프로 변환
+                    const fullCSS = selectedTheme.css
+                      .replace(/:root\s*{/g, '.theme-preview {')
+                      .replace(/\.dark\s*{/g, '.theme-preview.dark {');
+                    
+                    const extra = `\n@keyframes theme-glow {\n  0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.05), 0 0 40px hsl(var(--accent) / 0.03); }\n  50% { box-shadow: 0 0 30px hsl(var(--primary) / 0.08), 0 0 60px hsl(var(--accent) / 0.05); }\n}\n.animate-theme-glow {\n  animation: theme-glow 3s ease-in-out infinite;\n}`;
+                    
+                    return `${fullCSS}\n${extra}`;
+                  })()
+                }}
+              />
+              <div 
+              ref={heatherCardRef}
+              className="theme-preview rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-500 animate-theme-glow relative flex flex-col h-full min-h-0" 
+              style={{ background: 'var(--bg-100)', border: '1px solid var(--bg-300)' }}
+            >
               {/* Header */}
-              <div className="p-6 bg-gradient-to-br from-[hsl(var(--muted))]/30 via-[hsl(var(--card))] to-[hsl(var(--accent))]/10 border-b border-[hsl(var(--border))] backdrop-blur-sm">
+              <div
+                className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100 backdrop-blur-sm min-h-[112px] flex-shrink-0"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 flex items-center justify-center">
@@ -610,18 +802,18 @@ export default function PRDResultPage() {
                       />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-[hsl(var(--foreground))]">디자이너 Heather</h3>
-                      <p className="text-sm text-[hsl(var(--muted-foreground))]">원하시는 스타일을 선택해주세요</p>
+                      <h3 className="text-lg font-semibold" style={{ color: 'var(--text-100)' }}>디자이너 Heather</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-200)' }}>원하시는 스타일을 선택해주세요</p>
                     </div>
                   </div>
                     <div className="text-right max-w-sm">
                       <div className="flex items-center justify-end gap-2 text-sm mb-1">
-                        <div className={`w-2 h-2 bg-[hsl(var(--primary))] rounded-full animate-pulse`}></div>
-                        <span className={`font-semibold text-[hsl(var(--foreground))]`}>
+                        <div className={`w-2 h-2 rounded-full animate-pulse`} style={{ background: 'var(--primary-100)' }}></div>
+                        <span className={`font-semibold`} style={{ color: 'var(--text-100)' }}>
                           {THEME_PRESETS.find(t => t.id === selectedThemeId)?.name} 선택됨
                         </span>
                       </div>
-                      <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-200)' }}>
                         "{THEME_PRESETS.find(t => t.id === selectedThemeId)?.recommendation}"
                       </p>
                     </div>
@@ -629,16 +821,16 @@ export default function PRDResultPage() {
               </div>
               
               {/* Content: 좌측 프리셋 리스트, 우측 스타일 미리보기 */}
-              <div className="relative">
-                    <div className="p-6">
-                  <div className="grid grid-cols-5 gap-6 items-start h-[calc(100vh-280px)]">
+              <div className="relative flex-1 flex flex-col min-h-0">
+                <div className="p-6 flex-1 min-h-0 flex flex-col">
+                  <div className="grid grid-cols-5 gap-6 flex-1 min-h-0">
                     {/* Preset List */}
-                    <div className="col-span-1 min-h-0 h-[calc(100vh-280px)] flex flex-col">
-                      <h4 className="text-sm font-bold text-[hsl(var(--foreground))] mb-4 flex items-center gap-2">
+                    <div className="col-span-1 flex flex-col min-h-0">
+                      <h4 className="text-sm font-bold text-[hsl(var(--foreground))] mb-4 flex items-center gap-2 flex-shrink-0">
                         <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))]"></div>
                         스타일 프리셋
                       </h4>
-                      <div className="space-y-3 overflow-y-auto pr-2 flex-1 px-1">
+                      <div className="space-y-3 overflow-y-auto pr-2 flex-1 min-h-0 px-1">
                         {THEME_PRESETS.map(preset => (
                       <button
                             key={preset.id}
@@ -681,50 +873,76 @@ export default function PRDResultPage() {
                     </div>
 
                     {/* Preview Panel with scoped theme */}
-                    <div className="col-span-4">
-                      <div className="mb-4">
+                    <div className="col-span-4 flex flex-col min-h-0">
+                      <div className="flex-shrink-0 mb-4">
                         <h4 className="text-sm font-bold text-[hsl(var(--foreground))] mb-3 flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[hsl(var(--accent))] to-[hsl(var(--primary))]"></div>
                           실시간 미리보기
                         </h4>
                         <div className="flex gap-2">
-                      <button
+                          <button
                             onClick={() => setPreviewType('dashboard')}
                             className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-300 ${
                               previewType === 'dashboard' 
                                 ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--primary))] shadow-lg shadow-[hsl(var(--primary))]/25' 
                                 : 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]/10 hover:border-[hsl(var(--accent))]'
                             }`}
-                      >
+                          >
                             대시보드
-                      </button>
-                      <button
+                          </button>
+                          <button
                             onClick={() => setPreviewType('chatbot')}
                             className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-300 ${
                               previewType === 'chatbot' 
                                 ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] border-[hsl(var(--primary))] shadow-lg shadow-[hsl(var(--primary))]/25' 
                                 : 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]/10 hover:border-[hsl(var(--accent))]'
                             }`}
-                      >
+                          >
                             AI 챗봇
-                      </button>
-                    </div>
-                  </div>
-                      <div className="border-2 border-[hsl(var(--border))] rounded-2xl overflow-hidden shadow-lg shadow-[hsl(var(--primary))]/5 bg-[hsl(var(--card))]">
-                        <div className="p-4" style={{ fontFamily: 'var(--font-sans)' }}>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="border-2 border-[hsl(var(--border))] rounded-2xl shadow-lg shadow-[hsl(var(--primary))]/5 bg-[hsl(var(--card))] flex-1 min-h-0 flex flex-col">
+                        <div className="p-4 flex-1 overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
                           {renderPreview()}
-                              </div>
-                            </div>
-                      <p className="text-xs text-[hsl(var(--muted-foreground))] mt-3 px-1 flex items-center gap-2">
+                        </div>
+                      </div>
+                      <div className="text-xs text-[hsl(var(--muted-foreground))] mt-3 px-1 flex items-center gap-2 flex-shrink-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--accent))]"></div>
                         선택한 스타일은 ZIP 다운로드에 theme.css로 포함됩니다.
-                      </p>
-                            </div>
-                          </div>
-                    </div>
                       </div>
                     </div>
+                  </div>
+                </div>
               </div>
+                    {/* Heather 진입 안내 오버레이 */}
+                    {showHeatherIntro && (
+                      <div
+                        className={`absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-20 transition-opacity duration-500 ${fadeOutHeatherIntro ? 'opacity-0' : 'opacity-100'}`}
+                        onClick={() => setShowHeatherIntro(false)}
+                      >
+                        <div className="flex flex-col items-center text-center px-6">
+                          <div className="mb-4">
+                            <img
+                              src="/assets/mini_heather_thinking.png"
+                              alt="Heather 안내"
+                              className="w-20 h-20 object-contain"
+                            />
+                          </div>
+                          <h3 className="text-base font-medium" style={{ color: 'var(--text-100)' }}>
+                            적용을 원하시는 디자인 시스템을 선택해주세요
+                          </h3>
+                          <p className="mt-2 text-sm" style={{ color: 'var(--text-200)' }}>
+                            좌측 목록에서 스타일 프리셋을 선택하면 우측에서 미리보기가 갱신됩니다.
+                          </p>
+                          <p className="mt-3 text-xs" style={{ color: 'var(--text-200)' }}>
+                            언제든 좌측에서 스타일을 변경할 수 있어요.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+              </div>
+            </div>
               
             {/* 개발자(Bob) 섹션 제거됨 */}
 
