@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu, ChevronRight, Home } from 'lucide-react';
+import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu, ChevronRight, Home, Paperclip, FileText, Image as ImageIcon, ZoomIn } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
@@ -35,6 +35,7 @@ interface Message {
   role: 'user' | 'assistant';
   timestamp: Date;
   isStreaming?: boolean;
+  attachments?: AttachedFile[];
 }
 
 interface Conversation {
@@ -53,6 +54,15 @@ interface ProjectData {
   expectedOutcome: string;
 }
 
+interface AttachedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadedId?: string;
+  url?: string;
+}
+
 export default function ChatPage() {
   const router = useRouter();
   const { setChatMessages, setProjectSummary } = usePRDContext();
@@ -69,8 +79,14 @@ export default function ChatPage() {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [newName, setNewName] = useState('');
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mini Ally Summary 모달 관련 상태
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
@@ -197,6 +213,186 @@ export default function ChatPage() {
     // MiniAllySummaryModal이 직접 세션 저장 및 페이지 이동을 처리합니다
   };
 
+  // 파일 업로드 처리
+  const uploadFile = async (file: File): Promise<AttachedFile | null> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('user', userId);
+
+    try {
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const data = await response.json();
+      
+      // 이미지 파일인 경우 미리보기 URL 생성
+      let previewUrl: string | undefined;
+      if (file.type.startsWith('image/')) {
+        previewUrl = URL.createObjectURL(file);
+      }
+      
+      return {
+        id: Date.now().toString(),
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        uploadedId: data.id,
+        url: previewUrl,
+      };
+    } catch (error) {
+      console.error('File upload error:', error);
+      toast.error('파일 업로드에 실패했습니다', {
+        description: file.name,
+      });
+      return null;
+    }
+  };
+
+  // 파일 선택 처리
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    const newFiles: AttachedFile[] = [];
+
+    for (const file of Array.from(files)) {
+      const uploadedFile = await uploadFile(file);
+      if (uploadedFile) {
+        newFiles.push(uploadedFile);
+      }
+    }
+
+    if (newFiles.length > 0) {
+      setAttachedFiles(prev => [...prev, ...newFiles]);
+      toast.success(`${newFiles.length}개 파일이 첨부되었습니다`);
+    }
+    
+    setIsUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // 드래그 앤 드롭 처리
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    setIsUploading(true);
+    const newFiles: AttachedFile[] = [];
+
+    for (const file of files) {
+      const uploadedFile = await uploadFile(file);
+      if (uploadedFile) {
+        newFiles.push(uploadedFile);
+      }
+    }
+
+    if (newFiles.length > 0) {
+      setAttachedFiles(prev => [...prev, ...newFiles]);
+      toast.success(`${newFiles.length}개 파일이 첨부되었습니다`);
+    }
+    
+    setIsUploading(false);
+  };
+
+  // 붙여넣기(클립보드) 이미지 처리
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) return;
+
+    const candidateFiles: File[] = [];
+
+    // 우선 items에서 이미지 탐색
+    for (const item of Array.from(clipboardData.items || [])) {
+      if (item.kind === 'file') {
+        const blob = item.getAsFile();
+        if (blob && blob.type.startsWith('image/')) {
+          const extension = blob.type.split('/')[1] || 'png';
+          const fileName = `pasted-image-${Date.now()}.${extension}`;
+          const file = new File([blob], fileName, { type: blob.type });
+          candidateFiles.push(file);
+        }
+      }
+    }
+
+    // 일부 브라우저의 files fallback 처리
+    if (candidateFiles.length === 0 && clipboardData.files && clipboardData.files.length > 0) {
+      for (const file of Array.from(clipboardData.files)) {
+        if (file.type.startsWith('image/')) {
+          candidateFiles.push(file);
+        }
+      }
+    }
+
+    // 이미지가 없으면 기본 붙여넣기(텍스트) 허용
+    if (candidateFiles.length === 0) return;
+
+    // 이미지가 있으면 텍스트 붙여넣기 방지하고 업로드 처리
+    e.preventDefault();
+
+    setIsUploading(true);
+    const newFiles: AttachedFile[] = [];
+
+    for (const file of candidateFiles) {
+      const uploadedFile = await uploadFile(file);
+      if (uploadedFile) {
+        newFiles.push(uploadedFile);
+      }
+    }
+
+    if (newFiles.length > 0) {
+      setAttachedFiles(prev => [...prev, ...newFiles]);
+      toast.success(`${newFiles.length}개 이미지가 첨부되었습니다`);
+    }
+
+    setIsUploading(false);
+  };
+
+  // 파일 제거
+  const removeFile = (fileId: string) => {
+    const file = attachedFiles.find(f => f.id === fileId);
+    if (file?.url) {
+      URL.revokeObjectURL(file.url);
+    }
+    setAttachedFiles(prev => prev.filter(file => file.id !== fileId));
+  };
+
+  // 이미지 미리보기 열기
+  const openPreview = (imageUrl: string) => {
+    setPreviewImage(imageUrl);
+    setPreviewOpen(true);
+  };
+
+  // 미리보기 닫기
+  const closePreview = () => {
+    setPreviewImage(null);
+    setPreviewOpen(false);
+  };
+
   // 스크롤을 맨 아래로
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -221,6 +417,17 @@ export default function ChatPage() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // 컴포넌트 언마운트 시 미리보기 URL 정리
+  useEffect(() => {
+    return () => {
+      attachedFiles.forEach(file => {
+        if (file.url) {
+          URL.revokeObjectURL(file.url);
+        }
+      });
+    };
   }, []);
 
   // 대화 목록 불러오기 및 사용자 ID 설정
@@ -271,13 +478,16 @@ export default function ChatPage() {
 
   // 메시지 전송 처리
   const handleSendMessage = async () => {
-    if (!message.trim() || isLoading) return;
+    if ((!message.trim() && attachedFiles.length === 0) || isLoading) return;
+
+    const attachmentsForMessage: AttachedFile[] = attachedFiles.map(f => ({ ...f }));
 
     const userMessage: Message = {
       id: Date.now().toString(),
       content: message,
       role: 'user',
       timestamp: new Date(),
+      attachments: attachmentsForMessage,
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -294,6 +504,16 @@ export default function ChatPage() {
     };
     setMessages(prev => [...prev, assistantMessage]);
 
+    // 첨부 파일 정보 준비
+    const files = attachedFiles.map(file => ({
+      type: 'image',
+      transfer_method: 'local_file',
+      upload_file_id: file.uploadedId,
+    }));
+
+    // 입력 영역의 첨부 파일 목록 초기화 (미리보기 URL은 메시지에 남겨둠)
+    setAttachedFiles([]);
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -304,6 +524,7 @@ export default function ChatPage() {
           query: message,
           conversationId: currentConversationId,
           userId: userId,
+          files: files.length > 0 ? files : [],
         }),
       });
 
@@ -595,6 +816,9 @@ export default function ChatPage() {
               <h3 className="text-[18px] custom:text-[20px] font-light text-gray-900 tracking-tight leading-tight">
                 아이디어가 완성되었나요?
               </h3>
+              <p className="text-[16px] text-gray-500 font-light mt-1">
+                다음 단계로 이동해보세요!
+              </p>
             </div>
             
             {/* MISO Generator 카드 */}
@@ -664,7 +888,27 @@ export default function ChatPage() {
         </div>
 
       {/* 메인 채팅 영역 */}
-      <div className="flex-1 flex flex-col bg-white">
+      <div 
+        className="flex-1 flex flex-col bg-white relative"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* 드래그 오버레이 */}
+        {isDragging && (
+          <div className="absolute inset-0 bg-gray-900/10 z-50 flex items-center justify-center backdrop-blur-sm">
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8 text-gray-600" />
+                </div>
+                <p className="text-lg font-medium text-gray-900">파일을 여기에 놓으세요</p>
+                <p className="text-sm text-gray-500">이미지 파일을 업로드할 수 있습니다</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* 헤더 */}
         <div className="h-[60px] custom:h-[72px] px-4 custom:px-8 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center gap-5">
@@ -941,6 +1185,30 @@ export default function ChatPage() {
                                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
                               </div>
                             ) : null}
+
+                            {msg.attachments && msg.attachments.length > 0 && (
+                              <div className={cn('mt-2', msg.role === 'user' ? '' : '')}>
+                                <div className="flex flex-wrap gap-2">
+                                  {msg.attachments
+                                    .filter(f => f.type?.startsWith('image/') && f.url)
+                                    .map(f => (
+                                      <div key={f.id} className="relative group">
+                                        <img
+                                          src={f.url!}
+                                          alt={f.name}
+                                          className={cn(
+                                            'object-cover rounded-lg border',
+                                            msg.role === 'user'
+                                              ? 'w-24 h-24 border-white/20'
+                                              : 'w-28 h-28 border-gray-200'
+                                          )}
+                                          onClick={() => openPreview(f.url!)}
+                                        />
+                                      </div>
+                                    ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                           <p
                             className={cn(
@@ -967,24 +1235,89 @@ export default function ChatPage() {
         {/* 입력 영역 */}
         <div className="border-t border-gray-100 bg-white">
           <div className="max-w-[720px] mx-auto px-4 custom:px-8 py-3 custom:py-4">
+            {/* 첨부 파일 미리보기 */}
+            {attachedFiles.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-3">
+                {attachedFiles.map(file => (
+                  <div
+                    key={file.id}
+                    className="relative group"
+                  >
+                    {file.type.startsWith('image/') && file.url ? (
+                      <div className="relative">
+                        <img
+                          src={file.url}
+                          alt={file.name}
+                          className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => openPreview(file.url!)}
+                            className="w-8 h-8 bg-white rounded-full flex items-center justify-center"
+                          >
+                            <ZoomIn className="w-4 h-4 text-gray-700" />
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => removeFile(file.id)}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-gray-900 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm">
+                        <FileText className="w-4 h-4 text-gray-600" />
+                        <span className="max-w-[150px] truncate text-gray-700">{file.name}</span>
+                        <button
+                          onClick={() => removeFile(file.id)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            
             <div className="relative">
               <Textarea
                 ref={textareaRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 placeholder="메시지를 입력하세요..."
-                className="w-full min-h-[48px] custom:min-h-[56px] max-h-[120px] custom:max-h-[150px] px-4 custom:px-5 py-3 custom:py-4 resize-none border border-gray-200 rounded-2xl text-[14px] custom:text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
+                className="w-full min-h-[48px] custom:min-h-[56px] max-h-[120px] custom:max-h-[150px] px-4 custom:px-5 py-3 custom:py-4 pr-24 custom:pr-28 resize-none border border-gray-200 rounded-2xl text-[14px] custom:text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
                 disabled={isLoading}
               />
-              <div className="absolute right-2 custom:right-3 bottom-2 custom:bottom-3">
+              <div className="absolute right-2 custom:right-3 bottom-2 custom:bottom-3 flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || isUploading}
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 custom:h-10 custom:w-10 text-gray-500 hover:text-gray-700"
+                >
+                  <Paperclip className="w-4 h-4 custom:w-5 custom:h-5" />
+                </Button>
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!message.trim() || isLoading}
+                  disabled={(!message.trim() && attachedFiles.length === 0) || isLoading}
                   size="icon"
                   className={cn(
                     "h-8 w-8 custom:h-10 custom:w-10 rounded-xl transition-all",
-                    message.trim() && !isLoading
+                    (message.trim() || attachedFiles.length > 0) && !isLoading
                       ? "bg-gray-900 hover:bg-gray-800 text-white"
                       : "bg-gray-100 text-gray-400"
                   )}
@@ -1079,6 +1412,24 @@ export default function ChatPage() {
         onConfirm={handleSummaryConfirm}
         action={pendingAction || undefined}
       />
+
+      {/* 이미지 미리보기 모달 */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-4xl w-full p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>이미지 미리보기</DialogTitle>
+          </DialogHeader>
+          <div className="relative">
+            {previewImage && (
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="w-full h-auto max-h-[80vh] object-contain"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

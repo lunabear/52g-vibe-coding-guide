@@ -328,11 +328,6 @@ ${data.expectedOutcome || ''}`;
               </div>
               <div className="text-center space-y-2">
                 <p className="text-[15px] font-light text-gray-700">대화 내용을 분석 중입니다</p>
-                <div className="flex justify-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse"></div>
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{animationDelay: '200ms'}}></div>
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{animationDelay: '400ms'}}></div>
-                </div>
               </div>
             </div>
           ) : (
