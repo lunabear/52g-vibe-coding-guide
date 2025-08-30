@@ -25,7 +25,7 @@ export default function PRDResultPage() {
   const [error, setError] = useState<string | null>(null);
   const [isMiniAllyFlow, setIsMiniAllyFlow] = useState(false);
   // Heather: 스타일 선택 프리셋과 선택 상태
-  const [selectedThemeId, setSelectedThemeId] = useState<string>('designSystem');
+  const [selectedThemeId, setSelectedThemeId] = useState<string>('');
   const computeScopedCss = (css: string) =>
     css
       .replace(/:root/g, '.theme-preview')
@@ -141,9 +141,7 @@ export default function PRDResultPage() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [showVibeCodingModal, setShowVibeCodingModal] = useState(false);
   const [hasClickedVibeCoding, setHasClickedVibeCoding] = useState(false);
-  // Heather: 진입 안내 오버레이 (잠시 안내 후 자연스럽게 사라짐)
-  const [showHeatherIntro, setShowHeatherIntro] = useState(true);
-  const [fadeOutHeatherIntro, setFadeOutHeatherIntro] = useState(false);
+  const [showDesignWarningModal, setShowDesignWarningModal] = useState(false);
   // 카드 높이 동기화 (전체 카드 기준)
   const kyleCardRef = useRef<HTMLDivElement | null>(null);
   const heatherCardRef = useRef<HTMLDivElement | null>(null);
@@ -170,16 +168,6 @@ export default function PRDResultPage() {
       window.removeEventListener('resize', measure);
     };
   }, [prdContent]);
-  useEffect(() => {
-    const HEATHER_OVERLAY_VISIBLE_MS = 2500;
-    const HEATHER_OVERLAY_FADE_MS = 500;
-    const t1 = setTimeout(() => setFadeOutHeatherIntro(true), HEATHER_OVERLAY_VISIBLE_MS);
-    const t2 = setTimeout(() => setShowHeatherIntro(false), HEATHER_OVERLAY_VISIBLE_MS + HEATHER_OVERLAY_FADE_MS);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, []);
   
   // 편집 모드 상태
   const [isEditingPRD, setIsEditingPRD] = useState(false);
@@ -269,33 +257,68 @@ export default function PRDResultPage() {
 
   const handleDownload = async (includeMiso: boolean = false, misoType?: 'chatflow' | 'workflow' | 'both') => {
     const date = new Date().toISOString().split('T')[0];
-    let combinedMd = `# 프로젝트 문서 (${date})\n\n`;
 
-    if (prdContent) {
-      combinedMd += `## 1) 기획자 Kyle PRD\n\n${prdContent}\n\n`;
-    }
-
-    const selectedTheme = THEME_PRESETS.find(t => t.id === selectedThemeId);
-    if (selectedTheme) {
-      const heatherMd = buildTailwindThemeMarkdown(selectedTheme);
-      combinedMd += `## 2) 디자이너 Heather 디자인 스타일\n\n${heatherMd}\n\n`;
-    }
-
+    // 문서 헤더
+    let md = `# 제품 요구사항 문서 (PRD)\n\n`;
+    md += `> 이 문서 활용 지침\n\n`;
+    md += `- PRD에 따라 시스템을 프로덕션 수준으로 구현합니다.\n`;
+    md += `- 초기 단계에서는 목업 데이터를 우선 활용합니다.\n`;
+    md += `- 디자인 지침을 준수해 일관된 컬러/타이포그래피를 시스템 전반에 적용합니다.\n`;
     if (includeMiso && misoType) {
-      const { MISO_CHATFLOW_AGENT_GUIDE, MISO_WORKFLOW_GUIDE } = await import('@/lib/prompts/vibe-coding-guide');
+      md += `- MISO 연동이 필요한 경우 3. 기술 연동 가이드를 따릅니다.\n`;
+    }
+    md += `\n`;
+
+    // 목차
+    md += `## 목차\n\n`;
+    md += `- 1. PRD\n`;
+    md += `- 2. 디자인 시스템 가이드\n`;
+    if (includeMiso && misoType) {
+      md += `- 3. 기술 연동 가이드\n`;
       if (misoType === 'chatflow' || misoType === 'both') {
-        combinedMd += `## 3) MISO Chatflow 가이드\n\n${MISO_CHATFLOW_AGENT_GUIDE}\n\n`;
+        md += `  - 3.1 MISO Chatflow\n`;
       }
       if (misoType === 'workflow' || misoType === 'both') {
-        combinedMd += `## 4) MISO Workflow 가이드\n\n${MISO_WORKFLOW_GUIDE}\n\n`;
+        md += `  - 3.2 MISO Workflow\n`;
+      }
+    }
+    md += `\n---\n\n`;
+
+    // 1. PRD
+    md += `## 1. PRD\n\n`;
+    if (prdContent) {
+      md += `${prdContent}\n\n`;
+    }
+    md += `---\n\n`;
+
+    // 2. 디자인 시스템 가이드
+    md += `## 2. 디자인 시스템 가이드\n\n`;
+    const selectedTheme = THEME_PRESETS.find(t => t.id === selectedThemeId);
+    if (selectedTheme) {
+      const designGuide = buildTailwindThemeMarkdown(selectedTheme);
+      md += `${designGuide}\n\n`;
+    } else {
+      md += `선택된 디자인 시스템이 없습니다.\n\n`;
+    }
+
+    // 3. 기술 연동 가이드 (옵션)
+    if (includeMiso && misoType) {
+      md += `---\n\n`;
+      md += `## 3. 기술 연동 가이드\n\n`;
+      const { MISO_CHATFLOW_AGENT_GUIDE, MISO_WORKFLOW_GUIDE } = await import('@/lib/prompts/vibe-coding-guide');
+      if (misoType === 'chatflow' || misoType === 'both') {
+        md += `### 3.1 MISO Chatflow\n\n${MISO_CHATFLOW_AGENT_GUIDE}\n\n`;
+      }
+      if (misoType === 'workflow' || misoType === 'both') {
+        md += `### 3.2 MISO Workflow\n\n${MISO_WORKFLOW_GUIDE}\n\n`;
       }
     }
 
-    const blob = new Blob([combinedMd], { type: 'text/markdown;charset=utf-8' });
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `프로젝트문서_${date}.md`;
+    a.download = `PRD_${date}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -410,7 +433,11 @@ export default function PRDResultPage() {
             <button
               onClick={() => {
                 setHasClickedVibeCoding(true);
-                setShowVibeCodingModal(true);
+                if (!selectedThemeId) {
+                  setShowDesignWarningModal(true);
+                } else {
+                  setShowVibeCodingModal(true);
+                }
               }}
               disabled={!prdContent}
               className={`inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium ${
@@ -806,17 +833,28 @@ export default function PRDResultPage() {
                       <p className="text-sm" style={{ color: 'var(--text-200)' }}>원하시는 스타일을 선택해주세요</p>
                     </div>
                   </div>
-                    <div className="text-right max-w-sm">
-                      <div className="flex items-center justify-end gap-2 text-sm mb-1">
-                        <div className={`w-2 h-2 rounded-full animate-pulse`} style={{ background: 'var(--primary-100)' }}></div>
-                        <span className={`font-semibold`} style={{ color: 'var(--text-100)' }}>
-                          {THEME_PRESETS.find(t => t.id === selectedThemeId)?.name} 선택됨
-                        </span>
+                    {selectedThemeId ? (
+                      <div className="text-right max-w-sm">
+                        <div className="flex items-center justify-end gap-2 text-sm mb-1">
+                          <div className={`w-2 h-2 rounded-full animate-pulse`} style={{ background: 'var(--primary-100)' }}></div>
+                          <span className={`font-semibold`} style={{ color: 'var(--text-100)' }}>
+                            {THEME_PRESETS.find(t => t.id === selectedThemeId)?.name} 선택됨
+                          </span>
+                        </div>
+                        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-200)' }}>
+                          "{THEME_PRESETS.find(t => t.id === selectedThemeId)?.recommendation}"
+                        </p>
                       </div>
-                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-200)' }}>
-                        "{THEME_PRESETS.find(t => t.id === selectedThemeId)?.recommendation}"
-                      </p>
-                    </div>
+                    ) : (
+                      <div className="text-right max-w-sm">
+                        <div className="flex items-center justify-end gap-2 text-sm">
+                          <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                          <span className="font-medium text-gray-600">
+                            스타일 미선택
+                          </span>
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
               
@@ -830,11 +868,11 @@ export default function PRDResultPage() {
                         <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))]"></div>
                         스타일 프리셋
                       </h4>
-                      <div className="space-y-3 overflow-y-auto pr-2 flex-1 min-h-0 px-1">
+                      <div className="space-y-3 overflow-y-auto pr-2 flex-1 min-h-0 px-1 pt-2">
                         {THEME_PRESETS.map(preset => (
                       <button
                             key={preset.id}
-                            onClick={() => setSelectedThemeId(preset.id)}
+                            onClick={() => setSelectedThemeId(selectedThemeId === preset.id ? '' : preset.id)}
                             className={`group w-full text-left border rounded-xl p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
                               selectedThemeId === preset.id 
                                 ? 'border-[hsl(var(--primary))] bg-gradient-to-br from-[hsl(var(--primary))]/5 to-[hsl(var(--accent))]/10 shadow-md shadow-[hsl(var(--primary))]/20' 
@@ -902,10 +940,29 @@ export default function PRDResultPage() {
                           </button>
                         </div>
                       </div>
-                      <div className="border-2 border-[hsl(var(--border))] rounded-2xl shadow-lg shadow-[hsl(var(--primary))]/5 bg-[hsl(var(--card))] flex-1 min-h-0 flex flex-col">
+                      <div className="border-2 border-[hsl(var(--border))] rounded-2xl shadow-lg shadow-[hsl(var(--primary))]/5 bg-[hsl(var(--card))] flex-1 min-h-0 flex flex-col relative">
                         <div className="p-4 flex-1 overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
-                          {renderPreview()}
+                          {selectedThemeId ? renderPreview() : null}
                         </div>
+                        {!selectedThemeId && (
+                          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+                            <div className="flex flex-col items-center text-center px-6">
+                              <div className="mb-4">
+                                <img
+                                  src="/assets/mini_heather_thinking.png"
+                                  alt="Heather 안내"
+                                  className="w-20 h-20 object-contain"
+                                />
+                              </div>
+                              <h3 className="text-base font-medium text-gray-900">
+                                적용을 원하시는 디자인 시스템을 선택해주세요
+                              </h3>
+                              <p className="mt-2 text-sm text-gray-600">
+                                좌측 목록에서 스타일 프리셋을 선택하면 우측에서 미리보기가 갱신됩니다.
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div className="text-xs text-[hsl(var(--muted-foreground))] mt-3 px-1 flex items-center gap-2 flex-shrink-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--accent))]"></div>
@@ -915,32 +972,6 @@ export default function PRDResultPage() {
                   </div>
                 </div>
               </div>
-                    {/* Heather 진입 안내 오버레이 */}
-                    {showHeatherIntro && (
-                      <div
-                        className={`absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-20 transition-opacity duration-500 ${fadeOutHeatherIntro ? 'opacity-0' : 'opacity-100'}`}
-                        onClick={() => setShowHeatherIntro(false)}
-                      >
-                        <div className="flex flex-col items-center text-center px-6">
-                          <div className="mb-4">
-                            <img
-                              src="/assets/mini_heather_thinking.png"
-                              alt="Heather 안내"
-                              className="w-20 h-20 object-contain"
-                            />
-                          </div>
-                          <h3 className="text-base font-medium" style={{ color: 'var(--text-100)' }}>
-                            적용을 원하시는 디자인 시스템을 선택해주세요
-                          </h3>
-                          <p className="mt-2 text-sm" style={{ color: 'var(--text-200)' }}>
-                            좌측 목록에서 스타일 프리셋을 선택하면 우측에서 미리보기가 갱신됩니다.
-                          </p>
-                          <p className="mt-3 text-xs" style={{ color: 'var(--text-200)' }}>
-                            언제든 좌측에서 스타일을 변경할 수 있어요.
-                          </p>
-                        </div>
-                      </div>
-                    )}
               </div>
             </div>
               
@@ -970,6 +1001,20 @@ export default function PRDResultPage() {
           const misoDesign = getMisoDesignFromSession();
           return misoDesign?.misoAppType ? convertMisoAppTypeToVibeType(misoDesign.misoAppType) : undefined;
         })()}
+      />
+      
+      {/* Design Selection Warning Modal */}
+      <ConfirmModal
+        isOpen={showDesignWarningModal}
+        title="디자인 미선택"
+        message="디자인을 선택하지 않았습니다. 진행하시겠습니까?"
+        confirmText="진행하기"
+        cancelText="돌아가기"
+        onConfirm={() => {
+          setShowDesignWarningModal(false);
+          setShowVibeCodingModal(true);
+        }}
+        onCancel={() => setShowDesignWarningModal(false)}
       />
     </div>
   );

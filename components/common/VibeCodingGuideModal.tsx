@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, ExternalLink, Upload, FileText, Image, Paperclip, MousePointer, Send } from 'lucide-react';
+import { Download, ExternalLink, Upload, FileText, MousePointer, Send } from 'lucide-react';
 import { EXTERNAL_LINKS } from '@/lib/links';
 
 interface VibeCodingGuideModalProps {
@@ -32,15 +32,13 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
   const [isSendButtonPressed, setIsSendButtonPressed] = useState(false);
   const [uploadAreaActive, setUploadAreaActive] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const fullText = '마케팅 대시보드를 만들어줘!';
+  const fullText = '첨부한 지침에 따라 구현해줘';
   const textRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   
-  // 파일 목록
+  // 파일 목록 (애니메이션에 PRD 문서만 포함)
   const fileList = [
     { name: 'PRD 문서.md', color: 'blue', icon: FileText },
-    { name: '디자인 가이드.md', color: 'green', icon: Image },
-    ...(includeMiso ? [{ name: 'MISO API.md', color: 'purple', icon: Paperclip }] : [])
   ];
   
   // 애니메이션 시퀀스
@@ -48,8 +46,8 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
     if (isOpen) {
       const timeouts: NodeJS.Timeout[] = [];
       
-      // 1. 1초 후 마우스 등장
-      timeouts.push(setTimeout(() => setShowMouse(true), 1000));
+      // 1. 모달 오픈과 동시에 마우스 표시
+      setShowMouse(true);
       
       // 2. 2초 후 업로드 영역으로 이동 (자연스러운 곡선 이동)
       timeouts.push(setTimeout(() => {
@@ -334,22 +332,8 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                         <div className="space-y-1 text-sm text-gray-600 font-light">
                           <div className="flex items-center gap-2">
                             <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                            <span>프로젝트 기획서</span>
+                            <span>PRD 문서</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                            <span>화면 디자인 가이드</span>
-                          </div>
-                          {includeMiso && (
-                            <div className="flex items-center gap-2">
-                              <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
-                              <span className="text-blue-700 font-medium">
-                                {misoType === 'chatflow' && 'MISO Agent/Chatflow API 가이드'}
-                                {misoType === 'workflow' && 'MISO Workflow API 가이드'}
-                                {misoType === 'both' && 'MISO Agent/Chatflow 및 Workflow API 가이드'}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       </div>
                       <div className="pt-3 border-t border-gray-100">
@@ -424,7 +408,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                     <div className="mt-3 space-y-2">
                       {showFiles.map((fileIndex) => {
                         const file = fileList[fileIndex];
-                        const colorClasses = {
+                        const colorClasses: Record<'blue' | 'green' | 'purple', string> = {
                           blue: 'bg-blue-50 border-blue-200 text-blue-700',
                           green: 'bg-emerald-50 border-emerald-200 text-emerald-700',
                           purple: 'bg-violet-50 border-violet-200 text-violet-700'
@@ -434,7 +418,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                         return (
                           <div
                             key={fileIndex}
-                            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs animate-fade-in animate-bounce-subtle ${colorClasses[file.color]}`}
+                            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs animate-fade-in animate-bounce-subtle ${colorClasses[file.color as 'blue']}`}
                           >
                             <IconComponent className="w-3.5 h-3.5" />
                             <span className="font-medium">{file.name}</span>
@@ -457,15 +441,9 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                           <span ref={textRef} className="text-gray-900 text-sm font-normal">
                             {typedText}
                           </span>
-                          <div 
-                            className="absolute top-0 w-0.5 h-5 bg-gray-900 typing-cursor"
-                            style={{
-                              left: `${textRef.current?.offsetWidth || 0}px`
-                            }}
-                          ></div>
                         </>
                       ) : (
-                        <span className="text-gray-400 text-sm">마케팅 대시보드를 만들어줘!</span>
+                        <span className="text-gray-400 text-sm">첨부한 지침에 따라 구현해줘</span>
                       )}
                     </div>
                     <button 
