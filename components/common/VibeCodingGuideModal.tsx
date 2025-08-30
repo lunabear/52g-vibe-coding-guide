@@ -127,9 +127,8 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
   }, [isOpen, includeMiso]);
 
 
-  const handleDownloadAndClose = () => {
+  const handleDownloadOnly = () => {
     onDownload(includeMiso, includeMiso ? misoType : undefined);
-    onClose();
   };
 
   return (
@@ -184,12 +183,23 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-6 border-b border-gray-100">
-          <DialogTitle className="text-2xl font-light text-gray-900">
-            바이브코딩에 적용하기
-          </DialogTitle>
-          <DialogDescription className="text-sm text-gray-600 mt-2 leading-relaxed font-light">
-            생성된 프로젝트 문서를 바이브코딩에서 활용하는 방법을 안내합니다
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 flex items-center justify-center">
+              <img 
+                src="/assets/mini_bob_default.png" 
+                alt="개발자 Bob"
+                className="w-14 h-14 object-contain"
+              />
+            </div>
+            <div>
+              <DialogTitle className="text-2xl font-light text-gray-900">
+                바이브코딩에 적용하기
+              </DialogTitle>
+              <DialogDescription className="text-sm text-gray-600 mt-1 leading-relaxed font-light">
+                생성된 프로젝트 문서를 바이브코딩에서 활용하는 방법을 안내합니다
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-8 mt-8">
@@ -318,7 +328,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                 <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                   <div className="flex-shrink-0">
                     <Button
-                      onClick={handleDownloadAndClose}
+                      onClick={handleDownloadOnly}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-medium"
                     >
                       <Download className="w-4 h-4 mr-2" />

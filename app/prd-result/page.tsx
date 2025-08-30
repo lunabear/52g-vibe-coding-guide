@@ -430,29 +430,39 @@ export default function PRDResultPage() {
               <div className="h-6 w-px bg-gray-200"></div>
               <h1 className="text-lg font-medium text-gray-900">프로젝트 문서</h1>
             </div>
-            <button
-              onClick={() => {
-                setHasClickedVibeCoding(true);
-                if (!selectedThemeId) {
-                  setShowDesignWarningModal(true);
-                } else {
-                  setShowVibeCodingModal(true);
-                }
-              }}
-              disabled={!prdContent}
-              className={`inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium ${
-                prdContent && !hasClickedVibeCoding 
-                  ? 'bg-blue-600 hover:bg-blue-700 animate-subtle-lift' 
-                  : 'bg-black hover:bg-gray-800'
-              }`}
-            >
-              <Sparkles className={`w-4 h-4 ${
-                prdContent && !hasClickedVibeCoding 
-                  ? 'animate-soft-glow' 
-                  : ''
-              }`} />
-              바이브코딩에 적용하기
-            </button>
+            <div className="flex items-center gap-3">
+              {selectedThemeId && (
+                <div className="flex items-center gap-2 text-blue-600 animate-bounce">
+                  <span className="text-sm font-medium">Click!</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-blue-600">
+                    <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  setHasClickedVibeCoding(true);
+                  if (!selectedThemeId) {
+                    setShowDesignWarningModal(true);
+                  } else {
+                    setShowVibeCodingModal(true);
+                  }
+                }}
+                disabled={!prdContent}
+                className={`inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium ${
+                  prdContent && !hasClickedVibeCoding 
+                    ? 'bg-blue-600 hover:bg-blue-700 animate-subtle-lift' 
+                    : 'bg-black hover:bg-gray-800'
+                }`}
+              >
+                <Sparkles className={`w-4 h-4 ${
+                  prdContent && !hasClickedVibeCoding 
+                    ? 'animate-soft-glow' 
+                    : ''
+                }`} />
+                바이브코딩에 적용하기
+              </button>
+            </div>
           </div>
         </div>
       </header>
