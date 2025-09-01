@@ -270,7 +270,7 @@ export default function ChatPage() {
     setIsUploading(true);
     const selectedFiles = Array.from(files);
 
-    // 낙관적 미리보기 추가
+    // 낙관적 미리보기 추가 (data URL)
     const tempItems: AttachedFile[] = await Promise.all(selectedFiles.map(async (file) => {
       const id = generateUniqueId();
       let previewUrl: string | undefined;
@@ -287,6 +287,7 @@ export default function ChatPage() {
         url: previewUrl,
         isUploading: true,
       };
+    }));
     }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
@@ -352,6 +353,7 @@ export default function ChatPage() {
         url: previewUrl,
         isUploading: true,
       };
+    }));
     }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
@@ -428,6 +430,7 @@ export default function ChatPage() {
         url: previewUrl,
         isUploading: true,
       };
+    }));
     }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
@@ -507,7 +510,7 @@ export default function ChatPage() {
       });
       objectUrlSetRef.current.clear();
     };
-  }, []);
+  }, [attachedFiles]);
 
   // 대화 목록 불러오기 및 사용자 ID 설정
   useEffect(() => {
