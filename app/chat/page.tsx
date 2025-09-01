@@ -101,6 +101,15 @@ export default function ChatPage() {
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   };
 
+  const readFileAsDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Mini Ally Summary 모달 관련 상태
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [projectData, setProjectData] = useState<ProjectData | null>(null);
@@ -262,12 +271,13 @@ export default function ChatPage() {
     const selectedFiles = Array.from(files);
 
     // 낙관적 미리보기 추가
-    const tempItems: AttachedFile[] = selectedFiles.map((file) => {
+    const tempItems: AttachedFile[] = await Promise.all(selectedFiles.map(async (file) => {
       const id = generateUniqueId();
       let previewUrl: string | undefined;
       if (file.type.startsWith('image/')) {
-        previewUrl = URL.createObjectURL(file);
-        if (previewUrl) objectUrlSetRef.current.add(previewUrl);
+        try {
+          previewUrl = await readFileAsDataURL(file);
+        } catch (_) {}
       }
       return {
         id,
@@ -277,7 +287,7 @@ export default function ChatPage() {
         url: previewUrl,
         isUploading: true,
       };
-    });
+    }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
 
@@ -326,12 +336,13 @@ export default function ChatPage() {
 
     setIsUploading(true);
 
-    const tempItems: AttachedFile[] = files.map((file) => {
+    const tempItems: AttachedFile[] = await Promise.all(files.map(async (file) => {
       const id = generateUniqueId();
       let previewUrl: string | undefined;
       if (file.type.startsWith('image/')) {
-        previewUrl = URL.createObjectURL(file);
-        if (previewUrl) objectUrlSetRef.current.add(previewUrl);
+        try {
+          previewUrl = await readFileAsDataURL(file);
+        } catch (_) {}
       }
       return {
         id,
@@ -341,7 +352,7 @@ export default function ChatPage() {
         url: previewUrl,
         isUploading: true,
       };
-    });
+    }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
 
@@ -401,12 +412,13 @@ export default function ChatPage() {
 
     setIsUploading(true);
 
-    const tempItems: AttachedFile[] = candidateFiles.map((file) => {
+    const tempItems: AttachedFile[] = await Promise.all(candidateFiles.map(async (file) => {
       const id = generateUniqueId();
       let previewUrl: string | undefined;
       if (file.type.startsWith('image/')) {
-        previewUrl = URL.createObjectURL(file);
-        if (previewUrl) objectUrlSetRef.current.add(previewUrl);
+        try {
+          previewUrl = await readFileAsDataURL(file);
+        } catch (_) {}
       }
       return {
         id,
@@ -416,7 +428,7 @@ export default function ChatPage() {
         url: previewUrl,
         isUploading: true,
       };
-    });
+    }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
 
