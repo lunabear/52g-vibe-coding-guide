@@ -976,7 +976,7 @@ export default function PRDResultPage() {
                       </div>
                       <div className="text-xs text-[hsl(var(--muted-foreground))] mt-3 px-1 flex items-center gap-2 flex-shrink-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--accent))]"></div>
-                        선택한 스타일은 ZIP 다운로드에 theme.css로 포함됩니다.
+                        선택한 스타일은 PRD.md 파일의 디자인 시스템 가이드에 포함됩니다.
                       </div>
                     </div>
                   </div>
