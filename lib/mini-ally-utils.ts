@@ -57,7 +57,9 @@ export function saveMiniAllySession(projectData: ProjectData, step: MiniAllySess
     step
   };
   
-  sessionStorage.setItem('prdSession', JSON.stringify(session));
+  if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+    window.sessionStorage.setItem('prdSession', JSON.stringify(session));
+  }
 }
 
 /**
@@ -65,7 +67,10 @@ export function saveMiniAllySession(projectData: ProjectData, step: MiniAllySess
  */
 export function loadMiniAllySession(): MiniAllySession | null {
   try {
-    const sessionData = sessionStorage.getItem('prdSession');
+    if (typeof window === 'undefined' || typeof window.sessionStorage === 'undefined') {
+      return null;
+    }
+    const sessionData = window.sessionStorage.getItem('prdSession');
     if (!sessionData) return null;
     
     const session: MiniAllySession = JSON.parse(sessionData);
@@ -84,8 +89,10 @@ export function loadMiniAllySession(): MiniAllySession | null {
     
     return session;
   } catch (error) {
-    console.error('Failed to load mini-ally session:', error);
-    clearMiniAllySession();
+    if (typeof window !== 'undefined') {
+      console.error('Failed to load mini-ally session:', error);
+      clearMiniAllySession();
+    }
     return null;
   }
 }
@@ -100,7 +107,9 @@ export function updateMiniAllySessionAnswers(expertAnswers: MiniAllySession['exp
   session.expertAnswers = expertAnswers;
   session.timestamp = new Date().toISOString();
   
-  sessionStorage.setItem('prdSession', JSON.stringify(session));
+  if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+    window.sessionStorage.setItem('prdSession', JSON.stringify(session));
+  }
 }
 
 /**
@@ -113,14 +122,18 @@ export function updateMiniAllySessionStep(step: MiniAllySession['step']) {
   session.step = step;
   session.timestamp = new Date().toISOString();
   
-  sessionStorage.setItem('prdSession', JSON.stringify(session));
+  if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+    window.sessionStorage.setItem('prdSession', JSON.stringify(session));
+  }
 }
 
 /**
  * SessionStorage에서 mini-ally 세션 삭제
  */
 export function clearMiniAllySession() {
-  sessionStorage.removeItem('prdSession');
+  if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+    window.sessionStorage.removeItem('prdSession');
+  }
 }
 
 /**
@@ -157,7 +170,9 @@ export function saveMisoDesignToSession(misoDesignData: MisoDesignData) {
     // 기존 mini-ally 세션이 있으면 업데이트
     session.misoDesign = misoDesignData;
     session.timestamp = new Date().toISOString();
-    sessionStorage.setItem('prdSession', JSON.stringify(session));
+    if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+      window.sessionStorage.setItem('prdSession', JSON.stringify(session));
+    }
   } else {
     // MISO 설계만 있는 세션 생성
     const newSession = {
@@ -165,7 +180,9 @@ export function saveMisoDesignToSession(misoDesignData: MisoDesignData) {
       timestamp: new Date().toISOString(),
       misoDesign: misoDesignData
     };
-    sessionStorage.setItem('prdSession', JSON.stringify(newSession));
+    if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+      window.sessionStorage.setItem('prdSession', JSON.stringify(newSession));
+    }
   }
 }
 
@@ -174,13 +191,18 @@ export function saveMisoDesignToSession(misoDesignData: MisoDesignData) {
  */
 export function getMisoDesignFromSession(): MisoDesignData | null {
   try {
-    const sessionData = sessionStorage.getItem('prdSession');
+    if (typeof window === 'undefined' || typeof window.sessionStorage === 'undefined') {
+      return null;
+    }
+    const sessionData = window.sessionStorage.getItem('prdSession');
     if (!sessionData) return null;
     
     const session = JSON.parse(sessionData);
     return session.misoDesign || null;
   } catch (error) {
-    console.error('Failed to get MISO design from session:', error);
+    if (typeof window !== 'undefined') {
+      console.error('Failed to get MISO design from session:', error);
+    }
     return null;
   }
 }

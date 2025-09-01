@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Bot, User, Send, Sparkles, Zap, Brain, MessageCircle, ChevronRight } from 'lucide-react';
 
 interface Message {
@@ -89,7 +89,7 @@ export function ChatbotPreview({ themeId }: ChatbotPreviewProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
-  const conversationFlow: Message[] = [
+  const conversationFlow: Message[] = useMemo(() => [
     {
       id: '1',
       type: 'bot',
@@ -125,7 +125,7 @@ export function ChatbotPreview({ themeId }: ChatbotPreviewProps) {
       timestamp: '오전 10:34',
       quickReplies: ['작업 할당하기', '일정 확인하기', '팀 미팅 예약'],
     }
-  ];
+  ], []);
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -165,7 +165,7 @@ export function ChatbotPreview({ themeId }: ChatbotPreviewProps) {
 
       return () => clearTimeout(resetTimer);
     }
-  }, [messages, currentMessageIndex]);
+  }, [messages, currentMessageIndex, conversationFlow]);
 
   return (
     <div className={themeClasses.container}>

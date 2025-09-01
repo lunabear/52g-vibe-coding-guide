@@ -428,7 +428,7 @@ export default function ChatPage() {
         }
       });
     };
-  }, []);
+  }, [attachedFiles]);
 
   // 대화 목록 불러오기 및 사용자 ID 설정
   useEffect(() => {
