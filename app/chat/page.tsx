@@ -288,7 +288,6 @@ export default function ChatPage() {
         isUploading: true,
       };
     }));
-    }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
 
@@ -353,7 +352,6 @@ export default function ChatPage() {
         url: previewUrl,
         isUploading: true,
       };
-    }));
     }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
@@ -430,7 +428,6 @@ export default function ChatPage() {
         url: previewUrl,
         isUploading: true,
       };
-    }));
     }));
 
     setAttachedFiles((prev) => [...prev, ...tempItems]);
