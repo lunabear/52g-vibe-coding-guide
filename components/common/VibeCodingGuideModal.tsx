@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -37,9 +37,9 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
   const inputRef = useRef<HTMLDivElement>(null);
   
   // 파일 목록 (애니메이션에 PRD 문서만 포함)
-  const fileList = [
+  const fileList = useMemo(() => [
     { name: 'PRD 문서.md', color: 'blue', icon: FileText },
-  ];
+  ], []);
   
   // 애니메이션 시퀀스
   useEffect(() => {
@@ -124,7 +124,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
       setUploadAreaActive(false);
       setIsTyping(false);
     }
-  }, [isOpen, includeMiso]);
+  }, [isOpen, includeMiso, fileList]);
 
 
   const handleDownloadOnly = () => {

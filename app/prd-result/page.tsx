@@ -852,7 +852,7 @@ export default function PRDResultPage() {
                           </span>
                         </div>
                         <p className="text-xs leading-relaxed" style={{ color: 'var(--text-200)' }}>
-                          "{THEME_PRESETS.find(t => t.id === selectedThemeId)?.recommendation}"
+                          &quot;{THEME_PRESETS.find(t => t.id === selectedThemeId)?.recommendation}&quot;
                         </p>
                       </div>
                     ) : (
