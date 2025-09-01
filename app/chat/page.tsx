@@ -61,6 +61,7 @@ interface AttachedFile {
   type: string;
   uploadedId?: string;
   url?: string;
+  isUploading?: boolean;
 }
 
 export default function ChatPage() {
@@ -87,6 +88,18 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const objectUrlSetRef = useRef<Set<string>>(new Set());
+
+  const generateUniqueId = () => {
+    try {
+      // @ts-ignore
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        // @ts-ignore
+        return crypto.randomUUID();
+      }
+    } catch (_) {}
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  };
 
   // Mini Ally Summary 모달 관련 상태
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
@@ -213,8 +226,8 @@ export default function ChatPage() {
     // MiniAllySummaryModal이 직접 세션 저장 및 페이지 이동을 처리합니다
   };
 
-  // 파일 업로드 처리
-  const uploadFile = async (file: File): Promise<AttachedFile | null> => {
+  // 파일 업로드 처리 (업로드 ID만 반환)
+  const uploadFile = async (file: File): Promise<{ uploadedId: string } | null> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('user', userId);
@@ -230,21 +243,7 @@ export default function ChatPage() {
       }
 
       const data = await response.json();
-      
-      // 이미지 파일인 경우 미리보기 URL 생성
-      let previewUrl: string | undefined;
-      if (file.type.startsWith('image/')) {
-        previewUrl = URL.createObjectURL(file);
-      }
-      
-      return {
-        id: Date.now().toString(),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        uploadedId: data.id,
-        url: previewUrl,
-      };
+      return { uploadedId: data.id };
     } catch (error) {
       console.error('File upload error:', error);
       toast.error('파일 업로드에 실패했습니다', {
@@ -260,20 +259,44 @@ export default function ChatPage() {
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    const newFiles: AttachedFile[] = [];
+    const selectedFiles = Array.from(files);
 
-    for (const file of Array.from(files)) {
-      const uploadedFile = await uploadFile(file);
-      if (uploadedFile) {
-        newFiles.push(uploadedFile);
+    // 낙관적 미리보기 추가
+    const tempItems: AttachedFile[] = selectedFiles.map((file) => {
+      const id = generateUniqueId();
+      let previewUrl: string | undefined;
+      if (file.type.startsWith('image/')) {
+        previewUrl = URL.createObjectURL(file);
+        if (previewUrl) objectUrlSetRef.current.add(previewUrl);
       }
+      return {
+        id,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: previewUrl,
+        isUploading: true,
+      };
+    });
+
+    setAttachedFiles((prev) => [...prev, ...tempItems]);
+
+    let successCount = 0;
+    await Promise.all(selectedFiles.map(async (file, idx) => {
+      const tempId = tempItems[idx].id;
+      const result = await uploadFile(file);
+      if (result) {
+        successCount++;
+        setAttachedFiles((prev) => prev.map((f) => f.id === tempId ? { ...f, uploadedId: result.uploadedId, isUploading: false } : f));
+      } else {
+        setAttachedFiles((prev) => prev.filter((f) => f.id !== tempId));
+      }
+    }));
+
+    if (successCount > 0) {
+      toast.success(`${successCount}개 파일이 첨부되었습니다`);
     }
 
-    if (newFiles.length > 0) {
-      setAttachedFiles(prev => [...prev, ...newFiles]);
-      toast.success(`${newFiles.length}개 파일이 첨부되었습니다`);
-    }
-    
     setIsUploading(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -302,20 +325,42 @@ export default function ChatPage() {
     if (files.length === 0) return;
 
     setIsUploading(true);
-    const newFiles: AttachedFile[] = [];
 
-    for (const file of files) {
-      const uploadedFile = await uploadFile(file);
-      if (uploadedFile) {
-        newFiles.push(uploadedFile);
+    const tempItems: AttachedFile[] = files.map((file) => {
+      const id = generateUniqueId();
+      let previewUrl: string | undefined;
+      if (file.type.startsWith('image/')) {
+        previewUrl = URL.createObjectURL(file);
+        if (previewUrl) objectUrlSetRef.current.add(previewUrl);
       }
+      return {
+        id,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: previewUrl,
+        isUploading: true,
+      };
+    });
+
+    setAttachedFiles((prev) => [...prev, ...tempItems]);
+
+    let successCount = 0;
+    await Promise.all(files.map(async (file, idx) => {
+      const tempId = tempItems[idx].id;
+      const result = await uploadFile(file);
+      if (result) {
+        successCount++;
+        setAttachedFiles((prev) => prev.map((f) => f.id === tempId ? { ...f, uploadedId: result.uploadedId, isUploading: false } : f));
+      } else {
+        setAttachedFiles((prev) => prev.filter((f) => f.id !== tempId));
+      }
+    }));
+
+    if (successCount > 0) {
+      toast.success(`${successCount}개 파일이 첨부되었습니다`);
     }
 
-    if (newFiles.length > 0) {
-      setAttachedFiles(prev => [...prev, ...newFiles]);
-      toast.success(`${newFiles.length}개 파일이 첨부되었습니다`);
-    }
-    
     setIsUploading(false);
   };
 
@@ -355,18 +400,40 @@ export default function ChatPage() {
     e.preventDefault();
 
     setIsUploading(true);
-    const newFiles: AttachedFile[] = [];
 
-    for (const file of candidateFiles) {
-      const uploadedFile = await uploadFile(file);
-      if (uploadedFile) {
-        newFiles.push(uploadedFile);
+    const tempItems: AttachedFile[] = candidateFiles.map((file) => {
+      const id = generateUniqueId();
+      let previewUrl: string | undefined;
+      if (file.type.startsWith('image/')) {
+        previewUrl = URL.createObjectURL(file);
+        if (previewUrl) objectUrlSetRef.current.add(previewUrl);
       }
-    }
+      return {
+        id,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: previewUrl,
+        isUploading: true,
+      };
+    });
 
-    if (newFiles.length > 0) {
-      setAttachedFiles(prev => [...prev, ...newFiles]);
-      toast.success(`${newFiles.length}개 이미지가 첨부되었습니다`);
+    setAttachedFiles((prev) => [...prev, ...tempItems]);
+
+    let successCount = 0;
+    await Promise.all(candidateFiles.map(async (file, idx) => {
+      const tempId = tempItems[idx].id;
+      const result = await uploadFile(file);
+      if (result) {
+        successCount++;
+        setAttachedFiles((prev) => prev.map((f) => f.id === tempId ? { ...f, uploadedId: result.uploadedId, isUploading: false } : f));
+      } else {
+        setAttachedFiles((prev) => prev.filter((f) => f.id !== tempId));
+      }
+    }));
+
+    if (successCount > 0) {
+      toast.success(`${successCount}개 이미지가 첨부되었습니다`);
     }
 
     setIsUploading(false);
@@ -376,7 +443,8 @@ export default function ChatPage() {
   const removeFile = (fileId: string) => {
     const file = attachedFiles.find(f => f.id === fileId);
     if (file?.url) {
-      URL.revokeObjectURL(file.url);
+      try { URL.revokeObjectURL(file.url); } catch (_) {}
+      objectUrlSetRef.current.delete(file.url);
     }
     setAttachedFiles(prev => prev.filter(file => file.id !== fileId));
   };
@@ -419,16 +487,15 @@ export default function ChatPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 컴포넌트 언마운트 시 미리보기 URL 정리
+  // 컴포넌트 언마운트 시 생성된 Object URL 전체 정리
   useEffect(() => {
     return () => {
-      attachedFiles.forEach(file => {
-        if (file.url) {
-          URL.revokeObjectURL(file.url);
-        }
+      objectUrlSetRef.current.forEach((url) => {
+        try { URL.revokeObjectURL(url); } catch (_) {}
       });
+      objectUrlSetRef.current.clear();
     };
-  }, [attachedFiles]);
+  }, []);
 
   // 대화 목록 불러오기 및 사용자 ID 설정
   useEffect(() => {
@@ -478,7 +545,7 @@ export default function ChatPage() {
 
   // 메시지 전송 처리
   const handleSendMessage = async () => {
-    if ((!message.trim() && attachedFiles.length === 0) || isLoading) return;
+    if ((!message.trim() && attachedFiles.length === 0) || isLoading || isUploading) return;
 
     const attachmentsForMessage: AttachedFile[] = attachedFiles.map(f => ({ ...f }));
 
@@ -505,11 +572,13 @@ export default function ChatPage() {
     setMessages(prev => [...prev, assistantMessage]);
 
     // 첨부 파일 정보 준비
-    const files = attachedFiles.map(file => ({
-      type: 'image',
-      transfer_method: 'local_file',
-      upload_file_id: file.uploadedId,
-    }));
+    const files = attachedFiles
+      .filter(file => !!file.uploadedId)
+      .map(file => ({
+        type: 'image',
+        transfer_method: 'local_file',
+        upload_file_id: file.uploadedId,
+      }));
 
     // 입력 영역의 첨부 파일 목록 초기화 (미리보기 URL은 메시지에 남겨둠)
     setAttachedFiles([]);
@@ -1250,10 +1319,16 @@ export default function ChatPage() {
                           alt={file.name}
                           className="w-20 h-20 object-cover rounded-lg border border-gray-200"
                         />
+                        {file.isUploading && (
+                          <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
+                            <div className="w-6 h-6 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
                           <button
-                            onClick={() => openPreview(file.url!)}
+                            onClick={() => file.url && openPreview(file.url)}
                             className="w-8 h-8 bg-white rounded-full flex items-center justify-center"
+                            disabled={!!file.isUploading}
                           >
                             <ZoomIn className="w-4 h-4 text-gray-700" />
                           </button>
@@ -1313,11 +1388,11 @@ export default function ChatPage() {
                 </Button>
                 <Button
                   onClick={handleSendMessage}
-                  disabled={(!message.trim() && attachedFiles.length === 0) || isLoading}
+                  disabled={(!message.trim() && attachedFiles.length === 0) || isLoading || isUploading}
                   size="icon"
                   className={cn(
                     "h-8 w-8 custom:h-10 custom:w-10 rounded-xl transition-all",
-                    (message.trim() || attachedFiles.length > 0) && !isLoading
+                    (message.trim() || attachedFiles.length > 0) && !isLoading && !isUploading
                       ? "bg-gray-900 hover:bg-gray-800 text-white"
                       : "bg-gray-100 text-gray-400"
                   )}
@@ -1423,7 +1498,7 @@ export default function ChatPage() {
             {previewImage && (
               <img
                 src={previewImage}
-                alt="Preview"
+                alt="이미지 미리보기"
                 className="w-full h-auto max-h-[80vh] object-contain"
               />
             )}
