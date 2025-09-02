@@ -12,7 +12,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <HackathonModal />
+      {/* TODO:  플레이 메이커가 미소에 들어가면서 첫 모달을 지웁니다. */}
+      {/* <HackathonModal /> */}
       <SimpleHeader />
       <main className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-7xl mx-auto px-8 pt-32 pb-16">
