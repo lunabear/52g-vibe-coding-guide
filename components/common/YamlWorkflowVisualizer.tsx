@@ -117,10 +117,10 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
         result.workflow.connections.push(currentConnection);
       }
 
-      console.log('파싱된 결과:', result);
+      console.log('Parsed result:', result);
       return result;
     } catch (error) {
-      console.error('YAML 파싱 오류:', error);
+      console.error('YAML parse error:', error);
       return null;
     }
   };
@@ -169,26 +169,26 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
       setParsedData(parsed);
       setShowYamlInput(false);
     } else {
-      alert('YAML 파싱에 실패했습니다. 형식을 확인해주세요.');
+      alert('Failed to parse YAML. Please check the format.');
     }
   };
 
   if (!parsedData) {
-    return <div className="flex items-center justify-center h-64">로딩 중...</div>;
+    return <div className="flex items-center justify-center h-64">Loading...</div>;
   }
 
   return (
     <div className="w-full bg-white">
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-base font-medium text-gray-900">워크플로우 YAML 시각화</h3>
+          <h3 className="text-base font-medium text-gray-900">Workflow YAML Visualization</h3>
           <div className="flex gap-2">
             <button
               onClick={() => setShowYamlInput(!showYamlInput)}
               className="px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded hover:bg-blue-600 flex items-center gap-1"
             >
               <Upload className="w-3 h-3" />
-              YAML 편집
+              Edit YAML
             </button>
             <button
               onClick={() => {
@@ -196,7 +196,7 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
                 const button = document.getElementById('copy-yaml-btn-viz');
                 if (button) {
                   const originalText = button.textContent;
-                  button.textContent = '✓ 복사됨';
+                  button.textContent = '✓ Copied';
                   button.classList.add('bg-green-100', 'text-green-700', 'border-green-300');
                   setTimeout(() => {
                     button.textContent = originalText || '';
@@ -207,34 +207,34 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
               id="copy-yaml-btn-viz"
               className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
             >
-              YAML 복사
+              Copy YAML
             </button>
           </div>
         </div>
-        <p className="text-xs text-gray-600">노드를 클릭하여 상세 정보를 확인하세요</p>
+        <p className="text-xs text-gray-600">Click a node to view details</p>
       </div>
 
       {showYamlInput && (
         <div className="mb-4 p-4 border rounded-lg bg-gray-50">
-          <h4 className="text-sm font-semibold mb-2">YAML 입력</h4>
+          <h4 className="text-sm font-semibold mb-2">YAML Input</h4>
           <textarea
             value={yamlInput}
             onChange={(e) => setYamlInput(e.target.value)}
             className="w-full h-64 p-3 border rounded font-mono text-xs"
-            placeholder="YAML을 입력하세요..."
+            placeholder="Enter YAML..."
           />
           <div className="mt-2 flex gap-2">
             <button
               onClick={handleYamlSubmit}
               className="px-3 py-1.5 text-xs font-medium text-white bg-green-500 rounded hover:bg-green-600"
             >
-              적용
+              Apply
             </button>
             <button
               onClick={() => setShowYamlInput(false)}
               className="px-3 py-1.5 text-xs font-medium text-white bg-gray-500 rounded hover:bg-gray-600"
             >
-              취소
+              Cancel
             </button>
           </div>
         </div>
@@ -243,7 +243,7 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
       <div className="flex gap-4">
         <div className="flex-1">
           <div className="bg-gray-50 border rounded-lg p-4 min-h-96">
-            <h4 className="text-sm font-semibold mb-4 px-2">워크플로우 다이어그램</h4>
+            <h4 className="text-sm font-semibold mb-4 px-2">Workflow Diagram</h4>
             
             <div className="overflow-auto border rounded bg-white" style={{ height: '400px' }}>
               <div className="relative p-4" style={{ width: '1400px', height: '300px', minWidth: '1400px' }}>
@@ -330,14 +330,14 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
             </div>
             
             <div className="mt-2 text-xs text-gray-500 px-2">
-              💡 다이어그램을 좌우로 스크롤하여 전체 워크플로우를 확인하세요
+              💡 Tip: Scroll horizontally to view the full workflow
             </div>
           </div>
         </div>
 
         <div className="w-80">
           <div className="bg-white border rounded-lg p-4 sticky top-4">
-            <h4 className="text-sm font-semibold mb-3">노드 상세 정보</h4>
+            <h4 className="text-sm font-semibold mb-3">Node Details</h4>
             
             {selectedNode ? (
               <div className="space-y-3">
@@ -352,18 +352,18 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
                     <span className="ml-2">{selectedNode.id}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600">타입:</span>
+                    <span className="font-medium text-gray-600">Type:</span>
                     <span className="ml-2">{selectedNode.type}</span>
                   </div>
                   {selectedNode.description && (
                     <div>
-                      <span className="font-medium text-gray-600">설명:</span>
+                      <span className="font-medium text-gray-600">Description:</span>
                       <span className="ml-2">{selectedNode.description}</span>
                     </div>
                   )}
                   {selectedNode.position && (
                     <div>
-                      <span className="font-medium text-gray-600">위치:</span>
+                      <span className="font-medium text-gray-600">Position:</span>
                       <span className="ml-2">
                         ({selectedNode.position.x}, {selectedNode.position.y})
                       </span>
@@ -373,7 +373,7 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
 
                 {selectedNode.config && (
                   <div className="mt-4">
-                    <h5 className="font-medium text-gray-700 mb-2">설정</h5>
+                    <h5 className="font-medium text-gray-700 mb-2">Configuration</h5>
                     <div className="bg-gray-50 p-3 rounded text-xs">
                       <pre className="whitespace-pre-wrap">
                         {JSON.stringify(selectedNode.config, null, 2)}
@@ -384,24 +384,24 @@ const YamlWorkflowVisualizer: React.FC<YamlWorkflowVisualizerProps> = ({ yamlCon
               </div>
             ) : (
               <p className="text-gray-500 text-xs">
-                노드를 클릭하여 상세 정보를 확인하세요
+                Click a node to view details
               </p>
             )}
           </div>
 
           <div className="bg-white border rounded-lg p-4 mt-4">
-            <h4 className="text-sm font-semibold mb-3">워크플로우 통계</h4>
+            <h4 className="text-sm font-semibold mb-3">Workflow Stats</h4>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
-                <span>총 노드 수:</span>
+                <span>Total nodes:</span>
                 <span className="font-medium">{parsedData.workflow.nodes?.length || 0}</span>
               </div>
               <div className="flex justify-between">
-                <span>연결 수:</span>
+                <span>Connections:</span>
                 <span className="font-medium">{parsedData.workflow.connections?.length || 0}</span>
               </div>
               <div className="flex justify-between">
-                <span>LLM 노드:</span>
+                <span>LLM nodes:</span>
                 <span className="font-medium">
                   {parsedData.workflow.nodes?.filter(n => n.type === 'llm').length || 0}
                 </span>

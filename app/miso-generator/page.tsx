@@ -58,12 +58,12 @@ function MisoGeneratorContent() {
     // 항상 MISO 설계 데이터 확인 (새로고침 시에도 데이터 유지)
     const savedMisoDesign = getMisoDesignFromSession();
     if (savedMisoDesign) {
-      console.log('📋 MISO Generator - 이전 설계 데이터 발견:', savedMisoDesign);
+      console.log('📋 MISO Generator - previous design data found:', savedMisoDesign);
       setExpectedInput(savedMisoDesign.inputData);
       setExpectedOutput(savedMisoDesign.resultData);
       setDesiredAction(savedMisoDesign.businessLogic);
       setUserExperience(savedMisoDesign.referenceData);
-      setMisoAppType(savedMisoDesign.misoAppType === 'agent' ? '챗봇 대화형식' : '단일 결과물 생성');
+      setMisoAppType(savedMisoDesign.misoAppType === 'agent' ? 'Chat-based (Agent)' : 'Single deliverable (Workflow)');
       
       // agentPrompt가 있으면 프롬프트와 지식도 복원
       if (savedMisoDesign.agentPrompt) {
@@ -79,18 +79,18 @@ function MisoGeneratorContent() {
       const session = loadMiniAllySession();
       
       if (session) {
-        console.log('📊 MISO Generator - Mini-Ally 세션 데이터:', {
-          '타겟 사용자': session.projectData.personaProfile,
-          '불편함 시점': session.projectData.painPointContext,
-          '불편함 이유': session.projectData.painPointReason,
-          '핵심 문제': session.projectData.coreProblemStatement,
-          '솔루션 이름': session.projectData.solutionNameIdea,
-          '솔루션 메커니즘': session.projectData.solutionMechanism,
-          '기대 효과': session.projectData.expectedOutcome
+        console.log('📊 MISO Generator - Mini-Ally session data:', {
+          'Target user': session.projectData.personaProfile,
+          'Situation': session.projectData.painPointContext,
+          'Root cause': session.projectData.painPointReason,
+          'Core problem': session.projectData.coreProblemStatement,
+          'Idea name': session.projectData.solutionNameIdea,
+          'Mechanism': session.projectData.solutionMechanism,
+          'Expected outcome': session.projectData.expectedOutcome
         });
         
       } else {
-        console.log('⚠️ MISO Generator - Mini-Ally 세션을 찾을 수 없습니다.');
+        console.log('⚠️ MISO Generator - Mini-Ally session not found.');
       }
     }
   }, [searchParams]);
@@ -112,7 +112,7 @@ function MisoGeneratorContent() {
 
   const handleMisoAppSubmit = async () => {
     if (!canSubmit()) {
-      setError('모든 항목을 입력해주세요.');
+      setError('Please fill in all fields.');
       return;
     }
 
@@ -127,7 +127,7 @@ function MisoGeneratorContent() {
     saveMisoDesignToSession(misoDesignData);
 
     // 5번 질문이 '단일 결과물 생성'인 경우 워크플로우 생성 로직 실행
-    if (misoAppType === '단일 결과물 생성') {
+    if (misoAppType === 'Single deliverable (Workflow)') {
       const query = generateQuery();
       setIsLoading(true);
       setError(null);
@@ -149,7 +149,7 @@ function MisoGeneratorContent() {
           }
         }
       } catch (e) {
-        setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
+        setError('An unexpected error occurred. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -158,7 +158,7 @@ function MisoGeneratorContent() {
 
     // 5번 질문이 '챗봇 대화형식'인 경우 기존 미소 앱 생성 로직 실행
     const query = generateMisoAppQuery();
-    const appType = misoAppType === '챗봇 대화형식' ? 'agent' : 'workflow';
+    const appType = misoAppType === 'Chat-based (Agent)' ? 'agent' : 'workflow';
     
     // 세션에서 Mini-Ally 데이터 확인하여 optional_context 생성
     let optionalContext = null;
@@ -169,9 +169,9 @@ function MisoGeneratorContent() {
       const pd = session.projectData;
       console.log('📋 MISO App Submit - projectData:', pd);
       optionalContext = `<personaProfile>${pd.personaProfile || ''}</personaProfile><painPointContext>${pd.painPointContext || ''}</painPointContext><painPointReason>${pd.painPointReason || ''}</painPointReason><coreProblemStatement>${pd.coreProblemStatement || ''}</coreProblemStatement><solutionNameIdea>${pd.solutionNameIdea || ''}</solutionNameIdea><solutionMechanism>${pd.solutionMechanism || ''}</solutionMechanism><expectedOutcome>${pd.expectedOutcome || ''}</expectedOutcome>`;
-      console.log('🎯 MISO App Submit - optionalContext 생성됨:', optionalContext);
+      console.log('🎯 MISO App Submit - optionalContext created:', optionalContext);
     } else {
-      console.log('⚠️ MISO App Submit - 세션 또는 projectData 없음');
+      console.log('⚠️ MISO App Submit - session or projectData not found');
     }
     
     setIsLoadingMisoApp(true);
@@ -203,17 +203,17 @@ function MisoGeneratorContent() {
           resultData: expectedOutput.trim(),
           businessLogic: desiredAction.trim(),
           referenceData: userExperience.trim(),
-          misoAppType: misoAppType === '챗봇 대화형식' ? 'agent' : 'workflow',
+          misoAppType: misoAppType === 'Chat-based (Agent)' ? 'agent' : 'workflow',
           agentPrompt: result.prompt,
           knowledge: result.knowledge
         };
         saveMisoDesignToSession(updatedMisoDesignData);
       } else {
         // prompt가 없으면 에러
-        setError('MISO 앱 프롬프트를 생성하지 못했습니다.');
+        setError('Failed to generate the MISO app prompt.');
       }
     } catch (e) {
-      setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoadingMisoApp(false);
     }
@@ -313,7 +313,7 @@ function MisoGeneratorContent() {
             >
               <ArrowLeft className="w-5 h-5 text-gray-700" />
             </Button>
-            <h2 className="text-[18px] lg:text-[22px] font-light text-gray-900 tracking-tight">MISO 설계 도우미</h2>
+            <h2 className="text-[18px] lg:text-[22px] font-light text-gray-900 tracking-tight">MISO Design Assistant</h2>
           </div>
         </div>
 
@@ -328,16 +328,15 @@ function MisoGeneratorContent() {
                 <div className="w-20 h-20 lg:w-24 lg:h-24 flex items-center justify-center flex-shrink-0 border-2 border-gray-200 rounded-xl overflow-hidden">
                   <img 
                     src="/assets/minian-making.png" 
-                    alt="Minian의 MISO 설계실" 
+                    alt="Minian's MISO design studio" 
                     className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="text-xl lg:text-2xl font-medium text-gray-900 mb-3">MISO 설계실 ✨</div>
+                  <div className="text-xl lg:text-2xl font-medium text-gray-900 mb-3">MISO Design Studio ✨</div>
                   <div className="text-[14px] lg:text-[16px] text-gray-600 font-light leading-relaxed">
-                  서비스가 어떻게 작동하면 좋을지 알려주세요. 
-                  <br /> MISO활용 가이드를 만들어 줄게요!
-                  
+                  Tell us how your service should work.
+                  <br /> We will create a MISO usage guide for you!
                   </div>
                 </div>
               </div>
@@ -357,9 +356,7 @@ function MisoGeneratorContent() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-sm font-medium text-blue-800">
-                        미니 앨리와 정리한 내용 확인하기
-                      </span>
+                      <span className="text-sm font-medium text-blue-800">View summary from Mini Ally</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-blue-600 transition-transform group-hover:translate-x-0.5" />
                   </button>
@@ -378,11 +375,11 @@ function MisoGeneratorContent() {
                                      <div className="flex-1">
                      <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                      사용자는 처음에 무엇을 입력하나요?
+                      What does the user input first?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                      👉 서비스 시작할 때 입력하는 내용
+                      👉 What the user enters at the start
                       </span>
                     </label>
                     <div className="space-y-3">
@@ -392,7 +389,7 @@ function MisoGeneratorContent() {
                           setExpectedInput(e.target.value);
                           handleTextareaResize(e);
                         }}
-                        placeholder="예: 이름 입력, 상품 검색, 위치 선택, 사진 업로드"
+                        placeholder="e.g., Enter name, search product, select location, upload photo"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
@@ -400,10 +397,10 @@ function MisoGeneratorContent() {
                       />
                       <button
                         type="button"
-                        onClick={() => setExpectedInput('잘 모르겠습니다')}
+                        onClick={() => setExpectedInput('Not sure')}
                         className="text-sm text-gray-500 hover:text-black transition-colors font-light"
                       >
-                        잘 모르겠어요 →
+                        Not sure →
                       </button>
                     </div>
                   </div>
@@ -419,11 +416,11 @@ function MisoGeneratorContent() {
                                      <div className="flex-1">
                      <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                      서비스를 통해 무엇을 받게 되나요?
+                      What will the user receive?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                      👉 사용자가 얻게 되는 &apos;최종 결과&apos;
+                      👉 The final output the user receives
                       </span>
                     </label>
                     <div className="space-y-3">
@@ -433,7 +430,7 @@ function MisoGeneratorContent() {
                           setExpectedOutput(e.target.value);
                           handleTextareaResize(e);
                         }}
-                        placeholder="예: 추천 상품 목록, 날씨 정보, 분석 결과, 번역문"
+                        placeholder="e.g., Recommended product list, weather info, analysis result, translation"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
@@ -441,10 +438,10 @@ function MisoGeneratorContent() {
                       />
                       <button
                         type="button"
-                        onClick={() => setExpectedOutput('잘 모르겠습니다')}
+                        onClick={() => setExpectedOutput('Not sure')}
                         className="text-sm text-gray-500 hover:text-black transition-colors font-light"
                       >
-                        잘 모르겠어요 →
+                        Not sure →
                       </button>
                     </div>
                   </div>
@@ -460,11 +457,11 @@ function MisoGeneratorContent() {
                                      <div className="flex-1">
                      <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                        그 결과를 만들기 위해 서비스는 어떤 기능이 필요한가요?
+                        What functionality is needed to produce that result?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                      👉 서비스가 자동으로 처리하는 일
+                      👉 Tasks the service handles automatically
                       </span>
                     </label>
                     <div className="space-y-3">
@@ -474,7 +471,7 @@ function MisoGeneratorContent() {
                           setDesiredAction(e.target.value);
                           handleTextareaResize(e);
                         }}
-                        placeholder="예: 입력 분석, 조건에 맞는 결과 검색, 이미지 변환"
+                        placeholder="e.g., Parse inputs, search matching results, convert images"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
@@ -482,10 +479,10 @@ function MisoGeneratorContent() {
                       />
                       <button
                         type="button"
-                        onClick={() => setDesiredAction('잘 모르겠습니다')}
+                        onClick={() => setDesiredAction('Not sure')}
                         className="text-sm text-gray-500 hover:text-black transition-colors font-light"
                       >
-                        잘 모르겠어요 →
+                        Not sure →
                       </button>
                     </div>
                   </div>
@@ -501,11 +498,11 @@ function MisoGeneratorContent() {
                   <div className="flex-1">
                     <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                        서비스가 참고해야 하는 자료는 무엇인가요?
+                        What references must the service use?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                       <span className="block text-sm text-gray-500 mt-1 font-light">
-                        👉 결과를 만들 때 반드시 근거로 삼아야 하는 자료나 규칙
+                        👉 Sources or rules the result must be based on
                       </span>
                     </label>
                     <div className="space-y-3">
@@ -515,7 +512,7 @@ function MisoGeneratorContent() {
                           setUserExperience(e.target.value);
                           handleTextareaResize(e);
                         }}
-                        placeholder="예: 사내 규정 문서, 제품 매뉴얼, 고객 응대 가이드"
+                        placeholder="e.g., Company policy, product manual, customer service guide"
                         rows={3}
                         className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none font-light"
                         disabled={isLoading}
@@ -523,10 +520,10 @@ function MisoGeneratorContent() {
                       />
                       <button
                         type="button"
-                        onClick={() => setUserExperience('잘 모르겠습니다')}
+                        onClick={() => setUserExperience('Not sure')}
                         className="text-sm text-gray-500 hover:text-black transition-colors font-light"
                       >
-                        잘 모르겠어요 →
+                        Not sure →
                       </button>
                     </div>
                   </div>
@@ -542,7 +539,7 @@ function MisoGeneratorContent() {
                   <div className="flex-1">
                     <label className="block mb-4">
                       <span className="text-base lg:text-lg font-medium text-gray-900 leading-relaxed">
-                        서비스를 어떤 형식으로 이용하나요?
+                        What experience format do you prefer?
                         <span className="text-red-500 ml-1">*</span>
                       </span>
                     </label>
@@ -551,31 +548,31 @@ function MisoGeneratorContent() {
                       <div 
                         className={cn(
                           "border-2 rounded-xl p-4 cursor-pointer transition-all",
-                          misoAppType === '챗봇 대화형식' 
+                          misoAppType === 'Chat-based (Agent)' 
                             ? "border-blue-300 bg-blue-50" 
                             : "border-gray-200 hover:border-gray-300"
                         )}
-                        onClick={() => setMisoAppType('챗봇 대화형식')}
+                        onClick={() => setMisoAppType('Chat-based (Agent)')}
                       >
                         <div className="flex items-start gap-3">
                           <div className={cn(
                             "w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5",
-                            misoAppType === '챗봇 대화형식'
+                            misoAppType === 'Chat-based (Agent)'
                               ? "border-blue-500 bg-blue-500"
                               : "border-gray-300"
                           )}>
-                            {misoAppType === '챗봇 대화형식' && (
+                            {misoAppType === 'Chat-based (Agent)' && (
                               <div className="w-2 h-2 rounded-full bg-white"></div>
                             )}
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-lg">💬</span>
-                              <span className="font-medium text-gray-900">챗봇 대화형식</span>
+                              <span className="font-medium text-gray-900">Chat-based (Agent)</span>
                             </div>
                             <p className="text-sm text-gray-600 font-light">
-                              사용자와 AI가 대화를 통해 결과물이 제공되는 방식입니다.<br />
-                              질문에 대한 답변 후 추가 질문이 이어집니다.
+                              The user and AI interact through a conversation to produce results.<br />
+                              Follow-up questions may be asked after each answer.
                             </p>
                           </div>
                         </div>
@@ -585,34 +582,34 @@ function MisoGeneratorContent() {
                       <div 
                         className={cn(
                           "border-2 rounded-xl p-4 cursor-pointer transition-all",
-                          misoAppType === '단일 결과물 생성' 
+                          misoAppType === 'Single deliverable (Workflow)' 
                             ? "border-blue-300 bg-blue-50" 
                             : "border-gray-200 hover:border-gray-300"
                         )}
                         onClick={() => {
-                          setMisoAppType('단일 결과물 생성');
+                          setMisoAppType('Single deliverable (Workflow)');
                           setShowWorkflowGuideModal(true);
                         }}
                       >
                         <div className="flex items-start gap-3">
                           <div className={cn(
                             "w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5",
-                            misoAppType === '단일 결과물 생성'
+                            misoAppType === 'Single deliverable (Workflow)'
                               ? "border-blue-500 bg-blue-500"
                               : "border-gray-300"
                           )}>
-                            {misoAppType === '단일 결과물 생성' && (
+                            {misoAppType === 'Single deliverable (Workflow)' && (
                               <div className="w-2 h-2 rounded-full bg-white"></div>
                             )}
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-lg">📄</span>
-                              <span className="font-medium text-gray-900">단일 결과물 생성</span>
+                              <span className="font-medium text-gray-900">Single deliverable (Workflow)</span>
                             </div>
                             <p className="text-sm text-gray-600 font-light">
-                              사용자가 하나의 완성된 결과물을 받는 방식입니다.<br />
-                              분석 보고서, 정리된 문서 등을 생성합니다.
+                              The user receives a single, complete deliverable.<br />
+                              Examples: analysis report, summarized document.
                             </p>
                           </div>
                         </div>
@@ -620,10 +617,10 @@ function MisoGeneratorContent() {
 
                       <button
                         type="button"
-                        onClick={() => setMisoAppType('잘 모르겠습니다')}
+                        onClick={() => setMisoAppType('Not sure')}
                         className="text-sm text-gray-500 hover:text-black transition-colors font-light"
                       >
-                        잘 모르겠어요 →
+                        Not sure →
                       </button>
                     </div>
                   </div>
@@ -635,7 +632,7 @@ function MisoGeneratorContent() {
             {/* 에러 표시 */}
             {error && (
               <div className="mt-6 p-3 bg-red-50 border border-red-100 rounded-lg">
-                <p className="text-sm text-red-800 font-medium mb-1">문제가 발생했습니다</p>
+                <p className="text-sm text-red-800 font-medium mb-1">An issue occurred</p>
                 <p className="text-xs text-red-600 font-light">{error}</p>
               </div>
             )}
@@ -645,7 +642,7 @@ function MisoGeneratorContent() {
           <div className="bg-white border-t border-gray-100 p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500 font-light">
-                {[expectedInput, expectedOutput, desiredAction, userExperience, misoAppType].filter(v => v.trim().length > 0).length}/5 질문 답변 완료
+                {[expectedInput, expectedOutput, desiredAction, userExperience, misoAppType].filter(v => v.trim().length > 0).length}/5 answers completed
               </span>
               <Button 
                 onClick={handleMisoAppSubmit}
@@ -660,10 +657,10 @@ function MisoGeneratorContent() {
                 {(isLoading || isLoadingMisoApp) ? (
                   <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>설계 중...</span>
+                    <span>Designing...</span>
                   </div>
                 ) : (
-                  <span>미소 앱 설계하기</span>
+                  <span>Design MISO app</span>
                 )}
               </Button>
             </div>
@@ -677,7 +674,7 @@ function MisoGeneratorContent() {
         <div className="h-auto lg:h-[88px] px-4 lg:px-6 py-4 lg:py-0 flex items-center justify-between border-b border-gray-100">
           <div className="w-full">
             <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-[16px] lg:text-[18px] font-medium text-gray-900">MISO 앱 설계</h2>
+              <h2 className="text-[16px] lg:text-[18px] font-medium text-gray-900">MISO App Design</h2>
               {(() => {
                const savedDesign = getMisoDesignFromSession();
                const misoAppType = savedDesign?.misoAppType;
@@ -701,7 +698,7 @@ function MisoGeneratorContent() {
                   onClick={() => setShowV0GuideModal(true)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
                 >
-                  워크플로우를 v0에 연결해 보고 싶으신가요?
+                  Want to connect the workflow to v0?
                 </Button>
               );
             } else if (!isWorkflowType) {
@@ -711,7 +708,7 @@ function MisoGeneratorContent() {
                   onClick={handleVibeCodingClick}
                   className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
                 >
-                  바이브코딩 설계하기
+                  Plan Vibe Coding
                 </Button>
               );
             }
@@ -727,24 +724,24 @@ function MisoGeneratorContent() {
                 <div className="w-28 h-28 mb-6 rounded-full overflow-hidden border border-blue-100 shadow-sm flex items-center justify-center">
                   <img
                     src="/assets/miso_processing_realtime.gif"
-                    alt={isLoadingMisoApp ? '미소 앱 설계 로딩' : '워크플로우 설계 로딩'}
+                    alt={isLoadingMisoApp ? 'MISO app design loading' : 'Workflow design loading'}
                     className="w-full h-full object-cover"
                   />
                 </div>
                <div className="text-center max-w-md">
                  <h3 className="text-[18px] lg:text-[20px] font-medium text-gray-900 mb-3">
-                   {isLoadingMisoApp ? '🎨 미소 앱을 설계하고 있습니다' : '⚙️ 워크플로우를 설계하고 있습니다'}
+                   {isLoadingMisoApp ? '🎨 Designing your MISO app' : '⚙️ Designing your workflow'}
                  </h3>
                  <p className="text-[14px] lg:text-[15px] text-gray-600 font-light leading-relaxed mb-4">
                    {isLoadingMisoApp ? (
                      <>
-                       AI가 입력하신 정보를 분석하여<br />
-                       최적의 미소 앱 프롬프트를 생성하고 있습니다.
+                       AI is analyzing your inputs and<br />
+                       generating the optimal MISO app prompt.
                      </>
                    ) : (
                      <>
-                       AI가 입력하신 정보를 분석하여<br />
-                       맞춤형 워크플로우를 설계하고 있습니다.
+                       AI is analyzing your inputs and<br />
+                       designing a tailored workflow.
                      </>
                    )}
                  </p>
@@ -754,9 +751,7 @@ function MisoGeneratorContent() {
                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></span>
                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '400ms' }}></span>
                    </div>
-                   <span className="text-[12px] text-blue-700 font-medium">
-                     최대 3분 정도 소요될 수 있습니다
-                   </span>
+                   <span className="text-[12px] text-blue-700 font-medium">This may take up to 3 minutes</span>
                  </div>
                   <div className="mt-6">
                     <Button
@@ -765,7 +760,7 @@ function MisoGeneratorContent() {
                       onClick={handleCancelProcessing}
                       className="px-4 py-2 text-sm border-gray-300 hover:bg-gray-100"
                     >
-                      취소
+                      Cancel
                     </Button>
                   </div>
                </div>
@@ -780,12 +775,12 @@ function MisoGeneratorContent() {
                   <div className="order-2 xl:order-1 border border-blue-100 bg-blue-50/40 rounded-xl p-4 h-full min-h-0 flex flex-col">
                     <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                       <div className="flex items-center justify-between mb-3">
-                        <div className="text-sm text-blue-900 font-medium">미니 앨리 요약</div>
+                        <div className="text-sm text-blue-900 font-medium">Mini Ally Summary</div>
                         <button
                           type="button"
                           onClick={() => setShowMiniAllyInlineSummary(false)}
                           className="p-1 rounded hover:bg-blue-100 transition-colors"
-                          aria-label="닫기"
+                          aria-label="Close"
                         >
                           <X className="w-4 h-4 text-blue-700" />
                         </button>
@@ -793,43 +788,43 @@ function MisoGeneratorContent() {
                       <div className="space-y-3 text-[14px] text-gray-800">
                         {miniAllyProjectData.personaProfile && (
                           <div>
-                            <div className="text-gray-600 text-xs mb-1">타겟 사용자</div>
+                            <div className="text-gray-600 text-xs mb-1">Target user</div>
                             <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.personaProfile}</div>
                           </div>
                         )}
                         {miniAllyProjectData.painPointContext && (
                           <div>
-                            <div className="text-gray-600 text-xs mb-1">문제 상황</div>
+                            <div className="text-gray-600 text-xs mb-1">Situation</div>
                             <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.painPointContext}</div>
                           </div>
                         )}
                         {miniAllyProjectData.painPointReason && (
                           <div>
-                            <div className="text-gray-600 text-xs mb-1">문제의 원인</div>
+                            <div className="text-gray-600 text-xs mb-1">Root cause</div>
                             <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.painPointReason}</div>
                           </div>
                         )}
                         {miniAllyProjectData.coreProblemStatement && (
                           <div>
-                            <div className="text-gray-600 text-xs mb-1">핵심 문제</div>
+                            <div className="text-gray-600 text-xs mb-1">Core problem</div>
                             <div className="bg-white rounded-md border border-blue-100 p-3 font-medium">{miniAllyProjectData.coreProblemStatement}</div>
                           </div>
                         )}
                         {miniAllyProjectData.solutionNameIdea && (
                           <div>
-                            <div className="text-gray-600 text-xs mb-1">아이디어 이름</div>
+                            <div className="text-gray-600 text-xs mb-1">Idea name</div>
                             <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.solutionNameIdea}</div>
                           </div>
                         )}
                         {miniAllyProjectData.solutionMechanism && (
                           <div>
-                            <div className="text-gray-600 text-xs mb-1">작동 방식</div>
+                            <div className="text-gray-600 text-xs mb-1">Mechanism</div>
                             <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.solutionMechanism}</div>
                           </div>
                         )}
                         {miniAllyProjectData.expectedOutcome && (
                           <div>
-                            <div className="text-gray-600 text-xs mb-1">기대 효과</div>
+                            <div className="text-gray-600 text-xs mb-1">Expected outcome</div>
                             <div className="bg-white rounded-md border border-blue-100 p-3">{miniAllyProjectData.expectedOutcome}</div>
                           </div>
                         )}
@@ -848,11 +843,11 @@ function MisoGeneratorContent() {
                     />
                   </div>
                   <h3 className="text-[20px] lg:text-[24px] font-light text-gray-900 mb-3 text-center">
-                    분석 결과가 여기에 표시됩니다
+                    Analysis results will appear here
                   </h3>
                   <p className="text-[14px] lg:text-[16px] text-gray-500 leading-relaxed font-light text-center">
-                    왼쪽 질문에 답변해주시면<br />
-                    맞춤형 워크플로우를 설계해드립니다
+                    Answer the questions on the left and<br />
+                    we will design a tailored workflow for you
                   </p>
                 </div>
               </div>
@@ -870,10 +865,10 @@ function MisoGeneratorContent() {
                </div>
                <div className="max-w-sm">
                  <h3 className="text-base font-medium text-red-800 mb-2">
-                   분석에 실패했습니다
+                   Analysis failed
                  </h3>
                  <p className="text-sm text-red-600 font-light">
-                   다시 시도하거나 질문을 더 구체적으로 작성해보세요
+                   Please try again or provide more specific details
                  </p>
                </div>
              </div>
@@ -886,15 +881,15 @@ function MisoGeneratorContent() {
                 <div className="bg-white rounded-lg p-6 border border-gray-200">
                   <div className="mb-4">
                     <p className="text-[12px] lg:text-[13px] text-gray-600 leading-relaxed flex items-center gap-1.5 flex-wrap">
-                      <span className="text-gray-500">MISO에 로그인 하신 뒤</span>
-                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">플레이그라운드</span>
+                      <span className="text-gray-500">After logging into MISO</span>
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">Playground</span>
                       <span className="text-gray-400">→</span>
-                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">앱 만들기</span>
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">Create App</span>
                       <span className="text-gray-400">→</span>
-                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">새로 만들기</span>
+                      <span className="font-medium bg-gray-50 border border-gray-200 px-2 py-0.5 rounded">New</span>
                       <span className="text-gray-400">→</span>
-                      <span className="font-medium bg-green-50 border border-green-300 text-green-700 px-2 py-0.5 rounded">워크플로우</span>
-                      <span className="text-gray-700">에서 아래 내용을 참조하여 구현하세요</span>
+                      <span className="font-medium bg-green-50 border border-green-300 text-green-700 px-2 py-0.5 rounded">Workflow</span>
+                      <span className="text-gray-700">and implement based on the details below</span>
                     </p>
                   </div>
                   <div className="prose prose-sm max-w-none text-[14px] lg:text-[16px] font-light leading-relaxed [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
@@ -1080,7 +1075,7 @@ function MisoGeneratorContent() {
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
                           <h3 className="text-base font-medium text-gray-900">
-                            참조할 지식
+                            Knowledge to reference
                           </h3>
                           <div className="relative">
                             <button
@@ -1095,8 +1090,8 @@ function MisoGeneratorContent() {
                               <div className="absolute right-0 lg:left-0 lg:right-auto top-6 z-10 w-72 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg">
                                 <div className="relative">
                                   <div className="absolute -top-5 right-2 lg:left-2 lg:right-auto w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-gray-900"></div>
-                                  MISO 에이전트가 답변을 하기 위해 반드시 참조해야하는 문서(데이터)를 참조할 지식에 설정해 주어야 합니다.<br />
-                                  참조할 지식 설정 방법은 &apos;지식 업로드 가이드&apos;를 확인해 주세요.
+                                  You must set the documents (data) that MISO must reference to answer.<br />
+                                  See the 'Knowledge Upload Guide' for how to set it.
                                 </div>
                               </div>
                             )}
@@ -1109,7 +1104,7 @@ function MisoGeneratorContent() {
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                           </svg>
-                          지식 업로드 가이드
+                          Knowledge Upload Guide
                         </button>
                       </div>
                       {knowledge ? (
@@ -1118,7 +1113,7 @@ function MisoGeneratorContent() {
                         </div>
                       ) : (
                         <div className="text-gray-500 text-sm">
-                          지식 영역은 현재 구현 중입니다.
+                          The knowledge section is currently under development.
                         </div>
                       )}
                     </div>
@@ -1126,7 +1121,7 @@ function MisoGeneratorContent() {
                     {/* 도구 영역 */}
                     <div className="bg-white rounded-lg p-6 border border-gray-200 h-80">
                       <h3 className="text-base font-medium text-gray-900 mb-4">
-                        도구
+                        Tools
                       </h3>
                       <div className="text-gray-500 text-sm">
                       </div>
@@ -1152,7 +1147,7 @@ function MisoGeneratorContent() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">v0와 워크플로우 연결하기</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Connect workflow with v0</h2>
               <button
                 onClick={() => setShowV0GuideModal(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -1166,17 +1161,17 @@ function MisoGeneratorContent() {
             <div className="space-y-4">
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  공유 받으신 노션에서 <strong>&quot;[해커톤] MISO와 v0 연결&quot;</strong> 문서를 참조하셔서 구현한 워크플로우와 v0를 연동하는 가이드를 확인하실 수 있습니다.
+                  Refer to the shared Notion doc <strong>&quot;[Hackathon] Connect MISO and v0&quot;</strong> for a guide on integrating your workflow with v0.
                 </p>
               </div>
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900 mb-2">
-                  <strong>📍 문서 위치:</strong>
+                  <strong>📍 Document location:</strong>
                 </p>
                 <div className="bg-white rounded p-3 border border-blue-200">
                   <p className="text-sm text-gray-700 font-mono">
-                    [해커톤] 해커 리모트 플레이그라운드 → 해커톤 툴 사용 꿀팁 → <strong>[해커톤] MISO와 v0 연결</strong>
+                    [Hackathon] Hacker Remote Playground → Tips for using hackathon tools → <strong>[Hackathon] Connect MISO and v0</strong>
                   </p>
                 </div>
               </div>
@@ -1187,7 +1182,7 @@ function MisoGeneratorContent() {
                 onClick={() => setShowV0GuideModal(false)}
                 className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
               >
-                확인
+                OK
               </Button>
             </div>
           </div>
@@ -1199,7 +1194,7 @@ function MisoGeneratorContent() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">워크플로우 구현 가이드</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Workflow implementation guide</h2>
               <button
                 onClick={() => setShowWorkflowGuideModal(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -1213,24 +1208,24 @@ function MisoGeneratorContent() {
             <div className="space-y-4">
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-700 leading-relaxed mb-3">
-                  미소 워크플로우 구현이 처음이시라면 먼저 영상을 통해 학습하신 뒤 시작해 보시는 것을 강력히 추천드립니다.
+                  If you are new to implementing MISO workflows, we highly recommend watching the guide video first.
                 </p>
                 <p className="text-gray-700 leading-relaxed mb-4">
+                  Watch the workflow implementation guide at 
                   <a 
                     href="https://gs52g.goorm.io" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                    className="text-blue-600 hover:text-blue-700 hover:underline font-medium ml-1"
                   >
                     gs52g.goorm.io
-                  </a>
-                  에서 워크플로우 구현 가이드 영상을 보실 수 있습니다.
+                  </a>.
                 </p>
               </div>
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900 mb-2">
-                  <strong>📍 가이드 영상 위치:</strong>
+                  <strong>📍 Guide video location:</strong>
                 </p>
                 <div className="bg-white rounded p-3 border border-blue-200">
                   <p className="text-sm text-gray-700 font-mono">
@@ -1243,7 +1238,7 @@ function MisoGeneratorContent() {
                       gs52g.goorm.io
                     </a>
                     {' → '}
-                    <strong>나도 이제 MISO 전문가!</strong>
+                    <strong>Now I am a MISO expert!</strong>
                   </p>
                 </div>
               </div>
@@ -1254,7 +1249,7 @@ function MisoGeneratorContent() {
                 onClick={() => setShowWorkflowGuideModal(false)}
                 className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
               >
-                확인
+                OK
               </Button>
             </div>
           </div>
@@ -1266,7 +1261,7 @@ function MisoGeneratorContent() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">프롬프트 작성 가이드</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Prompt writing guide</h2>
               <button
                 onClick={() => setShowPromptGuideModal(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -1280,18 +1275,18 @@ function MisoGeneratorContent() {
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900 mb-2">
-                  <strong>📍 가이드 위치:</strong>
+                  <strong>📍 Guide location:</strong>
                 </p>
                 <div className="bg-white rounded p-3 border border-blue-200">
                   <p className="text-sm text-gray-700 font-mono">
-                    <strong>MISO</strong> → <strong>학습하기</strong> → <strong>미소 학습하기</strong> → <strong>프롬프트 작성 가이드</strong>
+                    <strong>MISO</strong> → <strong>Learn</strong> → <strong>Learn MISO</strong> → <strong>Prompt Writing Guide</strong>
                   </p>
                 </div>
               </div>
               
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-700 leading-relaxed">
-                  위의 문서에서 자세한 프롬프팅 방법을 확인해 보실 수 있습니다.
+                  You can find detailed prompting methods in the document above.
                 </p>
               </div>
             </div>
@@ -1301,7 +1296,7 @@ function MisoGeneratorContent() {
                 onClick={() => setShowPromptGuideModal(false)}
                 className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
               >
-                확인
+                OK
               </Button>
             </div>
           </div>
@@ -1338,7 +1333,7 @@ function MisoGeneratorContent() {
               
               <div className="prose prose-sm max-w-none">
                 <p className="text-gray-700 leading-relaxed">
-                위의 문서에서 자세한 프롬프팅 방법을 확인해 보실 수 있습니다.
+                  You can find detailed prompting methods in the document above.
                 </p>
               </div>
             </div>
@@ -1348,7 +1343,7 @@ function MisoGeneratorContent() {
                 onClick={() => setShowKnowledgeGuideModal(false)}
                 className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-lg transition-colors"
               >
-                확인
+                OK
               </Button>
             </div>
           </div>

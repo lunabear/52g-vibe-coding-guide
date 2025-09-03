@@ -319,7 +319,54 @@ export default function PRDResultPage() {
     const a = document.createElement('a');
     a.href = url;
     a.download = `PRD_${date}.md`;
+    try {
+      const result: V0Project = await createV0Project('project name');
+      const {
+        id: v0ProjectId,
+        object: v0Object,
+        name: v0Name,
+        privacy: v0Privacy,
+        vercelProjectId: v0VercelProjectId,
+        createdAt: v0CreatedAt,
+        updatedAt: v0UpdatedAt,
+        apiUrl: v0ApiUrl,
+        webUrl: v0WebUrl,
+        chats: v0Chats,
+      } = result;
+
+      console.log('v0 project create response:', {
+        v0ProjectId,
+        v0Object,
+        v0Name,
+        v0Privacy,
+        v0VercelProjectId,
+        v0CreatedAt,
+        v0UpdatedAt,
+        v0ApiUrl,
+        v0WebUrl,
+        v0Chats,
+      });
+      try { alert(`v0 project created: ${JSON.stringify({ v0ProjectId, v0Name, v0WebUrl })}`); } catch (_) {}
+
+      // 프로젝트 생성 직후 채팅 생성 (별도 try/catch)
+      try {
+        const attachmentUrl = url; // Blob에서 생성한 URL 사용
+        const chatResult = await createV0Chat(v0ProjectId, attachmentUrl);
+        console.log('v0 chat create response:', chatResult);
+        try { alert(`v0 chat created: ${JSON.stringify(chatResult)}`); } catch (_) {}
+      } catch (chatErr: any) {
+        console.error('v0 chat create error:', chatErr);
+        try { alert(`v0 chat create error: ${chatErr?.message || String(chatErr)}`); } catch (_) {}
+      }
+    } catch (e: any) {
+      console.error('v0 project create error:', e);
+      try { alert(`v0 project create error: ${e?.message || String(e)}`); } catch (_) {}
+    }
     a.click();
+    
+    
+
+    
     URL.revokeObjectURL(url);
   };
 
@@ -359,6 +406,51 @@ export default function PRDResultPage() {
   const handleCancelPRD = () => {
     setIsEditingPRD(false);
     setTempPRDContent('');
+  };
+
+  // v0 프로젝트 응답 타입
+  type V0Project = {
+    id: string;
+    object: string;
+    name: string;
+    privacy: string;
+    vercelProjectId?: string;
+    createdAt: string;
+    updatedAt: string;
+    apiUrl: string;
+    webUrl: string;
+    chats: any[];
+  };
+
+  // v0 프로젝트 생성 API 호출
+  const createV0Project = async (projectName: string) => {
+    const response = await fetch('/api/v0/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: projectName}),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to create v0 project');
+    }
+    return response.json();
+  };
+
+  // v0 대화(채팅) 생성 API 호출
+  const createV0Chat = async (
+    projectId: string,
+    url: string,
+  ) => {
+    const response = await fetch('/api/v0/chats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, url }),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to create v0 chat');
+    }
+    return response.json();
   };
 
   // Heather 편집 관련 핸들러 제거
@@ -425,10 +517,10 @@ export default function PRDResultPage() {
                 className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                처음으로
+                Home
               </button>
               <div className="h-6 w-px bg-gray-200"></div>
-              <h1 className="text-lg font-medium text-gray-900">프로젝트 문서</h1>
+              <h1 className="text-lg font-medium text-gray-900">Project Documents</h1>
             </div>
             <div className="flex items-center gap-3">
               {selectedThemeId && (
@@ -460,7 +552,7 @@ export default function PRDResultPage() {
                     ? 'animate-soft-glow' 
                     : ''
                 }`} />
-                바이브코딩에 적용하기
+                Apply to Vibe Coding
               </button>
             </div>
           </div>
@@ -484,20 +576,20 @@ export default function PRDResultPage() {
                     <div className="w-16 h-16 flex items-center justify-center">
                       <img 
                         src="/assets/mini_kyle_default.png" 
-                        alt="기획자 Kyle" 
+                        alt="Planner Kyle" 
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900">기획자 Kyle</h3>
-                      <p className="text-sm text-gray-600">프로덕트 요구사항 정의</p>
+                      <h3 className="text-lg font-medium text-gray-900">Planner Kyle</h3>
+                      <p className="text-sm text-gray-600">Product Requirements Definition</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={isEditingPRD ? handleSavePRD : handleEditPRD}
                       className="p-1.5 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title={isEditingPRD ? "저장" : "편집"}
+                      title={isEditingPRD ? "Save" : "Edit"}
                       disabled={isPRDFixing}
                     >
                       {isEditingPRD ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
@@ -506,14 +598,14 @@ export default function PRDResultPage() {
                       <button
                         onClick={handleCancelPRD}
                         className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                        title="취소"
+                        title="Cancel"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     )}
                     <div className="flex items-center gap-2 text-sm">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="font-medium text-green-600">완료</span>
+                      <span className="font-medium text-green-600">Done</span>
                     </div>
                   </div>
                 </div>
@@ -527,7 +619,7 @@ export default function PRDResultPage() {
                       value={tempPRDContent}
                       onChange={(e) => setTempPRDContent(e.target.value)}
                       className="w-full h-[60vh] min-h-[420px] p-4 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                      placeholder="PRD 내용을 입력하세요..."
+                      placeholder="Enter PRD content..."
                     />
                   ) : (
                     <ReactMarkdown 
@@ -537,7 +629,7 @@ export default function PRDResultPage() {
                       assumption: ({ children }: { children?: React.ReactNode }) => (
                         <div className="pl-4 py-2 my-4 border-l-3 border-blue-400 bg-blue-50 rounded-r">
                           <div className="text-sm text-blue-700">
-                            <span className="font-semibold">가정: </span>
+                            <span className="font-semibold">Assumption: </span>
                             {children}
                           </div>
                         </div>
@@ -708,7 +800,7 @@ export default function PRDResultPage() {
                         // Pre-process content to convert json-flowchart to json
                         let processedContent = prdContent.replace(/```json-flowchart/g, '```json');
                         return processedContent;
-                      })() : (!error && !isLoading ? '# PRD 문서\n\n내용을 불러올 수 없습니다.' : '')}
+                      })() : (!error && !isLoading ? '# PRD Document\n\nUnable to load content.' : '')}
                     </ReactMarkdown>
                   )}
                 </div>
@@ -724,7 +816,7 @@ export default function PRDResultPage() {
                         className="w-20 h-20 object-contain"
                       />
                     </div>
-                    <h3 className="text-base font-medium text-gray-900 mb-2">아이디어를 정리하고 있어요</h3>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">Organizing your ideas</h3>
                     <div className="flex gap-1 mt-2">
                       {[0, 1, 2].map((index) => (
                         <div
@@ -751,7 +843,7 @@ export default function PRDResultPage() {
                         value={prdFixRequest}
                         onChange={(e) => setPRDFixRequest(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handlePRDFix()}
-                        placeholder="Kyle에게 수정을 요청하세요"
+                        placeholder="Ask Kyle to make edits"
                         className="w-full px-4 py-2.5 pr-12 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder-gray-400 transition-all"
                         disabled={isPRDFixing}
                       />
@@ -782,7 +874,7 @@ export default function PRDResultPage() {
                         className="w-20 h-20 object-contain"
                       />
                     </div>
-                    <h3 className="text-base font-medium text-gray-900 mb-2">문서를 수정하고 있습니다</h3>
+                    <h3 className="text-base font-medium text-gray-900 mb-2">Editing the document</h3>
                     <div className="flex gap-1 mt-4">
                       {[0, 1, 2].map((index) => (
                         <div
@@ -834,13 +926,13 @@ export default function PRDResultPage() {
                     <div className="w-16 h-16 flex items-center justify-center">
                       <img 
                         src="/assets/mini_heather_default.png" 
-                        alt="디자이너 Heather" 
+                        alt="Designer Heather" 
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold" style={{ color: 'var(--text-100)' }}>디자이너 Heather</h3>
-                      <p className="text-sm" style={{ color: 'var(--text-200)' }}>원하시는 스타일을 선택해주세요</p>
+                      <h3 className="text-lg font-semibold" style={{ color: 'var(--text-100)' }}>Designer Heather</h3>
+                      <p className="text-sm" style={{ color: 'var(--text-200)' }}>Please choose your preferred style</p>
                     </div>
                   </div>
                     {selectedThemeId ? (
@@ -848,7 +940,7 @@ export default function PRDResultPage() {
                         <div className="flex items-center justify-end gap-2 text-sm mb-1">
                           <div className={`w-2 h-2 rounded-full animate-pulse`} style={{ background: 'var(--primary-100)' }}></div>
                           <span className={`font-semibold`} style={{ color: 'var(--text-100)' }}>
-                            {THEME_PRESETS.find(t => t.id === selectedThemeId)?.name} 선택됨
+                            {THEME_PRESETS.find(t => t.id === selectedThemeId)?.name} selected
                           </span>
                         </div>
                         <p className="text-xs leading-relaxed" style={{ color: 'var(--text-200)' }}>
@@ -860,7 +952,7 @@ export default function PRDResultPage() {
                         <div className="flex items-center justify-end gap-2 text-sm">
                           <div className="w-2 h-2 rounded-full bg-gray-400"></div>
                           <span className="font-medium text-gray-600">
-                            스타일 미선택
+                            No style selected
                           </span>
                         </div>
                       </div>
@@ -876,7 +968,7 @@ export default function PRDResultPage() {
                     <div className="col-span-1 flex flex-col min-h-0">
                       <h4 className="text-sm font-bold text-[hsl(var(--foreground))] mb-4 flex items-center gap-2 flex-shrink-0">
                         <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))]"></div>
-                        스타일 프리셋
+                        Style presets
                       </h4>
                       <div className="space-y-3 overflow-y-auto pr-2 flex-1 min-h-0 px-1 pt-2">
                         {THEME_PRESETS.map(preset => (
@@ -925,7 +1017,7 @@ export default function PRDResultPage() {
                       <div className="flex-shrink-0 mb-4">
                         <h4 className="text-sm font-bold text-[hsl(var(--foreground))] mb-3 flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-gradient-to-r from-[hsl(var(--accent))] to-[hsl(var(--primary))]"></div>
-                          실시간 미리보기
+                          Live preview
                         </h4>
                         <div className="flex gap-2">
                           <button
@@ -936,7 +1028,7 @@ export default function PRDResultPage() {
                                 : 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]/10 hover:border-[hsl(var(--accent))]'
                             }`}
                           >
-                            대시보드
+                            Dashboard
                           </button>
                           <button
                             onClick={() => setPreviewType('chatbot')}
@@ -946,7 +1038,7 @@ export default function PRDResultPage() {
                                 : 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]/10 hover:border-[hsl(var(--accent))]'
                             }`}
                           >
-                            AI 챗봇
+                            AI Chatbot
                           </button>
                         </div>
                       </div>
@@ -960,15 +1052,15 @@ export default function PRDResultPage() {
                               <div className="mb-4">
                                 <img
                                   src="/assets/mini_heather_thinking.png"
-                                  alt="Heather 안내"
+                                  alt="Heather Info"
                                   className="w-20 h-20 object-contain"
                                 />
                               </div>
                               <h3 className="text-base font-medium text-gray-900">
-                                적용을 원하시는 디자인 시스템을 선택해주세요
+                                Select the design system you want to apply
                               </h3>
                               <p className="mt-2 text-sm text-gray-600">
-                                좌측 목록에서 스타일 프리셋을 선택하면 우측에서 미리보기가 갱신됩니다.
+                                Select a style preset on the left to update the preview on the right.
                               </p>
                             </div>
                           </div>
@@ -976,7 +1068,7 @@ export default function PRDResultPage() {
                       </div>
                       <div className="text-xs text-[hsl(var(--muted-foreground))] mt-3 px-1 flex items-center gap-2 flex-shrink-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--accent))]"></div>
-                        선택한 스타일은 PRD.md 파일의 디자인 시스템 가이드에 포함됩니다.
+                        The selected style will be included in the design system guide of PRD.md.
                       </div>
                     </div>
                   </div>
@@ -994,10 +1086,10 @@ export default function PRDResultPage() {
       {/* Exit Confirmation Modal */}
       <ConfirmModal
         isOpen={showExitModal}
-        title="홈으로 돌아가기"
-        message="작성 중인 내용이 모두 사라집니다. 정말 홈으로 돌아가시겠습니까?"
-        confirmText="홈으로 돌아가기"
-        cancelText="계속 보기"
+        title="Return to Home"
+        message="All progress will be lost. Are you sure you want to go home?"
+        confirmText="Return to Home"
+        cancelText="Keep viewing"
         onConfirm={handleConfirmExit}
         onCancel={handleCancelExit}
       />
@@ -1016,10 +1108,10 @@ export default function PRDResultPage() {
       {/* Design Selection Warning Modal */}
       <ConfirmModal
         isOpen={showDesignWarningModal}
-        title="디자인 미선택"
-        message="디자인을 선택하지 않았습니다. 진행하시겠습니까?"
-        confirmText="진행하기"
-        cancelText="돌아가기"
+        title="No design selected"
+        message="You haven’t selected a design. Do you want to proceed?"
+        confirmText="Proceed"
+        cancelText="Go back"
         onConfirm={() => {
           setShowDesignWarningModal(false);
           setShowVibeCodingModal(true);

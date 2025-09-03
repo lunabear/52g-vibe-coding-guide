@@ -165,8 +165,8 @@ export default function ChatPage() {
   const handleActionClick = async (action: string) => {
     // 대화가 없으면 토스트 표시하고 차단
     if (messages.length === 0) {
-      toast.error('먼저 대화를 시작해주세요', {
-        description: 'Mini Ally와 대화를 나눈 후 이용하실 수 있습니다.',
+      toast.error('Start a conversation first', {
+        description: 'You can use this after chatting with Mini Ally.',
         duration: 3000,
       });
       return;
@@ -211,15 +211,15 @@ export default function ChatPage() {
       });
       
       // 성공 토스트 표시
-      toast.success('요약이 완성되었습니다', {
-        description: '내용을 확인하신 후 다음 단계로 진행해주세요.',
+      toast.success('Summary is ready', {
+        description: 'Review the content and proceed to the next step.',
         duration: 2500,
       });
     } catch (error) {
       console.error('Failed to get summary:', error);
       setProjectData(null);
-      toast.error('요약 생성에 실패했습니다', {
-        description: '잠시 후 다시 시도해주세요.',
+      toast.error('Failed to generate summary', {
+        description: 'Please try again later.',
         duration: 3500,
       });
     } finally {
@@ -255,7 +255,7 @@ export default function ChatPage() {
       return { uploadedId: data.id };
     } catch (error) {
       console.error('File upload error:', error);
-      toast.error('파일 업로드에 실패했습니다', {
+      toast.error('Failed to upload file', {
         description: file.name,
       });
       return null;
@@ -304,7 +304,7 @@ export default function ChatPage() {
     }));
 
     if (successCount > 0) {
-      toast.success(`${successCount}개 파일이 첨부되었습니다`);
+      toast.success(`${successCount} file(s) attached`);
     }
 
     setIsUploading(false);
@@ -445,7 +445,7 @@ export default function ChatPage() {
     }));
 
     if (successCount > 0) {
-      toast.success(`${successCount}개 이미지가 첨부되었습니다`);
+      toast.success(`${successCount} image(s) attached`);
     }
 
     setIsUploading(false);
@@ -785,7 +785,7 @@ export default function ChatPage() {
               >
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
               </Button>
-              <h2 className="text-[18px] custom:text-[22px] font-light text-gray-900 tracking-tight">대화 목록</h2>
+              <h2 className="text-[18px] custom:text-[22px] font-light text-gray-900 tracking-tight">Conversations</h2>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -819,8 +819,8 @@ export default function ChatPage() {
               {conversations.length === 0 ? (
                 <div className="px-6 py-16 text-center">
                   <p className="text-[14px] text-gray-400 leading-relaxed">
-                    아직 대화가 없습니다.<br />
-                    새로운 대화를 시작해보세요.
+                    No conversations yet.<br />
+                    Start a new one to begin.
                   </p>
                 </div>
               ) : (
@@ -867,7 +867,7 @@ export default function ChatPage() {
                               }}
                             >
                               <Edit2 className="w-4 h-4 mr-2" />
-                              이름 변경
+                              Rename
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="text-[14px] text-red-600"
@@ -878,7 +878,7 @@ export default function ChatPage() {
                               }}
                             >
                               <X className="w-4 h-4 mr-2" />
-                              삭제
+                              Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -895,10 +895,10 @@ export default function ChatPage() {
             {/* 헤더 */}
             <div className="px-1 pt-1">
               <h3 className="text-[18px] custom:text-[20px] font-light text-gray-900 tracking-tight leading-tight">
-                아이디어가 완성되었나요?
+                Is your idea ready?
               </h3>
               <p className="text-[16px] text-gray-500 font-light mt-1">
-                다음 단계로 이동해보세요!
+                Move on to the next step!
               </p>
             </div>
             
@@ -922,14 +922,14 @@ export default function ChatPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-[15px] font-normal text-gray-900 leading-snug">
-                    MISO 설계하기
+                    Design MISO
                   </h3>
                   <p className="text-[12px] text-gray-500 font-light mt-0.5 leading-relaxed">
-                    MISO 설계/연동 가이드 생성
+                    Generate MISO design/integration guide
                   </p>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <span className="text-[11px] text-gray-700 font-normal">시작하기 →</span>
+                  <span className="text-[11px] text-gray-700 font-normal">Get started →</span>
                 </div>
               </div>
             </div>
@@ -954,14 +954,14 @@ export default function ChatPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-[15px] font-normal text-gray-900 leading-snug">
-                    바이브코딩 설계하기
+                    Plan Vibe Coding
                   </h3>
                   <p className="text-[12px] text-gray-500 font-light mt-0.5 leading-relaxed">
-                    체계적인 개발 설계서 작성
+                    Create a structured development plan
                   </p>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <span className="text-[11px] text-gray-700 font-normal">시작하기 →</span>
+                  <span className="text-[11px] text-gray-700 font-normal">Get started →</span>
                 </div>
               </div>
             </div>
@@ -983,8 +983,8 @@ export default function ChatPage() {
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
                   <ImageIcon className="w-8 h-8 text-gray-600" />
                 </div>
-                <p className="text-lg font-medium text-gray-900">파일을 여기에 놓으세요</p>
-                <p className="text-sm text-gray-500">이미지 파일을 업로드할 수 있습니다</p>
+                <p className="text-lg font-medium text-gray-900">Drop files here</p>
+                <p className="text-sm text-gray-500">You can upload image files</p>
               </div>
             </div>
           </div>
@@ -1045,7 +1045,7 @@ export default function ChatPage() {
                       />
                     </div>
                     <div className="flex items-center justify-center gap-1">
-                      <p className="text-[18px] text-gray-700 font-light">메시지를 불러오는 중</p>
+                      <p className="text-[18px] text-gray-700 font-light">Loading messages</p>
                       <div className="flex gap-1">
                         <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse"></span>
                         <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></span>
@@ -1069,13 +1069,13 @@ export default function ChatPage() {
                     {(() => {
                       const hour = new Date().getHours();
                       if (hour >= 5 && hour < 12) {
-                        return "좋은 아침이에요! 오늘은 어떤 도움이 필요하신가요?";
+                        return "Good morning! How can I help you today?";
                       } else if (hour >= 12 && hour < 17) {
-                        return "안녕하세요! 무엇을 도와드릴까요?";
+                        return "Hello! What can I help you with?";
                       } else if (hour >= 17 && hour < 21) {
-                        return "좋은 저녁이에요! 어떤 프로젝트를 진행 중이신가요?";
+                        return "Good evening! What project are you working on?";
                       } else {
-                        return "안녕하세요! 늦은 시간까지 열정적이시네요!";
+                        return "Hello! Burning the midnight oil, I see!";
                       }
                     })()}
                   </h2>
@@ -1083,13 +1083,13 @@ export default function ChatPage() {
                     {(() => {
                       const hour = new Date().getHours();
                       if (hour >= 5 && hour < 12) {
-                        return "새로운 아이디어를 시작하기 좋은 시간이에요. 궁금한 점을 편하게 물어보세요.";
+                        return "It’s a great time to start a new idea. Ask me anything.";
                       } else if (hour >= 12 && hour < 17) {
-                        return "프로젝트 아이디어나 궁금한 점을 자유롭게 물어보세요.";
+                        return "Feel free to ask about your project ideas or questions.";
                       } else if (hour >= 17 && hour < 21) {
-                        return "오늘 하루도 수고 많으셨어요. 제가 도와드릴 일이 있을까요?";
+                        return "Great work today. Is there anything I can help with?";
                       } else {
-                        return "밤늦게까지 작업 중이시군요! 어떤 도움이 필요하신가요?";
+                        return "Working late? What do you need help with?";
                       }
                     })()}
                   </p>
@@ -1243,14 +1243,14 @@ export default function ChatPage() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                               <h3 className="text-[15px] font-normal text-gray-900 leading-snug">
-                                                {part.action === 'generate_prd' ? '바이브코딩 설계하기' : 'MISO 설계하기'}
+                                                {part.action === 'generate_prd' ? 'Plan Vibe Coding' : 'Design MISO'}
                                               </h3>
                                               <p className="text-[12px] text-gray-500 font-light mt-0.5 leading-relaxed">
-                                                {part.action === 'generate_prd' ? '체계적인 개발 설계서 작성' : 'MISO 설계/연동 가이드 생성'}
+                                                {part.action === 'generate_prd' ? 'Create a structured development plan' : 'Generate MISO design/integration guide'}
                                               </p>
                                             </div>
                                             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                              <span className="text-[11px] text-gray-700 font-normal">시작하기 →</span>
+                                              <span className="text-[11px] text-gray-700 font-normal">Get started →</span>
                                             </div>
                                           </div>
                                         </div>
@@ -1297,7 +1297,7 @@ export default function ChatPage() {
                               msg.role === 'user' ? 'text-right text-gray-400' : 'text-gray-400'
                             )}
                           >
-                            {new Date(msg.timestamp).toLocaleTimeString('ko-KR', {
+                            {new Date(msg.timestamp).toLocaleTimeString('en-US', {
                               hour: '2-digit',
                               minute: '2-digit',
                             })}
@@ -1376,7 +1376,7 @@ export default function ChatPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
-                placeholder="메시지를 입력하세요..."
+                placeholder="Type your message..."
                 className="w-full min-h-[48px] custom:min-h-[56px] max-h-[120px] custom:max-h-[150px] px-4 custom:px-5 py-3 custom:py-4 pr-24 custom:pr-28 resize-none border border-gray-200 rounded-2xl text-[14px] custom:text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
                 disabled={isLoading}
               />
@@ -1414,7 +1414,7 @@ export default function ChatPage() {
               </div>
             </div>
             <p className="text-[11px] custom:text-[13px] text-gray-400 text-center mt-2 custom:mt-3">
-              Mini Ally는 실수할 수 있습니다. 중요한 정보는 확인해 주세요.
+              Mini Ally may make mistakes. Please verify important information.
             </p>
           </div>
         </div>
@@ -1424,11 +1424,11 @@ export default function ChatPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>대화 삭제</DialogTitle>
+            <DialogTitle>Delete conversation</DialogTitle>
             <DialogDescription>
-              &quot;{selectedConversation?.name}&quot; 대화를 삭제하시겠습니까?
+              Are you sure you want to delete &quot;{selectedConversation?.name}&quot;?
               <br />
-              이 작업은 되돌릴 수 없습니다.
+              This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1436,13 +1436,13 @@ export default function ChatPage() {
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              취소
+              Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteConversation}
             >
-              삭제
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1452,16 +1452,16 @@ export default function ChatPage() {
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>대화 이름 변경</DialogTitle>
+            <DialogTitle>Rename conversation</DialogTitle>
             <DialogDescription>
-              새로운 이름을 입력하세요.
+              Enter a new name.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="대화 제목 입력..."
+              placeholder="Enter conversation title..."
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -1478,13 +1478,13 @@ export default function ChatPage() {
                 setNewName('');
               }}
             >
-              취소
+              Cancel
             </Button>
             <Button
               onClick={handleRenameConversation}
               disabled={!newName.trim()}
             >
-              변경
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1504,13 +1504,13 @@ export default function ChatPage() {
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-4xl w-full p-0 overflow-hidden">
           <DialogHeader className="sr-only">
-            <DialogTitle>이미지 미리보기</DialogTitle>
+            <DialogTitle>Image preview</DialogTitle>
           </DialogHeader>
           <div className="relative">
             {previewImage && (
               <img
                 src={previewImage}
-                alt="이미지 미리보기"
+                alt="Image preview"
                 className="w-full h-auto max-h-[80vh] object-contain"
               />
             )}

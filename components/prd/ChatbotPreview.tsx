@@ -17,7 +17,7 @@ interface ChatbotPreviewProps {
 }
 
 export function ChatbotPreview({ themeId }: ChatbotPreviewProps) {
-  // 테마별 스타일 클래스 결정
+  // Decide theme-specific style classes
   const getThemeClasses = () => {
     switch (themeId) {
       case 'apple-liquid-glass':
@@ -93,37 +93,37 @@ export function ChatbotPreview({ themeId }: ChatbotPreviewProps) {
     {
       id: '1',
       type: 'bot',
-      content: '안녕하세요! 저는 AI 어시스턴트입니다. 무엇을 도와드릴까요? ✨',
-      timestamp: '오전 10:32',
+      content: 'Hello! I am your AI assistant. How can I help you? ✨',
+      timestamp: '10:32 AM',
     },
     {
       id: '2',
       type: 'user',
-      content: '프로젝트 진행 상황을 알려주세요',
-      timestamp: '오전 10:33',
+      content: 'Please tell me the project status',
+      timestamp: '10:33 AM',
     },
     {
       id: '3',
       type: 'bot',
-      content: '현재 프로젝트 진행률은 72%입니다. 주요 마일스톤 3개가 완료되었고, 2개가 진행 중입니다.',
-      timestamp: '오전 10:33',
+      content: 'The current project progress is 72%. Three key milestones are done and two are in progress.',
+      timestamp: '10:33 AM',
       features: [
-        { icon: <Zap className="w-3 h-3" />, text: '실시간 분석' },
-        { icon: <Brain className="w-3 h-3" />, text: 'AI 인사이트' },
+        { icon: <Zap className="w-3 h-3" />, text: 'Real-time Analysis' },
+        { icon: <Brain className="w-3 h-3" />, text: 'AI Insights' },
       ]
     },
     {
       id: '4',
       type: 'user',
-      content: '다음 단계는 무엇인가요?',
-      timestamp: '오전 10:34',
+      content: 'What are the next steps?',
+      timestamp: '10:34 AM',
     },
     {
       id: '5',
       type: 'bot',
-      content: '다음 단계를 위한 추천 사항입니다:',
-      timestamp: '오전 10:34',
-      quickReplies: ['작업 할당하기', '일정 확인하기', '팀 미팅 예약'],
+      content: 'Here are the recommendations for the next steps:',
+      timestamp: '10:34 AM',
+      quickReplies: ['Assign tasks', 'Check schedule', 'Book team meeting'],
     }
   ], []);
 
@@ -194,7 +194,7 @@ export function ChatbotPreview({ themeId }: ChatbotPreviewProps) {
                 {themeId === 'bold-colors' ? 'AI BOT 9000' : 'AI Assistant'}
               </h4>
               <p className={`text-xs text-[hsl(var(--muted-foreground))] ${themeId === 'bold-colors' ? 'font-bold uppercase tracking-widest' : ''}`}>
-                {themeId === 'bold-colors' ? 'ALWAYS ONLINE!' : '항상 온라인'}
+                {themeId === 'bold-colors' ? 'ALWAYS ONLINE!' : 'Always online'}
               </p>
             </div>
           </div>
@@ -317,7 +317,7 @@ export function ChatbotPreview({ themeId }: ChatbotPreviewProps) {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder={themeId === 'bold-colors' ? 'TYPE YOUR MESSAGE!' : '메시지를 입력하세요...'}
+            placeholder={themeId === 'bold-colors' ? 'TYPE YOUR MESSAGE!' : 'Enter your message...'}
             className={themeClasses.input}
           />
           <button className={themeClasses.sendButton}>

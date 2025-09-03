@@ -32,14 +32,9 @@ export function MisoSkipConfirmModal({ isOpen, onClose, onConfirm, onCancel }: M
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-lg font-medium text-gray-900 text-center">
-            MISO 설계를 건너뛰시겠어요?
-          </DialogTitle>
+          <DialogTitle className="text-lg font-medium text-gray-900 text-center">Skip MISO design?</DialogTitle>
           <DialogDescription className="text-center mt-4">
-            <div className="text-sm text-gray-600 leading-relaxed">
-              MISO 앱 설계를 먼저 완료하시면<br />
-              더 완성도 높은 프로젝트를 만들 수 있어요!
-            </div>
+            <div className="text-sm text-gray-600 leading-relaxed">Completing the MISO app design first helps create a more robust project.</div>
           </DialogDescription>
         </DialogHeader>
 
@@ -49,13 +44,13 @@ export function MisoSkipConfirmModal({ isOpen, onClose, onConfirm, onCancel }: M
             onClick={handleCancel}
             className="flex-1 text-gray-700 border-gray-300 hover:bg-gray-50"
           >
-            MISO 설계하기
+            Design MISO first
           </Button>
           <Button 
             onClick={handleConfirm}
             className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
           >
-            바로 넘어가기
+            Skip for now
           </Button>
         </div>
       </DialogContent>

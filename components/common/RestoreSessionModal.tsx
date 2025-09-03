@@ -31,11 +31,11 @@ export function RestoreSessionModal({
   const getStepDescription = (step: string) => {
     switch (step) {
       case 'expert-questions':
-        return 'Mini-Ally 대화 정리 → 전문가 질문 단계';
+        return 'Mini Ally summary → Expert questions';
       case 'prd-result':
-        return 'Mini-Ally 대화 정리 → 전문가 질문 → PRD 생성 완료';
+        return 'Mini Ally summary → Expert questions → PRD completed';
       default:
-        return 'Mini-Ally 대화 정리';
+        return 'Mini Ally summary';
     }
   };
 
@@ -56,38 +56,38 @@ export function RestoreSessionModal({
         <DialogHeader className="text-center">
           <DialogTitle className="flex items-center justify-center gap-2 text-gray-900 text-lg">
             <RotateCcw className="w-5 h-5 text-blue-600" />
-            이전 작업을 발견했습니다
+            We found your previous work
           </DialogTitle>
           <DialogDescription className="text-gray-600 leading-relaxed mt-2">
-            {timeAgo}에 작업하던 내용이 있습니다.
+            You have unsaved progress from {timeAgo}.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-6">
-          {/* 프로젝트 정보 요약 */}
+          {/* Project Summary */}
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">프로젝트 요약</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Project Summary</h4>
             <div className="space-y-2">
               <div className="text-sm">
-                <span className="text-gray-500">솔루션: </span>
+                <span className="text-gray-500">Solution: </span>
                 <span className="text-gray-800">
-                  {session.projectData.solutionNameIdea || '이름 미정'}
+                  {session.projectData.solutionNameIdea || 'Untitled'}
                 </span>
               </div>
               <div className="text-sm">
-                <span className="text-gray-500">타겟 사용자: </span>
+                <span className="text-gray-500">Target user: </span>
                 <span className="text-gray-800">
-                  {session.projectData.personaProfile?.slice(0, 50) || '미작성'}
+                  {session.projectData.personaProfile?.slice(0, 50) || 'N/A'}
                   {session.projectData.personaProfile && session.projectData.personaProfile.length > 50 && '...'}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* 진행 상황 */}
+          {/* Progress */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">진행 상황</span>
+              <span className="text-sm font-medium text-gray-700">Progress</span>
               <span className="text-sm text-gray-500">{getProgressPercentage(session.step)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -97,14 +97,14 @@ export function RestoreSessionModal({
               ></div>
             </div>
             <p className="text-sm text-gray-600 mt-2">
-              {getStepDescription(session.step)}까지 진행하셨습니다.
+              You progressed up to: {getStepDescription(session.step)}
             </p>
           </div>
 
-          {/* 시간 정보 */}
+          {/* Timestamp */}
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Clock className="w-4 h-4" />
-            <span>저장 시간: {new Date(session.timestamp).toLocaleString('ko-KR')}</span>
+            <span>Saved at: {new Date(session.timestamp).toLocaleString('en-US')}</span>
           </div>
         </div>
 
@@ -115,14 +115,14 @@ export function RestoreSessionModal({
             className="flex items-center gap-2 text-gray-700 border-gray-300"
           >
             <Plus className="w-4 h-4" />
-            새로 시작하기
+            Start new
           </Button>
           <Button
             onClick={onRestore}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
           >
             <RotateCcw className="w-4 h-4" />
-            이어서 계속하기
+            Continue
           </Button>
         </DialogFooter>
       </DialogContent>

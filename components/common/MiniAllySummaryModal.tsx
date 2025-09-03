@@ -55,13 +55,13 @@ export function MiniAllySummaryModal({
 
   // 필드별 라벨 정의
   const fieldLabels: Record<keyof ProjectData, string> = {
-    personaProfile: '타겟 사용자',
-    painPointContext: '문제 상황',
-    painPointReason: '문제의 원인',
-    coreProblemStatement: '핵심 문제',
-    solutionNameIdea: '아이디어 이름',
-    solutionMechanism: '작동 방식',
-    expectedOutcome: '기대 효과'
+    personaProfile: 'Target user',
+    painPointContext: 'Situation',
+    painPointReason: 'Root cause',
+    coreProblemStatement: 'Core problem',
+    solutionNameIdea: 'Idea name',
+    solutionMechanism: 'Mechanism',
+    expectedOutcome: 'Expected outcome'
   };
 
   // 빈 필드 검증 함수
@@ -79,31 +79,31 @@ export function MiniAllySummaryModal({
 
   // 프로젝트 데이터를 일반 텍스트 형태로 포맷팅
   const formatProjectData = (data: ProjectData): string => {
-    return `타겟 사용자
+    return `Target user
 
 ${data.personaProfile || ''}
 
-문제 상황
+Situation
 
 ${data.painPointContext || ''}
 
-문제의 원인
+Root cause
 
 ${data.painPointReason || ''}
 
-핵심 문제
+Core problem
 
 ${data.coreProblemStatement || ''}
 
-솔루션
+Solution
 
-아이디어 이름
+Idea name
 ${data.solutionNameIdea || ''}
 
-작동 방식
+Mechanism
 ${data.solutionMechanism || ''}
 
-기대 효과
+Expected outcome
 ${data.expectedOutcome || ''}`;
   };
 
@@ -225,75 +225,75 @@ ${data.expectedOutcome || ''}`;
   const renderProjectData = (data: ProjectData) => {
     return (
       <div className="space-y-8">
-        {/* 타겟 사용자 */}
+        {/* Target user */}
         <div>
-          <h3 className="text-[16px] font-semibold text-gray-900 mb-3">타겟 사용자</h3>
+          <h3 className="text-[16px] font-semibold text-gray-900 mb-3">Target user</h3>
           <EditableText 
             field="personaProfile" 
             value={data.personaProfile}
-            placeholder="이 서비스의 핵심 타겟 사용자는 누구인가요? 직업, 역할, 목표, 현재 상황 등을 구체적으로 설명해주세요."
+            placeholder="Who is the core target user of this service? Describe their job, role, goals, and current situation."
           />
         </div>
 
-        {/* 문제 분석 */}
+        {/* Problem analysis */}
         <div className="border-t border-gray-100 pt-6">
-          <h3 className="text-[16px] font-semibold text-gray-900 mb-4">문제 분석</h3>
+          <h3 className="text-[16px] font-semibold text-gray-900 mb-4">Problem analysis</h3>
           <div className="space-y-4">
             <div>
-              <h4 className="text-[14px] font-medium text-gray-800 mb-2">문제 상황</h4>
+              <h4 className="text-[14px] font-medium text-gray-800 mb-2">Situation</h4>
               <EditableText 
                 field="painPointContext" 
                 value={data.painPointContext}
-                placeholder="사용자는 언제, 어디서, 어떤 구체적인 상황에서 불편함을 경험하나요? 문제가 발생하는 특정 시나리오를 상세히 설명해주세요."
+                placeholder="When and where do users experience friction? Describe the specific scenario in detail."
               />
             </div>
             <div>
-              <h4 className="text-[14px] font-medium text-gray-800 mb-2">문제의 원인</h4>
+              <h4 className="text-[14px] font-medium text-gray-800 mb-2">Root cause</h4>
               <EditableText 
                 field="painPointReason" 
                 value={data.painPointReason}
-                placeholder="왜 이 상황을 불편하게 느끼나요? 근본적인 원인과 사용자가 충족시키고 싶은 핵심적인 욕구는 무엇인가요?"
+                placeholder="Why is this frustrating? What is the root cause and the unmet need?"
               />
             </div>
             <div>
-              <h4 className="text-[14px] font-medium text-gray-800 mb-2">핵심 문제</h4>
+              <h4 className="text-[14px] font-medium text-gray-800 mb-2">Core problem</h4>
               <EditableText 
                 field="coreProblemStatement" 
                 value={data.coreProblemStatement}
-                placeholder="해결해야 할 핵심 문제를 한 문장으로 요약해주세요. '[사용자]는 [목표/상황]에서 [어려움] 때문에 [부정적 결과]를 겪는다' 형식으로 작성해보세요."
+                placeholder="Summarize the core problem in one sentence. e.g., '[User] in [goal/context] experiences [difficulty], resulting in [negative outcome]'."
                 className="text-[14px] text-gray-700 leading-relaxed font-medium"
               />
             </div>
           </div>
         </div>
 
-        {/* 솔루션 */}
+        {/* Solution */}
         <div className="border-t border-gray-100 pt-6">
-          <h3 className="text-[16px] font-semibold text-gray-900 mb-4">솔루션</h3>
+          <h3 className="text-[16px] font-semibold text-gray-900 mb-4">Solution</h3>
           <div className="space-y-4">
             <div>
-              <h4 className="text-[14px] font-medium text-gray-800 mb-2">아이디어 이름</h4>
+              <h4 className="text-[14px] font-medium text-gray-800 mb-2">Idea name</h4>
               <EditableText 
                 field="solutionNameIdea" 
                 value={data.solutionNameIdea}
-                placeholder="이 해결책을 어떻게 부르시겠어요? 솔루션의 특징을 잘 나타내는 간결한 이름을 지어주세요."
+                placeholder="What would you call this solution? Choose a concise, descriptive name."
                 className="text-[14px] text-gray-700 leading-relaxed font-medium"
               />
             </div>
             <div>
-              <h4 className="text-[14px] font-medium text-gray-800 mb-2">작동 방식</h4>
+              <h4 className="text-[14px] font-medium text-gray-800 mb-2">Mechanism</h4>
               <EditableText 
                 field="solutionMechanism" 
                 value={data.solutionMechanism}
-                placeholder="이 해결책이 어떻게 작동하나요? 사용자가 문제를 해결하는 과정을 단계별로 구체적으로 설명해주세요."
+                placeholder="How does the solution work? Describe the step-by-step process for users."
               />
             </div>
             <div>
-              <h4 className="text-[14px] font-medium text-gray-800 mb-2">기대 효과</h4>
+              <h4 className="text-[14px] font-medium text-gray-800 mb-2">Expected outcome</h4>
               <EditableText 
                 field="expectedOutcome" 
                 value={data.expectedOutcome}
-                placeholder="이 솔루션을 통해 사용자는 어떤 긍정적인 변화를 얻게 될까요? 사용자의 삶이나 업무가 어떻게 개선될지 설명해주세요."
+                placeholder="What positive change will users gain? Explain how life or work improves."
               />
             </div>
           </div>
@@ -308,14 +308,14 @@ ${data.expectedOutcome || ''}`;
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="font-normal text-gray-900 text-[18px] custom:text-[20px]">
             {loading 
-              ? "대화 내용을 정리하고 있어요" 
-              : "대화 내용을 정리해봤어요"
+              ? "Summarizing the conversation" 
+              : "Here’s a summary of the conversation"
             }
           </DialogTitle>
           <DialogDescription className="text-gray-500 leading-relaxed text-[14px] custom:text-[15px] mt-1">
             {loading 
-              ? "지금까지의 대화를 요약하여 다음 단계 진행을 위해 준비하고 있습니다." 
-              : "내용을 클릭하여 수정하거나, 확인 후 다음 단계로 진행해주세요."
+              ? "We’re summarizing the conversation to prepare for the next step." 
+              : "Click to edit any section, or confirm and proceed to the next step."
             }
           </DialogDescription>
         </DialogHeader>
@@ -327,7 +327,7 @@ ${data.expectedOutcome || ''}`;
                 <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
               </div>
               <div className="text-center space-y-2">
-                <p className="text-[15px] font-light text-gray-700">대화 내용을 분석 중입니다</p>
+                <p className="text-[15px] font-light text-gray-700">Analyzing the conversation</p>
               </div>
             </div>
           ) : (
@@ -346,26 +346,22 @@ ${data.expectedOutcome || ''}`;
 
         <DialogFooter className="pt-6 border-t border-gray-100 flex-shrink-0">
           <div className="flex items-center justify-between w-full">
-            {/* 확인 안내 메시지 */}
+            {/* Confirmation hint */}
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-gray-500" />
               <div>
-                <p className="text-[13px] custom:text-[14px] font-normal text-gray-700">
-                  내용을 확인하셨나요?
-                </p>
-                <p className="text-[11px] custom:text-[12px] text-gray-500">
-                  각 항목을 클릭하여 수정하거나, 확인 후 진행해주세요.
-                </p>
+                <p className="text-[13px] custom:text-[14px] font-normal text-gray-700">All set?</p>
+                <p className="text-[11px] custom:text-[12px] text-gray-500">Click any field to edit, or confirm to proceed.</p>
               </div>
             </div>
             
-            {/* 다음 단계 버튼 */}
+            {/* Next step button */}
             {editableData && (
               <Button 
                 onClick={handleConfirm}
                 className="text-[14px] custom:text-[15px] bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-2"
               >
-                다음 단계로 진행
+                Proceed to next step
                 <ArrowRight className="w-4 h-4" />
               </Button>
             )}

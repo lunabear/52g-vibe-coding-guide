@@ -8,12 +8,12 @@ interface MISOLoadingProps {
 }
 
 export default function MISOLoading({ 
-  message = "MISO가 준비중입니다", 
-  subMessage = "잠시만 기다려주세요..." 
+  message = "MISO is preparing", 
+  subMessage = "Please wait a moment..." 
 }: MISOLoadingProps) {
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      {/* MISO 캐릭터 */}
+      {/* MISO character */}
       <div className="mb-8">
         <Image
           src="/assets/miso_processing_realtime.gif"
@@ -26,13 +26,13 @@ export default function MISOLoading({
         />
       </div>
       
-      {/* 텍스트 메시지 */}
+      {/* Text message */}
       <div className="text-center space-y-2">
         <h3 className="text-xl font-medium text-gray-900">{message}</h3>
         <p className="text-sm text-gray-600 max-w-sm">{subMessage}</p>
       </div>
       
-      {/* 점 애니메이션 */}
+      {/* Dot animation */}
       <div className="flex gap-1 mt-4">
         {[0, 1, 2].map((index) => (
           <div

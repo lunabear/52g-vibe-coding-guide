@@ -7,7 +7,7 @@ interface DashboardPreviewProps {
 }
 
 export function DashboardPreview({ themeId }: DashboardPreviewProps) {
-  // 테마별 스타일 클래스 결정
+  // Decide theme-specific style classes
   const getThemeClasses = () => {
     switch (themeId) {
       case 'apple-liquid-glass':
@@ -96,11 +96,11 @@ export function DashboardPreview({ themeId }: DashboardPreviewProps) {
   return (
     <div className={themeClasses.container}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[{label:'총 매출',value:'$15,231.89',delta:'+20.1%'},{label:'신규 고객',value:'1,234',delta:'-2.0%'},{label:'활성 계정',value:'45,678',delta:'+12.5%'}].map((m,i)=> (
+        {[{label:'Total Revenue',value:'$15,231.89',delta:'+20.1%'},{label:'New Customers',value:'1,234',delta:'-2.0%'},{label:'Active Accounts',value:'45,678',delta:'+12.5%'}].map((m,i)=> (
           <div key={i} className={themeClasses.gridCard}>
             <div className={`text-xs text-[hsl(var(--muted-foreground))] mb-1 ${themeId === 'bold-colors' ? 'font-bold uppercase tracking-wider' : ''}`}>{m.label}</div>
             <div className={`text-xl font-semibold text-[hsl(var(--foreground))] ${themeId === 'bold-colors' ? 'text-2xl font-black' : ''}`}>{m.value}</div>
-            <div className={`text-xs text-[hsl(var(--muted-foreground))] mt-1 ${themeId === 'bold-colors' ? 'font-bold' : ''}`}>{m.delta} 최근</div>
+            <div className={`text-xs text-[hsl(var(--muted-foreground))] mt-1 ${themeId === 'bold-colors' ? 'font-bold' : ''}`}>{m.delta} recent</div>
           </div>
         ))}
       </div>
@@ -129,7 +129,7 @@ export function DashboardPreview({ themeId }: DashboardPreviewProps) {
           </div>
         </div>
         <div className={`${themeClasses.card} flex flex-col`}>
-          <div className={`text-sm font-medium text-[hsl(var(--foreground))] ${themeId === 'bold-colors' ? 'font-black uppercase tracking-widest' : ''}`}>활동 목표</div>
+          <div className={`text-sm font-medium text-[hsl(var(--foreground))] ${themeId === 'bold-colors' ? 'font-black uppercase tracking-widest' : ''}`}>Activity Goal</div>
           <div className={`text-3xl font-semibold my-2 text-[hsl(var(--foreground))] ${themeId === 'bold-colors' ? 'text-4xl font-black' : ''}`}>350</div>
           <div className={`text-xs text-[hsl(var(--muted-foreground))] ${themeId === 'bold-colors' ? 'font-bold uppercase tracking-wider' : ''}`}>CALORIES/DAY</div>
           <div className="mt-3 flex-1 flex items-end gap-1">
@@ -150,10 +150,10 @@ export function DashboardPreview({ themeId }: DashboardPreviewProps) {
               );
             })}
           </div>
-          <button className={themeClasses.button}>설정하기</button>
+          <button className={themeClasses.button}>Configure</button>
         </div>
         <div className={themeClasses.card}>
-          <div className={`text-sm font-medium text-[hsl(var(--foreground))] mb-2 ${themeId === 'bold-colors' ? 'font-black uppercase tracking-widest' : ''}`}>운동 시간</div>
+          <div className={`text-sm font-medium text-[hsl(var(--foreground))] mb-2 ${themeId === 'bold-colors' ? 'font-black uppercase tracking-widest' : ''}`}>Workout Time</div>
           {renderBar()}
           <div className="mt-3" />
           {renderLine()}

@@ -24,9 +24,9 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
 
   const getNodeIcon = (nodeName: string, index: number) => {
     const name = nodeName.toLowerCase();
-    if (name.includes('start') || name.includes('시작')) {
+    if (name.includes('start') || name.includes('start')) {
       return <Play className="w-4 h-4 text-white fill-current" />;
-    } else if (name.includes('end') || name.includes('종료') || name.includes('완료')) {
+    } else if (name.includes('end') || name.includes('end') || name.includes('done')) {
       return <CheckCircle2 className="w-4 h-4 text-white" />;
     } else {
       return <Bot className="w-4 h-4 text-white" />;
@@ -35,7 +35,7 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
 
   const isLLMNode = (nodeName: string) => {
     const name = nodeName.toLowerCase();
-    return name.includes('llm') || name.includes('ai') || name.includes('gpt') || name.includes('gemini') || name.includes('생성');
+    return name.includes('llm') || name.includes('ai') || name.includes('gpt') || name.includes('gemini') || name.includes('generate');
   };
 
   const createFlowContext = (selectedNode: WorkflowNode) => {
@@ -63,7 +63,7 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
   const handlePromptGenerate = async (node: WorkflowNode) => {
     const nodeKey = `${node.name}-${node.order}`;
     
-    // 이미 생성된 프롬프트가 있으면 모달 표시
+    // If prompt already generated, show modal
     if (promptStates[nodeKey]?.generated) {
       setModalState({
         isOpen: true,
@@ -73,14 +73,14 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
       return;
     }
 
-    // 로딩 상태 시작
+    // Start loading state
     setPromptStates(prev => ({
       ...prev,
       [nodeKey]: { loading: true, generated: false, result: '' }
     }));
 
     try {
-      const query = `${node.name} 노드에 대한 프롬프트를 생성해주세요. 이 노드는 "${node.description}" 역할을 담당합니다.`;
+      const query = `Generate a prompt for the node ${node.name}. This node is responsible for "${node.description}".`;
       const flowContext = createFlowContext(node);
 
       const response = await fetch('/api/miso/generate-prompt', {
@@ -95,27 +95,27 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
       });
 
       if (!response.ok) {
-        throw new Error('프롬프트 생성에 실패했습니다.');
+        throw new Error('Failed to generate prompt.');
       }
 
       const data = await response.json();
       
-      // 성공 상태 업데이트
+      // Success state update
       setPromptStates(prev => ({
         ...prev,
         [nodeKey]: { loading: false, generated: true, result: data.result }
       }));
 
     } catch (error) {
-      console.error('프롬프트 생성 오류:', error);
+      console.error('Prompt generation error:', error);
       
-      // 에러 상태 업데이트
+      // Error state update
       setPromptStates(prev => ({
         ...prev,
         [nodeKey]: { loading: false, generated: false, result: '' }
       }));
       
-      alert('프롬프트 생성 중 오류가 발생했습니다.');
+      alert('An error occurred while generating the prompt.');
     }
   };
 
@@ -134,9 +134,9 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
 
   const getNodeColor = (nodeName: string, index: number) => {
     const name = nodeName.toLowerCase();
-    if (name.includes('start') || name.includes('시작')) {
+    if (name.includes('start') || name.includes('start')) {
       return 'bg-pink-500';
-    } else if (name.includes('end') || name.includes('종료') || name.includes('완료')) {
+    } else if (name.includes('end') || name.includes('end') || name.includes('done')) {
       return 'bg-green-500';
     } else {
       return 'bg-blue-500';
@@ -148,20 +148,20 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
 
   return (
     <div className="w-full">
-      <h3 className="text-base font-medium text-gray-900 mb-6">워크플로우</h3>
+      <h3 className="text-base font-medium text-gray-900 mb-6">Workflow</h3>
       
-      {/* 세로 플로우 컨테이너 */}
+      {/* Vertical flow container */}
       <div className="space-y-0">
         {sortedFlow.map((node, index) => (
           <div key={`${node.name}-${node.order}`} className="flex flex-col items-center">
-            {/* 노드 블록 */}
+            {/* Node block */}
             <div className="bg-white border-2 border-green-400 rounded-xl px-4 py-3 w-full max-w-sm flex items-center gap-3 shadow-sm relative">
-              {/* 아이콘 */}
+              {/* Icon */}
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${getNodeColor(node.name, index)}`}>
                 {getNodeIcon(node.name, index)}
               </div>
               
-              {/* 콘텐츠 */}
+              {/* Content */}
               <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-semibold text-gray-900 capitalize mb-1">
                   {node.name}
@@ -175,13 +175,13 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
                 {node.parallel_group && (
                   <div className="mt-1">
                     <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full">
-                      병렬
+                      Parallel
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* LLM 노드용 프롬프트 생성/보기 버튼 */}
+              {/* Prompt generate/view buttons for LLM nodes */}
               {isLLMNode(node.name) && (() => {
                 const nodeKey = `${node.name}-${node.order}`;
                 const promptState = promptStates[nodeKey];
@@ -194,7 +194,7 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
                         className="px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed flex items-center gap-1"
                       >
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        생성 중...
+                        Generating...
                       </button>
                     </div>
                   );
@@ -207,7 +207,7 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
                         onClick={() => handlePromptView(node)}
                         className="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 hover:border-green-300 transition-colors"
                       >
-                        프롬프트 보기
+                        View Prompt
                       </button>
                     </div>
                   );
@@ -219,13 +219,13 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
                       onClick={() => handlePromptGenerate(node)}
                       className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-colors"
                     >
-                      프롬프트 생성
+                      Generate Prompt
                     </button>
                   </div>
                 );
               })()}
 
-              {/* 연결 포인트 - 아래쪽 */}
+              {/* Connection point - bottom */}
               {index < sortedFlow.length - 1 && (
                 <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-black rounded-full flex items-center justify-center">
                   <div className="w-3 h-3 bg-white rounded-full"></div>
@@ -233,7 +233,7 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
               )}
             </div>
             
-            {/* 연결선 */}
+            {/* Connector line */}
             {index < sortedFlow.length - 1 && (
               <div className="w-0.5 h-6 bg-black flex-shrink-0"></div>
             )}
@@ -241,15 +241,15 @@ export default function WorkflowVisualization({ flow, explanation = '' }: Workfl
         ))}
       </div>
       
-      {/* 요약 정보 */}
+      {/* Summary info */}
       <div className="mt-4 px-3 py-2 bg-gray-50 rounded-lg">
         <div className="text-xs text-gray-600 flex items-center justify-between">
-          <span>총 {flow.length}개 단계</span>
-          <span>{flow.some(node => node.parallel_group) ? '병렬 처리' : '순차 실행'}</span>
+          <span>Total {flow.length} steps</span>
+          <span>{flow.some(node => node.parallel_group) ? 'Parallel' : 'Sequential'}</span>
         </div>
       </div>
 
-      {/* 프롬프트 모달 */}
+      {/* Prompt modal */}
       <PromptModal
         isOpen={modalState.isOpen}
         onClose={() => setModalState({ isOpen: false, nodeName: '', prompt: '' })}

@@ -48,10 +48,10 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
           // Show the original chart as fallback with proper formatting
           containerRef.current.innerHTML = `
             <div class="text-red-600 text-sm">
-              <p class="font-semibold mb-2">다이어그램 렌더링 실패</p>
+              <p class="font-semibold mb-2">Failed to render diagram</p>
               <p class="text-xs text-gray-600 mb-3">${error?.message || error}</p>
               <pre class="bg-gray-800 text-gray-200 p-4 rounded overflow-x-auto text-xs">${chart.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-              <p class="text-xs text-gray-500 mt-2">팁: 괄호나 특수문자가 문제를 일으킬 수 있습니다.</p>
+              <p class="text-xs text-gray-500 mt-2">Tip: Parentheses or special characters may cause issues.</p>
             </div>
           `;
         }

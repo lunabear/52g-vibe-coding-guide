@@ -12,69 +12,69 @@ interface ExpertQuestionsProps {
 
 const expertInfo = {
   planner: {
-    name: '기획자 Kyle',
+    name: 'Planner Kyle',
     englishName: 'Kyle',
     character: (
       <div className="w-24 h-24 flex items-center justify-center">
         <img 
           src="/assets/mini_kyle_default.png" 
-          alt="기획자 Kyle" 
+          alt="Planner Kyle" 
           className="w-full h-full object-contain"
         />
       </div>
     ),
     color: 'border-gray-200 bg-white',
     description: '',
-    greeting: '안녕하세요! 기획자 Kyle입니다.',
+    greeting: 'Hello! I am Kyle, the planner.',
     questionPrefix: [
-      '비즈니스 관점에서 궁금한 점이 있어요.',
-      '사용자 가치를 위해 확인하고 싶은 부분이 있어요.',
-      '전략적인 관점에서 질문드릴게요.',
-      '프로젝트 성공을 위해 확인하고 싶어요.'
+      'I have a question from a business perspective.',
+      'I want to confirm something for user value.',
+      'I will ask from a strategic perspective.',
+      'I want to ensure project success.'
     ]
   },
   designer: {
-    name: '디자이너 Heather',
+    name: 'Designer Heather',
     englishName: 'Heather',
     character: (
       <div className="w-24 h-24 flex items-center justify-center">
         <img 
           src="/assets/mini_heather_default.png" 
-          alt="디자이너 Heather" 
+          alt="Designer Heather" 
           className="w-full h-full object-contain"
         />
       </div>
     ),
     color: 'border-gray-200 bg-white',
     description: '',
-    greeting: '안녕하세요! 디자이너 Heather입니다.',
+    greeting: 'Hello! I am Heather, the designer.',
     questionPrefix: [
-      '사용자 경험 측면에서 궁금한 점이 있어요.',
-      'UI/UX 관점에서 확인하고 싶은 부분이 있어요.',
-      '디자인적으로 고려해야 할 부분에 대해 여쭤볼게요.',
-      '사용자 인터페이스에 대해 질문드려요.'
+      'I have a question from the user experience perspective.',
+      'I want to confirm something from a UI/UX perspective.',
+      'I have a design consideration to ask about.',
+      'I have a question about the user interface.'
     ]
   },
   developer: {
-    name: '개발자 Bob',
+    name: 'Developer Bob',
     englishName: 'Bob',
     character: (
       <div className="w-24 h-24 flex items-center justify-center">
         <img 
           src="/assets/mini_bob_default.png" 
-          alt="개발자 Bob" 
+          alt="Developer Bob" 
           className="w-full h-full object-contain"
         />
       </div>
     ),
     color: 'border-gray-200 bg-white',
     description: '',
-    greeting: '안녕하세요! 개발자 Bob입니다.',
+    greeting: 'Hello! I am Bob, the developer.',
     questionPrefix: [
-      '기술적인 부분에 대해 확인하고 싶어요.',
-      '구현 관점에서 궁금한 점이 있어요.',
-      '개발 측면에서 고려해야 할 부분에 대해 여쭤볼게요.',
-      '시스템 아키텍처 관련해서 질문드려요.'
+      'I want to confirm a technical area.',
+      'I have a question from an implementation perspective.',
+      'I would like to ask about development considerations.',
+      'I have a question about the system architecture.'
     ]
   }
 };
@@ -127,7 +127,7 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
               <div className="text-sm custom:text-base text-muted-foreground font-light">{expert.description}</div>
             </div>
             <div className="text-sm custom:text-base text-gray-600 font-light mb-6 custom:mb-8">
-              {expert.greeting} 프로젝트를 더 잘 이해하기 위해 몇 가지 질문드릴게요.
+              {expert.greeting} To better understand the project, I have a few questions.
             </div>
             
             <div className="space-y-10">
@@ -149,7 +149,7 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
                         <textarea
                           value={answers[questionId] || ''}
                           onChange={(e) => handleAnswerChange(questionId, e.target.value)}
-                          placeholder="답변을 입력해주세요..."
+                          placeholder="Please enter your answer..."
                           rows={3}
                           className="w-full px-0 py-2 text-base border-0 border-b border-gray-200 focus:border-black focus:outline-none transition-colors bg-transparent resize-none"
                         />
@@ -172,9 +172,9 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
   return (
     <div>
       <div className="mb-12">
-        <h1 className="text-2xl custom:text-4xl font-light mb-4">전문가 추가 질문</h1>
+        <h1 className="text-2xl custom:text-4xl font-light mb-4">Expert Additional Questions</h1>
         <p className="text-base custom:text-lg text-muted-foreground font-light">
-          세 명의 전문가가 더 구체적인 아이디어를 위해 추가 질문을 준비했어요
+          Three experts prepared additional questions for more concrete ideas.
         </p>
       </div>
 
@@ -187,14 +187,14 @@ export const ExpertQuestions: React.FC<ExpertQuestionsProps> = ({
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 custom:px-6 py-4 custom:py-6 flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            {answeredQuestions}/{totalQuestions} 질문 답변 완료
+            {answeredQuestions}/{totalQuestions} answers completed
           </span>
           <button
             onClick={onComplete}
             disabled={!isComplete}
             className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium bg-black text-white rounded-md hover:bg-gray-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            아이디어 구체화하기
+            Generate PRD
           </button>
         </div>
       </div>

@@ -327,8 +327,8 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
                       animate={{ opacity: 1 }}
                     >
                       <MISOLoading 
-                        message="MISO가 전문가들과 상의 중이에요"
-                        subMessage="기획자, 개발자, 디자이너가 당신의 아이디어를 검토하고 있어요 💭"
+                        message="MISO is consulting with experts"
+                        subMessage="Product, Engineering, and Design are reviewing your idea 💭"
                       />
                     </motion.div>
                   ) : expertQuestions ? (
@@ -399,10 +399,10 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
                             {!isAdditional && currentStepData.id !== 'insight' && (
                               <button
                                 type="button"
-                                onClick={() => updateAnswer(question.id, '잘 모르겠습니다')}
+                                onClick={() => updateAnswer(question.id, 'Not sure')}
                                 className="text-sm text-muted-foreground hover:text-black transition-colors"
                               >
-                                잘 모르겠어요 →
+                                Not sure →
                               </button>
                             )}
                           </div>
@@ -448,14 +448,14 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
                                   <span className="w-1 h-1 bg-gray-400 rounded-full animate-pulse delay-75"></span>
                                   <span className="w-1 h-1 bg-gray-400 rounded-full animate-pulse delay-150"></span>
                                 </div>
-                                <span className="text-sm text-gray-500">이전 대화를 분석하고 있어요</span>
+                                <span className="text-sm text-gray-500">Analyzing previous conversation</span>
                               </div>
                             </div>
                           ) : hint ? (
                             <div className="space-y-2">
                               {/* 제목과 버튼을 같은 줄에 배치 */}
                               <div className="flex items-center justify-between gap-2">
-                                <span className="text-sm font-medium text-gray-800">이런 답변은 어떤가요?</span>
+                                <span className="text-sm font-medium text-gray-800">How about this answer?</span>
                                 <button
                                   onClick={(e) => {
                                     // 현재 단계의 첫 번째 질문 ID를 찾아서 해당 답변 업데이트
@@ -465,17 +465,17 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
                                       
                                       // 적용 완료 피드백
                                       const button = e.currentTarget;
-                                      button.textContent = '✓ 적용됨';
+                                      button.textContent = '✓ Applied';
                                       button.classList.add('bg-gray-100');
                                       setTimeout(() => {
-                                        button.textContent = '답변에 적용하기';
+                                        button.textContent = 'Apply to answer';
                                         button.classList.remove('bg-gray-100');
                                       }, 1500);
                                     }
                                   }}
                                   className="text-xs text-gray-600 hover:text-gray-800 px-3 py-1.5 rounded-md border border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all"
                                 >
-                                  답변에 적용하기
+                                  Apply to answer
                                 </button>
                               </div>
                               
@@ -485,7 +485,7 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
                             </div>
                           ) : (
                             <div className="text-sm text-gray-500">
-                              <p>{hint || '힌트를 생성하는 중 오류가 발생했습니다.'}</p>
+                              <p>{hint || 'An error occurred while generating a hint.'}</p>
                             </div>
                           )}
                         </div>
@@ -513,7 +513,7 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
                 className="inline-flex items-center gap-2 text-base font-medium disabled:opacity-30 disabled:cursor-not-allowed hover:text-gray-600 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                이전
+                Previous
               </button>
 
               <span className="text-sm text-muted-foreground">
@@ -530,11 +530,11 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
                 {isGeneratingQuestions ? (
                   <>
                     <Sparkles className="w-4 h-4 animate-pulse" />
-                    MISO 분석 중...
+                    MISO analyzing...
                   </>
                 ) : (
                   <>
-                    {currentStep === PRD_STEPS.length ? '완료' : '다음'}
+                    {currentStep === PRD_STEPS.length ? 'Done' : 'Next'}
                     {currentStep !== PRD_STEPS.length && <ArrowRight className="w-4 h-4" />}
                   </>
                 )}
@@ -547,10 +547,10 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
       {/* Exit Confirmation Modal */}
       <ConfirmModal
         isOpen={showExitModal}
-        title="홈으로 돌아가기"
-        message="작성 중인 내용이 모두 사라집니다. 정말 홈으로 돌아가시겠습니까?"
-        confirmText="홈으로 돌아가기"
-        cancelText="계속 작성하기"
+        title="Return to Home"
+        message="All progress will be lost. Are you sure you want to go home?"
+        confirmText="Return to Home"
+        cancelText="Continue"
         onConfirm={handleConfirmExit}
         onCancel={handleCancelExit}
       />

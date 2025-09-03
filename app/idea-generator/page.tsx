@@ -16,10 +16,10 @@ export default function IdeaGenerator() {
           className="max-w-4xl w-full text-center"
         >
           <h1 className="text-5xl custom:text-6xl font-extralight tracking-tight leading-tight mb-8">
-            아이디어 생성기
+            Idea Generator
           </h1>
           <p className="text-xl text-gray-600 font-light max-w-2xl mx-auto leading-relaxed">
-            창의적인 아이디어를 체계적으로 발전시켜보세요
+            Systematically develop your creative ideas.
           </p>
         </motion.div>
       </main>

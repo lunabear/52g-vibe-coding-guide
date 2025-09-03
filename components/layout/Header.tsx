@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({ className }) => {
             </div>
           </div>
           <nav className="text-sm text-gray-600">
-            AI와 함께 아이디어를 현실로 만들어보세요
+            Turn ideas into reality with AI
           </nav>
         </div>
       </div>

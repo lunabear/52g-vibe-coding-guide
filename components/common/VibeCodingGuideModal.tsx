@@ -32,13 +32,13 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
   const [isSendButtonPressed, setIsSendButtonPressed] = useState(false);
   const [uploadAreaActive, setUploadAreaActive] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const fullText = '첨부한 지침에 따라 구현해줘';
+  const fullText = 'Implement according to the attached instructions';
   const textRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   
   // 파일 목록 (애니메이션에 PRD 문서만 포함)
   const fileList = useMemo(() => [
-    { name: 'PRD 문서.md', color: 'blue', icon: FileText },
+    { name: 'PRD Document.md', color: 'blue', icon: FileText },
   ], []);
   
   // 애니메이션 시퀀스
@@ -187,29 +187,25 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
             <div className="w-14 h-14 flex items-center justify-center">
               <img 
                 src="/assets/mini_bob_default.png" 
-                alt="개발자 Bob"
+                alt="Developer Bob"
                 className="w-14 h-14 object-contain"
               />
             </div>
             <div>
-              <DialogTitle className="text-2xl font-light text-gray-900">
-                바이브코딩에 적용하기
-              </DialogTitle>
-              <DialogDescription className="text-sm text-gray-600 mt-1 leading-relaxed font-light">
-                생성된 프로젝트 문서를 바이브코딩에서 활용하는 방법을 안내합니다
-              </DialogDescription>
+              <DialogTitle className="text-2xl font-light text-gray-900">Apply to Vibe Coding</DialogTitle>
+              <DialogDescription className="text-sm text-gray-600 mt-1 leading-relaxed font-light">How to use the generated project documents in Vibe Coding</DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
         <div className="space-y-8 mt-8">
-          {/* Step 1: MISO API 연동 여부 선택 */}
+          {/* Step 1: Choose MISO API integration */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium">
                 1
               </div>
-              <h3 className="text-lg font-light text-gray-900">MISO API 연동이 필요하신가요?</h3>
+              <h3 className="text-lg font-light text-gray-900">Do you need MISO API integration?</h3>
             </div>
             <div className="ml-11 space-y-3">
               <div 
@@ -225,7 +221,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                     {!includeMiso && <div className="w-2 h-2 rounded-full bg-white"></div>}
                   </div>
                   <div>
-                    <div className="text-gray-700 font-light">아니요, 필요하지 않습니다</div>
+                    <div className="text-gray-700 font-light">No, not needed</div>
                   </div>
                 </div>
               </div>
@@ -242,14 +238,14 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                     {includeMiso && <div className="w-2 h-2 rounded-full bg-white"></div>}
                   </div>
                   <div>
-                    <div className="text-gray-700 font-light">네, MISO API를 사용합니다</div>
+                    <div className="text-gray-700 font-light">Yes, we use MISO API</div>
                   </div>
                 </div>
               </div>
               
               {includeMiso && (
                 <div className="ml-8 mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <p className="text-sm font-medium text-gray-900 mb-3">어떤 방식의 MISO API를 사용하시나요?</p>
+                  <p className="text-sm font-medium text-gray-900 mb-3">Which MISO API type will you use?</p>
                   <div className="space-y-3">
                     <div 
                       className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
@@ -264,8 +260,8 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                           {misoType === 'chatflow' && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
                         </div>
                         <div>
-                          <label className="text-gray-700 cursor-pointer font-light">대화형 (Agent/Chatflow)</label>
-                          <p className="text-xs text-gray-500 mt-1 font-light">채팅봇, 대화형 AI 기능을 구현할 때 사용합니다</p>
+                          <label className="text-gray-700 cursor-pointer font-light">Conversational (Agent/Chatflow)</label>
+                          <p className="text-xs text-gray-500 mt-1 font-light">Use for chatbots and conversational AI features</p>
                         </div>
                       </div>
                     </div>
@@ -282,8 +278,8 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                           {misoType === 'workflow' && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
                         </div>
                         <div>
-                          <label className="text-gray-700 cursor-pointer font-light">워크플로우 (Workflow)</label>
-                          <p className="text-xs text-gray-500 mt-1 font-light">단계별 자동화, 데이터 처리 파이프라인을 구현할 때 사용합니다</p>
+                          <label className="text-gray-700 cursor-pointer font-light">Workflow</label>
+                          <p className="text-xs text-gray-500 mt-1 font-light">Use for step-by-step automation and data pipelines</p>
                         </div>
                       </div>
                     </div>
@@ -300,8 +296,8 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                           {misoType === 'both' && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
                         </div>
                         <div>
-                          <label className="text-gray-700 cursor-pointer font-light">둘 다 필요</label>
-                          <p className="text-xs text-gray-500 mt-1 font-light">복합적인 기능을 구현할 때 사용합니다</p>
+                          <label className="text-gray-700 cursor-pointer font-light">Both</label>
+                          <p className="text-xs text-gray-500 mt-1 font-light">Use for combined capabilities</p>
                         </div>
                       </div>
                     </div>
@@ -311,18 +307,16 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
             </div>
           </div>
 
-          {/* Step 2: 파일 다운로드 */}
+          {/* Step 2: Download & upload documents */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium">
                 2
               </div>
-              <h3 className="text-lg font-light text-gray-900">프로젝트 문서 업로드하기</h3>
+              <h3 className="text-lg font-light text-gray-900">Upload project documents</h3>
             </div>
             <div className="ml-11">
-              <p className="text-sm text-gray-600 leading-relaxed font-light mb-4">
-                생성된 문서들을 v0에서 참조할 수 있도록 업로드해주세요
-              </p>
+              <p className="text-sm text-gray-600 leading-relaxed font-light mb-4">Upload the generated documents so v0 can reference them</p>
               
               <div className="border border-gray-200 rounded-xl p-6 bg-white">
                 <div className="flex flex-col lg:flex-row lg:items-start gap-6">
@@ -332,28 +326,24 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                       className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-medium"
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      문서 다운로드
+                      Download documents
                     </Button>
                   </div>
                   <div className="flex-1">
                     <div className="space-y-3">
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">포함된 문서</h4>
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">Included documents</h4>
                         <div className="space-y-1 text-sm text-gray-600 font-light">
                           <div className="flex items-center gap-2">
                             <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                            <span>PRD 문서</span>
+                            <span>PRD Document</span>
                           </div>
                         </div>
                       </div>
                       <div className="pt-3 border-t border-gray-100">
                         <div className="space-y-2">
-                          <p className="text-sm text-gray-600 font-light">
-                            <span className="font-medium">1.</span> 문서 다운로드 버튼을 클릭해서 다운받고
-                          </p>
-                          <p className="text-sm text-gray-600 font-light">
-                            <span className="font-medium">2.</span> v0의 <span className="font-medium">채팅창(혹은 Source 섹션)</span>에 파일을 업로드하고 작업을 시작하세요!
-                          </p>
+                          <p className="text-sm text-gray-600 font-light"><span className="font-medium">1.</span> Click Download to get the file</p>
+                          <p className="text-sm text-gray-600 font-light"><span className="font-medium">2.</span> Upload it to v0 <span className="font-medium">chat (or Source section)</span> and start</p>
                         </div>
                         <a
                           href={EXTERNAL_LINKS.V0_DOCUMENT_UPLOAD_GUIDE}
@@ -361,7 +351,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors font-light mt-3"
                         >
-                          업로드 방법 보기
+                          See upload guide
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>
@@ -372,18 +362,16 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
             </div>
           </div>
 
-          {/* Step 3: 시작하기 */}
+          {/* Step 3: Get started */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium">
                 3
               </div>
-              <h3 className="text-lg font-light text-gray-900">바이브코딩 시작!</h3>
+              <h3 className="text-lg font-light text-gray-900">Start Vibe Coding!</h3>
             </div>
             <div className="ml-11">
-              <p className="text-sm text-gray-600 leading-relaxed font-light mb-4">
-                이제 모든 준비가 완료되었습니다. v0에서 파일을 업로드하고 바이브 코딩을 시작해보세요!
-              </p>
+              <p className="text-sm text-gray-600 leading-relaxed font-light mb-4">You’re all set. Upload the file to v0 and start Vibe Coding!</p>
               
               {/* V0 스타일 시뮬레이션 */}
               <div className="border border-gray-200 rounded-xl bg-white p-6 relative overflow-hidden">
@@ -411,7 +399,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                   }`} />
                   <p className={`text-xs transition-colors ${
                     uploadAreaActive ? 'text-blue-600 font-medium' : 'text-gray-500'
-                  }`}>문서 업로드</p>
+                  }`}>Upload document</p>
                   
                   {/* 동적으로 나타나는 파일들 */}
                   {showFiles.length > 0 && (
@@ -432,7 +420,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                           >
                             <IconComponent className="w-3.5 h-3.5" />
                             <span className="font-medium">{file.name}</span>
-                            <div className="ml-auto text-xs opacity-60">업로드 완료</div>
+                            <div className="ml-auto text-xs opacity-60">Uploaded</div>
                           </div>
                         );
                       })}
@@ -453,7 +441,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
                           </span>
                         </>
                       ) : (
-                        <span className="text-gray-400 text-sm">첨부한 지침에 따라 구현해줘</span>
+                        <span className="text-gray-400 text-sm">Implement according to the attached instructions</span>
                       )}
                     </div>
                     <button 
@@ -485,7 +473,7 @@ export function VibeCodingGuideModal({ isOpen, onClose, onDownload, defaultMisoT
             onClick={onClose}
             className="text-gray-600 hover:text-gray-900 border-gray-200 font-light px-6 py-2"
           >
-            닫기
+            Close
           </Button>
         </div>
       </DialogContent>

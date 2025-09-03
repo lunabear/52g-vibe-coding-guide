@@ -4,8 +4,8 @@ import { PRDProvider } from '@/contexts/PRDContext';
 import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
-  title: "PLAI MAKER - AI와 함께 만드는 프로젝트 기획",
-  description: "MISO AI와 전문가들이 당신의 아이디어를 체계적으로 구체화해드립니다",
+  title: "PLAI MAKER - Plan your project with AI",
+  description: "MISO AI and experts help you elaborate your idea systematically.",
 };
 
 export const viewport = {
@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
+    <html lang="en">
       <body>
         <PRDProvider>
           {children}

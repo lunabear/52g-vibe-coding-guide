@@ -18,7 +18,7 @@ export default function HackathonModal() {
   const [currentVideo, setCurrentVideo] = useState(0);
 
   useEffect(() => {
-    // 로컬 스토리지에서 숨김 여부 확인
+    // Check hidden flag in localStorage
     const isHidden = localStorage.getItem(STORAGE_KEY);
     if (!isHidden) {
       setIsOpen(true);
@@ -26,7 +26,7 @@ export default function HackathonModal() {
   }, []);
 
   useEffect(() => {
-    // 비디오 음소거 상태 설정
+    // Set video muted state
     const video = document.querySelector('video');
     if (video) {
       video.muted = isMuted;
@@ -49,7 +49,7 @@ export default function HackathonModal() {
   };
 
   const handleVideoEnd = () => {
-    setCurrentVideo(1); // 두 번째 동영상으로 변경
+    setCurrentVideo(1); // Switch to the second video
   };
 
   const videos = [
@@ -60,9 +60,9 @@ export default function HackathonModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[700px] max-h-[95vh] overflow-y-auto p-0 border-0">
-        <DialogTitle className="sr-only">제4회 GS그룹 해커톤: PLAI</DialogTitle>
+        <DialogTitle className="sr-only">The 4th GS Group Hackathon: PLAI</DialogTitle>
         <div className="relative bg-white">
-          {/* 닫기 버튼 */}
+          {/* Close button */}
           <button
             onClick={handleClose}
             className="absolute right-4 top-4 z-10 w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
@@ -70,19 +70,19 @@ export default function HackathonModal() {
             <X className="h-5 w-5 text-gray-700" />
           </button>
 
-          {/* 모달 내용 */}
+          {/* Modal content */}
           <div className="p-6">
-            {/* 헤더 */}
+            {/* Header */}
             <div className="text-center mb-5">
               <h2 className="text-[28px] font-light text-gray-900 mb-2">
-                제4회 GS그룹 해커톤: PLAI
+                The 4th GS Group Hackathon: PLAI
               </h2>
               <p className="text-[16px] text-gray-600">
                 Play with GenAI - Make it WOW, Make it WORK!
               </p>
             </div>
 
-            {/* 비디오 영역 */}
+            {/* Video area */}
             <div className="relative w-full aspect-video bg-gray-50 rounded-xl overflow-hidden mb-5">
               <video
                 key={currentVideo}
@@ -96,10 +96,10 @@ export default function HackathonModal() {
                 onEnded={currentVideo === 0 ? handleVideoEnd : undefined}
               >
                 <source src={videos[currentVideo]} type="video/mp4" />
-                동영상을 재생할 수 없습니다.
+                The video cannot be played.
               </video>
               
-              {/* 음소거 버튼 */}
+              {/* Mute button */}
               <button
                 onClick={toggleMute}
                 className="absolute bottom-4 right-4 w-10 h-10 rounded-lg bg-black/50 hover:bg-black/70 backdrop-blur-sm flex items-center justify-center transition-colors"
@@ -112,29 +112,29 @@ export default function HackathonModal() {
               </button>
             </div>
 
-            {/* 일정 정보 */}
+            {/* Schedule info */}
             <div className="bg-gray-50 rounded-xl p-4 mb-4">
-              <h3 className="text-[15px] font-medium text-gray-900 mb-3">해커톤 일정</h3>
+              <h3 className="text-[15px] font-medium text-gray-900 mb-3">Hackathon Schedule</h3>
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center">
                   <div className="text-[20px] mb-1">📝</div>
-                  <p className="text-[13px] font-medium text-gray-800">리모트리그</p>
-                  <p className="text-[12px] text-gray-600">8월 13일 - 27일</p>
+                  <p className="text-[13px] font-medium text-gray-800">Remote League</p>
+                  <p className="text-[12px] text-gray-600">Aug 13 - 27</p>
                 </div>
                 <div className="text-center">
                   <div className="text-[20px] mb-1">🏆</div>
-                  <p className="text-[13px] font-medium text-gray-800">필드리그</p>
-                  <p className="text-[12px] text-gray-600">9월 8일 - 9일</p>
+                  <p className="text-[13px] font-medium text-gray-800">Field League</p>
+                  <p className="text-[12px] text-gray-600">Sep 8 - 9</p>
                 </div>
                 <div className="text-center">
                   <div className="text-[20px] mb-1">🎯</div>
-                  <p className="text-[13px] font-medium text-gray-800">챔피언스리그</p>
-                  <p className="text-[12px] text-gray-600">9월 29일</p>
+                  <p className="text-[13px] font-medium text-gray-800">Champions League</p>
+                  <p className="text-[12px] text-gray-600">Sep 29</p>
                 </div>
               </div>
             </div>
 
-            {/* 버튼들 */}
+            {/* Buttons */}
             <div className="flex gap-3 mb-4">
               <Button
                 className="flex-1 bg-gray-900 hover:bg-gray-800 text-white h-10 text-[14px]"
@@ -142,18 +142,18 @@ export default function HackathonModal() {
                   window.open('https://25-52g-hackathon.vercel.app', '_blank');
                 }}
               >
-                해커톤 자세히 보기
+                View Hackathon Details
               </Button>
               <Button
                 variant="outline"
                 className="flex-1 border-gray-200 hover:bg-gray-50 h-10 text-[14px]"
                 onClick={handleClose}
               >
-                나중에
+                Later
               </Button>
             </div>
 
-            {/* 다시 보지 않기 체크박스 */}
+            {/* Do not show again checkbox */}
             <div className="flex items-center justify-end">
               <label className="flex items-center cursor-pointer text-[13px] text-gray-600">
                 <input
@@ -162,7 +162,7 @@ export default function HackathonModal() {
                   onChange={(e) => setDontShowAgain(e.target.checked)}
                   className="mr-2 w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                 />
-                다시 보지 않기
+                Don’t show again
               </label>
             </div>
           </div>

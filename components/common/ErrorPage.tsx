@@ -17,24 +17,24 @@ interface ErrorPageProps {
 
 const errorMessages = {
   404: {
-    title: '페이지를 찾을 수 없어요',
-    message: '찾으시는 페이지가 이사를 갔나봐요. URL을 다시 확인해주세요.'
+    title: 'Page not found',
+    message: 'We couldn’t find that page. Please check the URL and try again.'
   },
   500: {
-    title: '서버에 문제가 생겼어요',
-    message: '잠시만 기다려주시면 곧 해결할게요. 조금 뒤에 다시 시도해주세요.'
+    title: 'Server error',
+    message: 'Something went wrong on our side. Please try again in a moment.'
   },
   503: {
-    title: '서비스 점검 중이에요',
-    message: '더 나은 서비스를 위해 잠시 점검하고 있어요. 곧 돌아올게요!'
+    title: 'Service under maintenance',
+    message: 'We are improving our service. Please come back shortly.'
   },
   network: {
-    title: '인터넷 연결을 확인해주세요',
-    message: '네트워크에 연결할 수 없어요. 인터넷 연결 상태를 확인해주세요.'
+    title: 'Check your internet connection',
+    message: 'We cannot connect to the network. Please verify your connection.'
   },
   default: {
-    title: '문제가 발생했어요',
-    message: '예상치 못한 문제가 발생했어요. 잠시 후 다시 시도해주세요.'
+    title: 'An error occurred',
+    message: 'An unexpected issue occurred. Please try again later.'
   }
 };
 
@@ -116,7 +116,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
               className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white hover:bg-gray-800 transition-colors"
             >
               <Home className="w-4 h-4" />
-              홈으로 돌아가기
+              Go back home
             </Button>
           )}
           
@@ -127,7 +127,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
               className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 transition-colors"
             >
               <RefreshCcw className="w-4 h-4" />
-              다시 시도하기
+              Try again
             </Button>
           )}
         </motion.div>
@@ -141,7 +141,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
         >
           <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
             <AlertCircle className="w-4 h-4" />
-            <span>계속해서 문제가 발생한다면</span>
+            <span>If the issue persists,</span>
             <a 
               href="#" 
               className="text-black underline hover:no-underline"
@@ -150,7 +150,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
                 // 고객센터 또는 문의하기 페이지로 이동
               }}
             >
-              고객센터에 문의해주세요
+              contact support
             </a>
           </div>
         </motion.div>

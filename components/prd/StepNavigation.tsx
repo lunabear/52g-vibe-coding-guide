@@ -29,7 +29,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
         className="flex items-center gap-2"
       >
         <ChevronLeft className="w-4 h-4" />
-        이전
+        Previous
       </Button>
 
       <span className="text-sm text-gray-600">
@@ -41,7 +41,7 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
         disabled={!canProceed}
         className="flex items-center gap-2"
       >
-        {isLastStep ? '완료' : '다음'}
+        {isLastStep ? 'Done' : 'Next'}
         {!isLastStep && <ChevronRight className="w-4 h-4" />}
       </Button>
     </div>
