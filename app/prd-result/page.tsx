@@ -319,7 +319,54 @@ export default function PRDResultPage() {
     const a = document.createElement('a');
     a.href = url;
     a.download = `PRD_${date}.md`;
-    a.click();
+    try {
+      const result: V0Project = await createV0Project('project name');
+      const {
+        id: v0ProjectId,
+        object: v0Object,
+        name: v0Name,
+        privacy: v0Privacy,
+        vercelProjectId: v0VercelProjectId,
+        createdAt: v0CreatedAt,
+        updatedAt: v0UpdatedAt,
+        apiUrl: v0ApiUrl,
+        webUrl: v0WebUrl,
+        chats: v0Chats,
+      } = result;
+
+      console.log('v0 project create response:', {
+        v0ProjectId,
+        v0Object,
+        v0Name,
+        v0Privacy,
+        v0VercelProjectId,
+        v0CreatedAt,
+        v0UpdatedAt,
+        v0ApiUrl,
+        v0WebUrl,
+        v0Chats,
+      });
+      try { alert(`v0 project created: ${JSON.stringify({ v0ProjectId, v0Name, v0WebUrl })}`); } catch (_) {}
+
+      // 프로젝트 생성 직후 채팅 생성 (별도 try/catch)
+      try {
+        const attachmentUrl = url; // Blob에서 생성한 URL 사용
+        const chatResult = await createV0Chat(v0ProjectId, attachmentUrl);
+        console.log('v0 chat create response:', chatResult);
+        try { alert(`v0 chat created: ${JSON.stringify(chatResult)}`); } catch (_) {}
+      } catch (chatErr: any) {
+        console.error('v0 chat create error:', chatErr);
+        try { alert(`v0 chat create error: ${chatErr?.message || String(chatErr)}`); } catch (_) {}
+      }
+    } catch (e: any) {
+      console.error('v0 project create error:', e);
+      try { alert(`v0 project create error: ${e?.message || String(e)}`); } catch (_) {}
+    }
+    // a.click();
+    
+    
+
+    
     URL.revokeObjectURL(url);
   };
 
@@ -359,6 +406,51 @@ export default function PRDResultPage() {
   const handleCancelPRD = () => {
     setIsEditingPRD(false);
     setTempPRDContent('');
+  };
+
+  // v0 프로젝트 응답 타입
+  type V0Project = {
+    id: string;
+    object: string;
+    name: string;
+    privacy: string;
+    vercelProjectId?: string;
+    createdAt: string;
+    updatedAt: string;
+    apiUrl: string;
+    webUrl: string;
+    chats: any[];
+  };
+
+  // v0 프로젝트 생성 API 호출
+  const createV0Project = async (projectName: string) => {
+    const response = await fetch('/api/v0/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: projectName}),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to create v0 project');
+    }
+    return response.json();
+  };
+
+  // v0 대화(채팅) 생성 API 호출
+  const createV0Chat = async (
+    projectId: string,
+    url: string,
+  ) => {
+    const response = await fetch('/api/v0/chats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, url }),
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to create v0 chat');
+    }
+    return response.json();
   };
 
   // Heather 편집 관련 핸들러 제거
