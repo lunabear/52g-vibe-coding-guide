@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu, ChevronRight, Home, Paperclip, FileText, Image as ImageIcon, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu, ChevronRight, Home, Paperclip, FileText, Image as ImageIcon, ZoomIn, Copy } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
@@ -509,6 +509,27 @@ export default function ChatPage() {
     };
   }, [attachedFiles]);
 
+  const handleCopy = async (text: string) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      toast.success('메시지를 복사했습니다');
+    } catch (e) {
+      console.error('Copy failed:', e);
+      toast.error('복사에 실패했습니다');
+    }
+  };
+
   // 대화 목록 불러오기 및 사용자 ID 설정
   useEffect(() => {
     const id = getUserId();
@@ -1012,7 +1033,7 @@ export default function ChatPage() {
               />
               <div>
                 <h1 className="text-[16px] custom:text-[18px] font-normal text-gray-900">Mini Ally</h1>
-                <p className="text-[12px] custom:text-[13px] text-gray-500">MISO</p>
+                <p className="text-[12px] custom:text-[13px] text-gray-500">아이데이션 파트너</p>
               </div>
             </div>
           </div>
@@ -1069,13 +1090,13 @@ export default function ChatPage() {
                     {(() => {
                       const hour = new Date().getHours();
                       if (hour >= 5 && hour < 12) {
-                        return "좋은 아침이에요! 오늘은 어떤 도움이 필요하신가요?";
+                        return "좋은 아침이에요! 오늘 어떤 아이디어를 탐색해볼까요?";
                       } else if (hour >= 12 && hour < 17) {
-                        return "안녕하세요! 무엇을 도와드릴까요?";
+                        return "안녕하세요! 떠오르는 문제나 아이디어를 함께 정리해볼까요?";
                       } else if (hour >= 17 && hour < 21) {
-                        return "좋은 저녁이에요! 어떤 프로젝트를 진행 중이신가요?";
+                        return "좋은 저녁이에요! 지금 구체화하고 싶은 아이디어가 있나요?";
                       } else {
-                        return "안녕하세요! 늦은 시간까지 열정적이시네요!";
+                        return "안녕하세요! 늦은 시간이지만 멋진 아이디어를 같이 다듬어봐요!";
                       }
                     })()}
                   </h2>
@@ -1083,13 +1104,13 @@ export default function ChatPage() {
                     {(() => {
                       const hour = new Date().getHours();
                       if (hour >= 5 && hour < 12) {
-                        return "새로운 아이디어를 시작하기 좋은 시간이에요. 궁금한 점을 편하게 물어보세요.";
+                        return "가볍게 문제를 설명하거나 영감을 주는 사례를 알려주세요.";
                       } else if (hour >= 12 && hour < 17) {
-                        return "프로젝트 아이디어나 궁금한 점을 자유롭게 물어보세요.";
+                        return "목표 사용자, 해결하고 싶은 문제, 기대 효과를 적어보세요.";
                       } else if (hour >= 17 && hour < 21) {
-                        return "오늘 하루도 수고 많으셨어요. 제가 도와드릴 일이 있을까요?";
+                        return "스케치, 스크린샷도 좋아요. 제가 가설과 다음 질문을 제안해요.";
                       } else {
-                        return "밤늦게까지 작업 중이시군요! 어떤 도움이 필요하신가요?";
+                        return "한 문장 아이디어부터 시작해도 충분해요. 확장과 변주를 도와드릴게요.";
                       }
                     })()}
                   </p>
@@ -1136,7 +1157,7 @@ export default function ChatPage() {
                                   : 'text-[14px] custom:text-[16px] font-light [&>*:first-child]:mt-0 [&>*:last-child]:mb-0'
                               )}>
                                 {msg.role === 'user' ? (
-                                  <span>{msg.content}</span>
+                                  <span className="select-text selection:bg-white selection:text-gray-900">{msg.content}</span>
                                 ) : (
                                   parseActionButtons(msg.content).map((part: any, index: number) => (
                                     <React.Fragment key={index}>
@@ -1291,17 +1312,26 @@ export default function ChatPage() {
                               </div>
                             )}
                           </div>
-                          <p
+                          <div
                             className={cn(
-                              'text-[12px] px-2',
-                              msg.role === 'user' ? 'text-right text-gray-400' : 'text-gray-400'
+                              'flex items-center px-2',
+                              msg.role === 'user' ? 'justify-end' : undefined
                             )}
                           >
-                            {new Date(msg.timestamp).toLocaleTimeString('ko-KR', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(msg.content)}
+                              aria-label="메시지 복사"
+                              title="복사"
+                              className={cn(
+                                'inline-flex items-center justify-center rounded-md transition-colors',
+                                'h-6 w-6',
+                                msg.role === 'user' ? 'text-gray-300 hover:text-gray-200 hover:bg-white/10' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                              )}
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1376,7 +1406,7 @@ export default function ChatPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
-                placeholder="메시지를 입력하세요..."
+                placeholder="아이디어나 해결하고 싶은 문제를 적어보세요..."
                 className="w-full min-h-[48px] custom:min-h-[56px] max-h-[120px] custom:max-h-[150px] px-4 custom:px-5 py-3 custom:py-4 pr-24 custom:pr-28 resize-none border border-gray-200 rounded-2xl text-[14px] custom:text-[16px] leading-relaxed focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all placeholder:text-gray-400"
                 disabled={isLoading}
               />
@@ -1414,7 +1444,7 @@ export default function ChatPage() {
               </div>
             </div>
             <p className="text-[11px] custom:text-[13px] text-gray-400 text-center mt-2 custom:mt-3">
-              Mini Ally는 실수할 수 있습니다. 중요한 정보는 확인해 주세요.
+              Mini Ally는 아이디어 확장을 돕지만, 중요한 정보는 꼭 확인해 주세요.
             </p>
           </div>
         </div>

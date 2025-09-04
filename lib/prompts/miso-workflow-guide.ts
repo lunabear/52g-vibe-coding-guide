@@ -162,4 +162,54 @@ curl -X GET 'https://<your-endpoint>/ext/v1/workflows/logs'\\
     - **type (string)**: 사용자 유형
     - **is_anonymous (bool)**: 익명 여부
     - **session_id (string)**: 세션 ID
-    - **created_at (timestamp)**: 생성 시각`;
+    - **created_at (timestamp)**: 생성 시각
+
+---
+
+## 파일 업로드
+
+### POST \`/files/upload\`
+
+\`\`\`bash
+curl -X POST 'https://<your-endpoint>/ext/v1/files/upload' \\
+--header 'Authorization: Bearer {api_key}' \\
+--form 'file=@localfile;type=image/[png|jpeg|jpg|webp|gif]' \\
+--form 'user=abc-123'
+\`\`\`
+
+> 이미지 파일을 업로드하여 멀티모달 기능에 활용할 수 있습니다.  
+> 지원 형식: **png, jpg, jpeg, webp, gif**
+
+#### Request Body (multipart/form-data)
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | :--: | --- |
+| **file** | File | ✓ | 업로드할 파일 |
+| **user** | string | ✓ | 최종 사용자 식별자 (앱 내 고유) |
+
+#### Response
+
+| 필드 | 타입 | 설명 |
+| --- | --- | --- |
+| **id** | uuid | 파일 ID |
+| **name** | string | 파일 이름 |
+| **size** | int | 파일 크기 (bytes) |
+| **extension** | string | 파일 확장자 |
+| **mime_type** | string | MIME 타입 |
+| **created_by** | uuid | 업로드한 사용자 ID |
+| **created_at** | timestamp | 파일 생성 시각 |
+
+#### Errors
+
+| HTTP Code | Error ID | 설명 |
+| :--: | --- | --- |
+| 400 | no_file_uploaded | 파일 미제공 |
+| 400 | too_many_files | 한 번에 하나만 업로드 가능 |
+| 400 | unsupported_preview | 미리보기 미지원 |
+| 400 | unsupported_estimate | 용량 추정 미지원 |
+| 413 | file_too_large | 파일이 너무 큼 |
+| 415 | unsupported_file_type | 허용되지 않은 파일 형식 |
+| 503 | s3_connection_failed | S3 연결 실패 |
+| 503 | s3_permission_denied | S3 업로드 권한 없음 |
+| 503 | s3_file_too_large | S3 제한 초과 |
+| 500 | internal_server_error | 내부 서버 오류 |`;
