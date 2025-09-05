@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { PRDProvider } from '@/contexts/PRDContext';
+import { Analytics } from '@vercel/analytics/react';
 import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({
           {children}
         </PRDProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );

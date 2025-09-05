@@ -32,6 +32,7 @@ interface MiniAllySummaryModalProps {
   projectData: ProjectData | null;
   onConfirm?: (content: string) => void; // optional로 변경 (하위 호환성)
   action?: string; // 액션 타입 추가
+  journeyId?: string; // chat에서 생성된 여정 ID 전달
 }
 
 export function MiniAllySummaryModal({
@@ -41,6 +42,7 @@ export function MiniAllySummaryModal({
   projectData,
   onConfirm,
   action,
+  journeyId,
 }: MiniAllySummaryModalProps) {
   const router = useRouter();
   const [editableData, setEditableData] = useState<ProjectData | null>(null);
@@ -129,10 +131,34 @@ ${data.expectedOutcome || ''}`;
       if (action === 'generate_miso') {
         // MISO 설계 도우미로 가는 경우 step을 'miso-design'으로 업데이트
         saveMiniAllySession(editableData, 'miso-design');
-        router.push('/miso-generator?fromMiniAlly=true');
+        const intent = 'generate_miso';
+        const params = new URLSearchParams({
+          fromMiniAlly: 'true',
+          origin: 'chat',
+          intent,
+          ...(journeyId ? { journey_id: journeyId } : {}),
+        });
+        // 여정 컨텍스트를 세션에 저장해 후속 페이지에서 사용
+        try {
+          const ctx = { journey_id: journeyId, journey_origin: 'chat', journey_intent: intent };
+          sessionStorage.setItem('journey_ctx', JSON.stringify(ctx));
+        } catch {}
+        router.push(`/miso-generator?${params.toString()}`);
       } else {
         // 기본값: prd-generator 페이지로 이동 (전문가 질문 단계)
-        router.push('/prd-generator?fromMiniAlly=true&step=insight');
+        const intent = 'generate_prd';
+        const params = new URLSearchParams({
+          fromMiniAlly: 'true',
+          step: 'insight',
+          origin: 'chat',
+          intent,
+          ...(journeyId ? { journey_id: journeyId } : {}),
+        });
+        try {
+          const ctx = { journey_id: journeyId, journey_origin: 'chat', journey_intent: intent };
+          sessionStorage.setItem('journey_ctx', JSON.stringify(ctx));
+        } catch {}
+        router.push(`/prd-generator?${params.toString()}`);
       }
     }
   };

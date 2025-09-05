@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { track } from '@vercel/analytics';
 import { ArrowLeft, Send, MoreHorizontal, Edit2, X, Plus, ChevronLeft, Menu, ChevronRight, Home, Paperclip, FileText, Image as ImageIcon, ZoomIn, Copy } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -89,6 +90,7 @@ export default function ChatPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const objectUrlSetRef = useRef<Set<string>>(new Set());
+  const [journeyId, setJourneyId] = useState<string | null>(null);
 
   const generateUniqueId = () => {
     try {
@@ -171,6 +173,25 @@ export default function ChatPage() {
       });
       return;
     }
+
+    // 여정 ID 생성 및 클릭 이벤트 추적
+    try {
+      const jid = (typeof crypto !== 'undefined' && (crypto as any)?.randomUUID)
+        ? (crypto as any).randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      setJourneyId(jid);
+      const intent = action === 'generate_prd' ? 'generate_prd' : 'generate_miso';
+      const ctx = { journey_id: jid, journey_origin: 'chat', journey_intent: intent } as const;
+      sessionStorage.setItem('journey_ctx', JSON.stringify(ctx));
+      track('chat_to_generate_cta_clicked', {
+        feature_area: 'chat',
+        target: action === 'generate_prd' ? 'prd' : 'miso',
+        journey_id: jid,
+        journey_intent: intent,
+        has_attachment: attachedFiles.length > 0,
+        chat_turn_index: messages.filter(m => m.role === 'user').length,
+      });
+    } catch {}
 
     // 대화가 있으면 API 호출 후 모달 표시
     setPendingAction(action);
@@ -1528,6 +1549,7 @@ export default function ChatPage() {
         projectData={projectData}
         onConfirm={handleSummaryConfirm}
         action={pendingAction || undefined}
+        journeyId={journeyId || undefined}
       />
 
       {/* 이미지 미리보기 모달 */}

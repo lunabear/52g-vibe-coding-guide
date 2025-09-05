@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import { track } from '@vercel/analytics';
 import { usePRDContext } from '@/contexts/PRDContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PRD_STEPS } from '@/lib/prd-questions';
@@ -60,6 +61,9 @@ function PRDGeneratorContent() {
   const step = searchParams.get('step');
   const fromMiniAlly = searchParams.get('fromMiniAlly') === 'true';
   const fromMisoGenerator = searchParams.get('fromMisoGenerator') === 'true';
+  const journeyId = searchParams.get('journey_id') || undefined;
+  const journeyOrigin = searchParams.get('origin') || (journeyId ? 'chat' : undefined);
+  const journeyIntent = searchParams.get('intent') || undefined;
 
   // Mini-Ally 세션 체크 및 복구 모달 표시
   useEffect(() => {
@@ -88,6 +92,24 @@ function PRDGeneratorContent() {
       setShowRestoreModal(true);
     }
   }, [fromMiniAlly, fromMisoGenerator, setCurrentStep]);
+
+  // 여정 랜딩 이벤트
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem('journey_ctx');
+      const ctx = stored ? JSON.parse(stored) : {};
+      const payload = {
+        feature_area: 'prd',
+        journey_id: journeyId || ctx?.journey_id,
+        journey_origin: journeyOrigin || ctx?.journey_origin,
+        journey_intent: journeyIntent || ctx?.journey_intent,
+      } as const;
+      if (payload.journey_id) {
+        track('journey_landed', payload);
+      }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 힌트 생성 useEffect
   useEffect(() => {
@@ -206,6 +228,19 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
       // Mini-Ally 플로우에서는 세션 단계 업데이트
       updateMiniAllySessionStep('prd-result');
     }
+    try {
+      const stored = sessionStorage.getItem('journey_ctx');
+      const ctx = stored ? JSON.parse(stored) : {};
+      const payloadBase = {
+        feature_area: 'prd',
+        journey_id: journeyId || ctx?.journey_id,
+        journey_origin: journeyOrigin || ctx?.journey_origin,
+        journey_intent: journeyIntent || ctx?.journey_intent,
+      } as const;
+      track('prd_generate_started', payloadBase);
+      // 완료 시점에서 성공 이벤트도 기록 (결과 페이지 이동 직전)
+      track('prd_generate_succeeded', payloadBase);
+    } catch {}
     router.push('/prd-result');
   };
 

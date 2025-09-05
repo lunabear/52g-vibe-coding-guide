@@ -6,6 +6,7 @@ import { SimpleHeader } from '@/components/layout/SimpleHeader';
 import Footer from '@/components/layout/Footer';
 import HackathonModal from '@/components/common/HackathonModal';
 import Image from 'next/image';
+import { track } from '@vercel/analytics';
 
 export default function Home() {
   const router = useRouter();
@@ -24,7 +25,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              onClick={() => router.push('/chat')}
+              onClick={() => {
+                try { track('home_cta_clicked', { cta_name: 'chat' }); } catch {}
+                router.push('/chat');
+              }}
               className="group relative bg-blue-50 rounded-2xl p-6 custom:p-10 h-[380px] custom:h-[480px] text-left hover:bg-blue-100 transition-all duration-200 overflow-visible border border-blue-100"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
@@ -79,7 +83,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              onClick={() => router.push('/prd-generator')}
+              onClick={() => {
+                try { track('home_cta_clicked', { cta_name: 'prd_generator' }); } catch {}
+                router.push('/prd-generator');
+              }}
               className="group relative bg-gray-50 rounded-2xl p-6 custom:p-10 h-[380px] custom:h-[480px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}
@@ -135,7 +142,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              onClick={() => router.push('/miso-generator')}
+              onClick={() => {
+                try { track('home_cta_clicked', { cta_name: 'miso_generator' }); } catch {}
+                router.push('/miso-generator');
+              }}
               className="group relative bg-gray-50 rounded-2xl p-6 custom:p-10 h-[380px] custom:h-[480px] text-left hover:bg-gray-100 transition-all duration-200 overflow-visible xl:col-span-1 lg:col-span-2 lg:xl:col-span-1"
             >
               {/* 메인 텍스트 - 상단 왼쪽으로 이동 */}

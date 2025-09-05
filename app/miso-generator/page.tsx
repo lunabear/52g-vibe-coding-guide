@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import { track } from '@vercel/analytics';
 import { ArrowLeft, ChevronRight, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,6 +21,9 @@ import { MisoSkipConfirmModal } from '@/components/common/MisoSkipConfirmModal';
 function MisoGeneratorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const journeyId = searchParams.get('journey_id') || undefined;
+  const journeyOrigin = searchParams.get('origin') || (journeyId ? 'chat' : undefined);
+  const journeyIntent = searchParams.get('intent') || undefined;
   const [expectedInput, setExpectedInput] = useState('');
   const [expectedOutput, setExpectedOutput] = useState('');
   const [desiredAction, setDesiredAction] = useState('');
@@ -94,6 +98,24 @@ function MisoGeneratorContent() {
       }
     }
   }, [searchParams]);
+
+  // 여정 랜딩 이벤트
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem('journey_ctx');
+      const ctx = stored ? JSON.parse(stored) : {};
+      const payload = {
+        feature_area: 'miso',
+        journey_id: journeyId || ctx?.journey_id,
+        journey_origin: journeyOrigin || ctx?.journey_origin,
+        journey_intent: journeyIntent || ctx?.journey_intent,
+      } as const;
+      if (payload.journey_id) {
+        track('journey_landed', payload);
+      }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // 폼 유효성 검사
   const canSubmit = () => {
     return expectedInput.trim() && expectedOutput.trim() && desiredAction.trim() && userExperience.trim() && misoAppType.trim();
@@ -128,6 +150,17 @@ function MisoGeneratorContent() {
 
     // 5번 질문이 '단일 결과물 생성'인 경우 워크플로우 생성 로직 실행
     if (misoAppType === '단일 결과물 생성') {
+      try {
+        const stored = sessionStorage.getItem('journey_ctx');
+        const ctx = stored ? JSON.parse(stored) : {};
+        const base = {
+          feature_area: 'miso',
+          journey_id: journeyId || ctx?.journey_id,
+          journey_origin: journeyOrigin || ctx?.journey_origin,
+          journey_intent: journeyIntent || ctx?.journey_intent,
+        } as const;
+        track('miso_workflow_run_started', base);
+      } catch {}
       const query = generateQuery();
       setIsLoading(true);
       setError(null);
@@ -139,6 +172,17 @@ function MisoGeneratorContent() {
         const result = await misoAPI.runMisoWorkflowWithType(query, 'workflow', null);
         if (result.explanation.startsWith('Error:')) {
           setError(result.explanation);
+          try {
+            const stored = sessionStorage.getItem('journey_ctx');
+            const ctx = stored ? JSON.parse(stored) : {};
+            const base = {
+              feature_area: 'miso',
+              journey_id: journeyId || ctx?.journey_id,
+              journey_origin: journeyOrigin || ctx?.journey_origin,
+              journey_intent: journeyIntent || ctx?.journey_intent,
+            } as const;
+            track('miso_workflow_run_failed', base);
+          } catch {}
         } else {
           setExplanation(result.explanation);
           if (result.flow) {
@@ -147,9 +191,31 @@ function MisoGeneratorContent() {
           if (result.flowYaml) {
             setFlowYaml(result.flowYaml);
           }
+          try {
+            const stored = sessionStorage.getItem('journey_ctx');
+            const ctx = stored ? JSON.parse(stored) : {};
+            const base = {
+              feature_area: 'miso',
+              journey_id: journeyId || ctx?.journey_id,
+              journey_origin: journeyOrigin || ctx?.journey_origin,
+              journey_intent: journeyIntent || ctx?.journey_intent,
+            } as const;
+            track('miso_workflow_run_succeeded', base);
+          } catch {}
         }
       } catch (e) {
         setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
+        try {
+          const stored = sessionStorage.getItem('journey_ctx');
+          const ctx = stored ? JSON.parse(stored) : {};
+          const base = {
+            feature_area: 'miso',
+            journey_id: journeyId || ctx?.journey_id,
+            journey_origin: journeyOrigin || ctx?.journey_origin,
+            journey_intent: journeyIntent || ctx?.journey_intent,
+          } as const;
+          track('miso_workflow_run_failed', base);
+        } catch {}
       } finally {
         setIsLoading(false);
       }
@@ -175,6 +241,17 @@ function MisoGeneratorContent() {
     }
     
     setIsLoadingMisoApp(true);
+    try {
+      const stored = sessionStorage.getItem('journey_ctx');
+      const ctx = stored ? JSON.parse(stored) : {};
+      const base = {
+        feature_area: 'miso',
+        journey_id: journeyId || ctx?.journey_id,
+        journey_origin: journeyOrigin || ctx?.journey_origin,
+        journey_intent: journeyIntent || ctx?.journey_intent,
+      } as const;
+      track('miso_workflow_run_started', base);
+    } catch {}
     setError(null);
     setExplanation('');
     setFlow([]);
@@ -208,12 +285,45 @@ function MisoGeneratorContent() {
           knowledge: result.knowledge
         };
         saveMisoDesignToSession(updatedMisoDesignData);
+        try {
+          const stored = sessionStorage.getItem('journey_ctx');
+          const ctx = stored ? JSON.parse(stored) : {};
+          const base = {
+            feature_area: 'miso',
+            journey_id: journeyId || ctx?.journey_id,
+            journey_origin: journeyOrigin || ctx?.journey_origin,
+            journey_intent: journeyIntent || ctx?.journey_intent,
+          } as const;
+          track('miso_workflow_run_succeeded', base);
+        } catch {}
       } else {
         // prompt가 없으면 에러
         setError('MISO 앱 프롬프트를 생성하지 못했습니다.');
+        try {
+          const stored = sessionStorage.getItem('journey_ctx');
+          const ctx = stored ? JSON.parse(stored) : {};
+          const base = {
+            feature_area: 'miso',
+            journey_id: journeyId || ctx?.journey_id,
+            journey_origin: journeyOrigin || ctx?.journey_origin,
+            journey_intent: journeyIntent || ctx?.journey_intent,
+          } as const;
+          track('miso_workflow_run_failed', base);
+        } catch {}
       }
     } catch (e) {
       setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
+      try {
+        const stored = sessionStorage.getItem('journey_ctx');
+        const ctx = stored ? JSON.parse(stored) : {};
+        const base = {
+          feature_area: 'miso',
+          journey_id: journeyId || ctx?.journey_id,
+          journey_origin: journeyOrigin || ctx?.journey_origin,
+          journey_intent: journeyIntent || ctx?.journey_intent,
+        } as const;
+        track('miso_workflow_run_failed', base);
+      } catch {}
     } finally {
       setIsLoadingMisoApp(false);
     }
