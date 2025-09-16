@@ -119,6 +119,19 @@ export enum ExpertType {
   DEVELOPER = 'developer',
 }
 
+export interface ChatMessage {
+  id?: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  createdAt?: string | number | Date;
+}
+
+export interface Conversation {
+  id: string;
+  name: string;
+  updatedAt: Date;
+}
+
 export interface WorkflowNode {
   name: string;
   order: number;

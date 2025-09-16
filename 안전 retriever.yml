@@ -1,0 +1,706 @@
+app:
+  description: remastered by Leo
+  icon: ⛑️
+  icon_background: '#FEF7C3'
+  mode: workflow
+  name: 안전 retriever
+  use_icon_as_answer_icon: false
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: ''
+    id: 0a5bb812-9751-4bcd-b1ae-d671cc10cf9d
+    name: TEXT_NODATA
+    selector:
+    - env
+    - TEXT_NODATA
+    value: 요청과 관련된 정보를 찾을 수 없습니다.
+    value_type: string
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 50
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        sourceType: code
+        targetType: end
+      id: 1732552050151-source-1732069367414-target
+      source: '1732552050151'
+      sourceHandle: source
+      target: '1732069367414'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: knowledge-retrieval
+      id: 1732069364803-source-1733375436800-target
+      source: '1732069364803'
+      sourceHandle: source
+      target: '1733375436800'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: knowledge-retrieval
+        targetType: code
+      id: 1733375436800-source-1732552050151-target
+      source: '1733375436800'
+      sourceHandle: source
+      target: '1732552050151'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: knowledge-retrieval
+        targetType: variable-aggregator
+      id: 1733375409963-source-1733378526074-target
+      source: '1733375409963'
+      sourceHandle: source
+      target: '1733378526074'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: knowledge-retrieval
+        targetType: variable-aggregator
+      id: 1733375612377-source-1733378526074-target
+      source: '1733375612377'
+      sourceHandle: source
+      target: '1733378526074'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: variable-aggregator
+        targetType: code
+      id: 1733378526074-source-1732552050151-target
+      source: '1733378526074'
+      sourceHandle: source
+      target: '1732552050151'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: start
+        targetType: if-else
+      id: 1732069364803-source-1733378586428-target
+      source: '1732069364803'
+      sourceHandle: source
+      target: '1733378586428'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: if-else
+        targetType: knowledge-retrieval
+      id: 1733378586428-true-1733375409963-target
+      source: '1733378586428'
+      sourceHandle: 'true'
+      target: '1733375409963'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: if-else
+        targetType: end
+      id: 1733378586428-false-1733380528635-target
+      source: '1733378586428'
+      sourceHandle: 'false'
+      target: '1733380528635'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: if-else
+        targetType: knowledge-retrieval
+      id: 1733378586428-430f464b-e31e-437e-8612-fc98b827ef1d-1733375612377-target
+      source: '1733378586428'
+      sourceHandle: 430f464b-e31e-437e-8612-fc98b827ef1d
+      target: '1733375612377'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: if-else
+        targetType: knowledge-retrieval
+      id: 1733378586428-268b9c73-f343-4f2b-a468-11a806a2b9b4-1733382267819-target
+      source: '1733378586428'
+      sourceHandle: 268b9c73-f343-4f2b-a468-11a806a2b9b4
+      target: '1733382267819'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: if-else
+        targetType: knowledge-retrieval
+      id: 1733378586428-ed5f7cac-109a-462c-92cb-4af181e5e27f-1733382272401-target
+      source: '1733378586428'
+      sourceHandle: ed5f7cac-109a-462c-92cb-4af181e5e27f
+      target: '1733382272401'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: if-else
+        targetType: knowledge-retrieval
+      id: 1733378586428-c6797b03-2e5f-4376-b9a3-e81ad33623b0-1733382276704-target
+      source: '1733378586428'
+      sourceHandle: c6797b03-2e5f-4376-b9a3-e81ad33623b0
+      target: '1733382276704'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: knowledge-retrieval
+        targetType: variable-aggregator
+      id: 1733382267819-source-1733378526074-target
+      source: '1733382267819'
+      sourceHandle: source
+      target: '1733378526074'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: knowledge-retrieval
+        targetType: variable-aggregator
+      id: 1733382272401-source-1733378526074-target
+      source: '1733382272401'
+      sourceHandle: source
+      target: '1733378526074'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        sourceType: knowledge-retrieval
+        targetType: variable-aggregator
+      id: 1733382276704-source-1733378526074-target
+      source: '1733382276704'
+      sourceHandle: source
+      target: '1733378526074'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 시작
+        type: start
+        variables:
+        - label: query
+          max_length: 2048
+          options: []
+          required: true
+          type: paragraph
+          variable: query
+        - label: company
+          max_length: 48
+          options:
+          - GS반월열병합발전
+          - GS 동해전력
+          - GS구미열병합발전
+          - GS 포천 그린에너지
+          - GS풍력발전
+          required: true
+          type: select
+          variable: company
+      height: 116
+      id: '1732069364803'
+      position:
+        x: 13
+        y: 547
+      positionAbsolute:
+        x: 13
+        y: 547
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - '1732552050151'
+          - result
+          variable: contexts
+        selected: false
+        title: 끝
+        type: end
+      height: 90
+      id: '1732069367414'
+      position:
+        x: 1616
+        y: 718
+      positionAbsolute:
+        x: 1616
+        y: 718
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "\ndef main(c0, c1) -> dict:\n    contexts = c0 + c1\n    ids = set()\n\
+          \    result = []\n    for c in contexts:\n        sid = c['metadata']['segment_id']\n\
+          \        if sid not in ids:\n            ids.add(sid)\n            seg =\
+          \ c['metadata']\n            context = {\n                'title': c['title'],\n\
+          \                'content': c['content'],\n                'page': seg['page']\
+          \ + 1 if seg['page'] is not None else seg['page']\n            }\n     \
+          \       result.append(context)\n\n    return {\n        \"result\": result,\n\
+          \    }\n"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: array[object]
+        selected: false
+        title: 코드
+        type: code
+        variables:
+        - value_selector:
+          - '1733375436800'
+          - result
+          variable: c0
+        - value_selector:
+          - '1733378526074'
+          - output
+          variable: c1
+      height: 54
+      id: '1732552050151'
+      position:
+        x: 1274
+        y: 529
+      positionAbsolute:
+        x: 1274
+        y: 529
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        dataset_ids:
+        - cee69283-659d-4055-821c-47125e87fc7a
+        desc: ''
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: weighted_score
+          reranking_model:
+            model: rerank-multilingual-v3.0
+            provider: cohere
+          score_threshold: 0.01
+          top_k: 4
+          weights:
+            keyword_setting:
+              keyword_weight: 0.3
+            vector_setting:
+              embedding_model_name: text-embedding-3-large
+              embedding_provider_name: openai
+              vector_weight: 0.7
+        query_variable_selector:
+        - '1732069364803'
+        - query
+        retrieval_mode: multiple
+        selected: false
+        title: GS반월열병합발전
+        type: knowledge-retrieval
+      height: 92
+      id: '1733375409963'
+      position:
+        x: 677
+        y: 624
+      positionAbsolute:
+        x: 677
+        y: 624
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        dataset_ids:
+        - 0b239b07-6ff1-4634-bf3c-b6cf6a9ce991
+        desc: ''
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: weighted_score
+          reranking_model:
+            model: rerank-multilingual-v3.0
+            provider: cohere
+          score_threshold: 0.01
+          top_k: 3
+          weights:
+            keyword_setting:
+              keyword_weight: 0.3
+            vector_setting:
+              embedding_model_name: text-embedding-3-large
+              embedding_provider_name: openai
+              vector_weight: 0.7
+        query_variable_selector:
+        - '1732069364803'
+        - query
+        retrieval_mode: multiple
+        selected: false
+        title: 산업안전보건법
+        type: knowledge-retrieval
+      height: 92
+      id: '1733375436800'
+      position:
+        x: 384
+        y: 409.4913308718196
+      positionAbsolute:
+        x: 384
+        y: 409.4913308718196
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        dataset_ids:
+        - c0d28bd4-79b9-4030-bc72-8d4acf73698c
+        desc: ''
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: weighted_score
+          reranking_model:
+            model: rerank-multilingual-v3.0
+            provider: cohere
+          score_threshold: 0.01
+          top_k: 4
+          weights:
+            keyword_setting:
+              keyword_weight: 0.3
+            vector_setting:
+              embedding_model_name: text-embedding-3-large
+              embedding_provider_name: openai
+              vector_weight: 0.7
+        query_variable_selector:
+        - '1732069364803'
+        - query
+        retrieval_mode: multiple
+        selected: false
+        title: GS 동해전력
+        type: knowledge-retrieval
+      height: 92
+      id: '1733375612377'
+      position:
+        x: 677
+        y: 755
+      positionAbsolute:
+        x: 677
+        y: 755
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        output_type: array[object]
+        selected: false
+        title: Variable Aggregator
+        type: variable-aggregator
+        variables:
+        - - '1733375409963'
+          - result
+        - - '1733375612377'
+          - result
+        - - '1733382272401'
+          - result
+        - - '1733382267819'
+          - result
+        - - '1733382276704'
+          - result
+      height: 197
+      id: '1733378526074'
+      position:
+        x: 981
+        y: 624
+      positionAbsolute:
+        x: 981
+        y: 624
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: contains
+            id: d45ec213-7f2b-4c27-8d6a-22999154d338
+            value: GS반월열병합발전
+            varType: string
+            variable_selector:
+            - '1732069364803'
+            - company
+          id: 'true'
+          logical_operator: and
+        - case_id: 430f464b-e31e-437e-8612-fc98b827ef1d
+          conditions:
+          - comparison_operator: contains
+            id: 32dd801f-ae99-4e7d-ab20-4af2a2cfc1d1
+            value: GS 동해전력
+            varType: string
+            variable_selector:
+            - '1732069364803'
+            - company
+          id: 430f464b-e31e-437e-8612-fc98b827ef1d
+          logical_operator: and
+        - case_id: 268b9c73-f343-4f2b-a468-11a806a2b9b4
+          conditions:
+          - comparison_operator: contains
+            id: 90b6ce4f-8eb3-4834-ba1c-c5926ce18f6f
+            value: GS구미열병합발전
+            varType: string
+            variable_selector:
+            - '1732069364803'
+            - company
+          id: 268b9c73-f343-4f2b-a468-11a806a2b9b4
+          logical_operator: and
+        - case_id: ed5f7cac-109a-462c-92cb-4af181e5e27f
+          conditions:
+          - comparison_operator: contains
+            id: 1bf9167c-5613-4c4b-8bb2-b5dd63cde9a3
+            value: GS 포천 그린에너지
+            varType: string
+            variable_selector:
+            - '1732069364803'
+            - company
+          id: ed5f7cac-109a-462c-92cb-4af181e5e27f
+          logical_operator: and
+        - case_id: c6797b03-2e5f-4376-b9a3-e81ad33623b0
+          conditions:
+          - comparison_operator: contains
+            id: 9afe7a02-e32f-43f5-8b1f-32e535072610
+            value: GS풍력발전
+            varType: string
+            variable_selector:
+            - '1732069364803'
+            - company
+          id: c6797b03-2e5f-4376-b9a3-e81ad33623b0
+          logical_operator: and
+        desc: ''
+        selected: false
+        title: IF/ELSE
+        type: if-else
+      height: 318
+      id: '1733378586428'
+      position:
+        x: 313
+        y: 898
+      positionAbsolute:
+        x: 313
+        y: 898
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - env
+          - TEXT_NODATA
+          variable: contexts
+        selected: false
+        title: End 2
+        type: end
+      height: 90
+      id: '1733380528635'
+      position:
+        x: 690
+        y: 1320
+      positionAbsolute:
+        x: 690
+        y: 1320
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        dataset_ids:
+        - 7c25c401-214c-4cfc-92dd-458185491fd0
+        desc: ''
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: weighted_score
+          reranking_model:
+            model: rerank-multilingual-v3.0
+            provider: cohere
+          score_threshold: 0.01
+          top_k: 4
+          weights:
+            keyword_setting:
+              keyword_weight: 0.3
+            vector_setting:
+              embedding_model_name: text-embedding-3-large
+              embedding_provider_name: openai
+              vector_weight: 0.7
+        query_variable_selector:
+        - '1732069364803'
+        - query
+        retrieval_mode: multiple
+        selected: false
+        title: GS구미열병합발전
+        type: knowledge-retrieval
+      height: 92
+      id: '1733382267819'
+      position:
+        x: 677
+        y: 992
+      positionAbsolute:
+        x: 677
+        y: 992
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        dataset_ids:
+        - 80cef6b3-cca7-42cf-9560-af25af47f9d9
+        desc: ''
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: weighted_score
+          reranking_model:
+            model: rerank-multilingual-v3.0
+            provider: cohere
+          score_threshold: 0.01
+          top_k: 4
+          weights:
+            keyword_setting:
+              keyword_weight: 0.3
+            vector_setting:
+              embedding_model_name: text-embedding-3-large
+              embedding_provider_name: openai
+              vector_weight: 0.7
+        query_variable_selector:
+        - '1732069364803'
+        - query
+        retrieval_mode: multiple
+        selected: false
+        title: GS 포천 그린에너지
+        type: knowledge-retrieval
+      height: 92
+      id: '1733382272401'
+      position:
+        x: 685
+        y: 1085
+      positionAbsolute:
+        x: 685
+        y: 1085
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        dataset_ids:
+        - cbe554eb-283d-4566-8afa-51577bd995f1
+        desc: ''
+        multiple_retrieval_config:
+          reranking_enable: true
+          reranking_mode: weighted_score
+          reranking_model:
+            model: rerank-multilingual-v3.0
+            provider: cohere
+          score_threshold: 0.01
+          top_k: 4
+          weights:
+            keyword_setting:
+              keyword_weight: 0.3
+            vector_setting:
+              embedding_model_name: text-embedding-3-large
+              embedding_provider_name: openai
+              vector_weight: 0.7
+        query_variable_selector:
+        - '1732069364803'
+        - company
+        retrieval_mode: multiple
+        selected: false
+        title: GS풍력발전
+        type: knowledge-retrieval
+      height: 92
+      id: '1733382276704'
+      position:
+        x: 695
+        y: 1187
+      positionAbsolute:
+        x: 695
+        y: 1187
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: 213.30282247261232
+      y: -272.2709404306562
+      zoom: 0.8208891817950459

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { IPRDData, IPRDStep, IQuestion, IExpertQuestions, IExpertAnswer } from '@/types/prd.types';
+import { IPRDData, IPRDStep, IQuestion, IExpertQuestions, IExpertAnswer, ChatMessage } from '@/types/prd.types';
 import { PRD_STEPS } from '@/lib/prd-questions';
 
 interface IPRDContext {
@@ -12,7 +12,7 @@ interface IPRDContext {
   expertQuestions: IExpertQuestions | null;
   expertAnswers: IExpertAnswer[];
   prdContent: string | null;
-  chatMessages: any[];
+  chatMessages: ChatMessage[];
   projectSummary: string | null;
   
   setCurrentStep: (step: number) => void;
@@ -26,7 +26,7 @@ interface IPRDContext {
   setExpertQuestions: (questions: IExpertQuestions) => void;
   setExpertAnswers: (answers: IExpertAnswer[]) => void;
   setPRDContent: (content: string) => void;
-  setChatMessages: (messages: any[]) => void;
+  setChatMessages: (messages: ChatMessage[]) => void;
   setProjectSummary: (summary: string) => void;
   getAllQuestionsAndAnswers: () => Array<{ question: string; answer: string }>;
 }
@@ -41,7 +41,7 @@ export const PRDProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [expertQuestions, setExpertQuestions] = useState<IExpertQuestions | null>(null);
   const [expertAnswers, setExpertAnswers] = useState<IExpertAnswer[]>([]);
   const [prdContent, setPRDContent] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [projectSummary, setProjectSummary] = useState<string | null>(null);
 
   const updateAnswer = useCallback((questionId: string, value: string) => {

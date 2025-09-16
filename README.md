@@ -48,10 +48,14 @@ MISO_GENERATOR_API_KEY='---'
 # MISO Agent API Configuration
 MISO_AGENT_API_KEY='---'
 MISO_AGENT_ENDPOINT=https://api.holdings.miso.gs/ext/v1
+
+# Supabase (MISOMarket 연결)
+NEXT_PUBLIC_SUPABASE_URL='https://<project-ref>.supabase.co'
+NEXT_PUBLIC_SUPABASE_ANON_KEY='ey...'
 ```
 
 
-- 참고: 기존 `NEXT_PUBLIC_*` 값은 더 이상 사용하지 않습니다.
+- 참고: 기존 `NEXT_PUBLIC_*` 값은 더 이상 사용하지 않습니다. (단, MISOMarket Supabase 연결용 2개 예외)
 - 보안: `/.env.local`은 커밋하지 마세요.
 
 ```
