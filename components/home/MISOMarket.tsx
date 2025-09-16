@@ -103,7 +103,7 @@ export default function MISOMarket() {
   return (
     <>
       <section className="bg-gradient-to-b from-white to-gray-50 pb-16">
-        <div className="container mx-auto px-6">
+        <div className="w-full max-w-7xl mx-auto px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -114,7 +114,7 @@ export default function MISOMarket() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div className="space-y-2">
                     <span className="inline-block bg-gray-100 text-gray-800 text-xs font-medium px-3 py-1 rounded-full">
-                      MISO Market
+                      템플릿으로 시작하기
                     </span>
                     <div className="space-y-1.5">
                       <h2 className="text-[28px] custom:text-[36px] font-bold text-gray-900 leading-tight">
