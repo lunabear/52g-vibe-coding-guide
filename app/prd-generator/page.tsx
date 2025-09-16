@@ -109,7 +109,7 @@ function PRDGeneratorContent() {
       try {
         // workflow를 사용한 힌트 생성 API 호출
         const context = `이전 대화 내용:
-${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
+${chatMessages.map((msg) => `${msg.role}: ${msg.content}`).join('\n')}`;
 
         const request = `${currentStepData?.description || ''}
         
@@ -240,7 +240,7 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
       
       // 세션에 저장된 전문가 답변이 있다면 복원
       if (savedSession.expertAnswers) {
-        const convertedAnswers = savedSession.expertAnswers.map((answer: any) => ({
+        const convertedAnswers = savedSession.expertAnswers.map((answer) => ({
           ...answer,
           expert: answer.expert as ExpertType
         }));
@@ -258,7 +258,7 @@ ${chatMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')}`;
   };
 
   // 전문가 답변 변경 핸들러
-  const handleExpertAnswersChange = (answers: any[]) => {
+  const handleExpertAnswersChange = (answers: { question: string; answer: string; expert: ExpertType }[]) => {
     setExpertAnswers(answers);
     
     // Mini-Ally 플로우인 경우 세션에도 저장

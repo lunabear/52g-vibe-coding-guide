@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { SimpleHeader } from '@/components/layout/SimpleHeader';
 import Footer from '@/components/layout/Footer';
 import HackathonModal from '@/components/common/HackathonModal';
+import MISOMarket from '@/components/home/MISOMarket';
 import Image from 'next/image';
 
 export default function Home() {
@@ -187,6 +188,9 @@ export default function Home() {
           </div>
         </div>
       </main>
+      
+      <MISOMarket />
+      
       <Footer />
     </div>
   );
